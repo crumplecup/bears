@@ -12,12 +12,14 @@ pub struct User {
 }
 
 impl User {
+    #[tracing::instrument(skip_all)]
     pub fn body(&self) -> String {
         let mut body = self.url.to_string();
         body.push_str(&format!("?&UserID={}", self.api));
         body
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn params(&self) -> HashMap<String, String> {
         let mut params = HashMap::new();
         params.insert("UserID".to_string(), self.api.clone());

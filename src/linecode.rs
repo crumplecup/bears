@@ -1,14 +1,27 @@
-use crate::{BeaError, Config, RequestParameters};
+use crate::{Config, RequestParameters, ReqwestError};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-pub async fn get_line_codes(config: &Config) -> Result<BeaLineCodes, BeaError> {
+#[tracing::instrument(skip_all)]
+pub async fn get_line_codes(config: &Config) -> Result<BeaLineCodes, ReqwestError> {
     let mut body = config.body();
     body.push_str("&method=GetParameterValuesFiltered");
     body.push_str("&TargetParameter=LineCode");
+    let url = body.clone();
     let client = reqwest::Client::new();
-    let res = client.get(body).send().await?;
-    Ok(res.json::<BeaLineCodes>().await?)
+    match client.get(body).send().await {
+        Ok(res) => match res.json::<BeaLineCodes>().await {
+            Ok(data) => Ok(data),
+            Err(source) => {
+                let error = ReqwestError::new(url, "get".to_string(), source);
+                Err(error)
+            }
+        },
+        Err(source) => {
+            let error = ReqwestError::new(url, "get".to_string(), source);
+            Err(error)
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
@@ -19,6 +32,7 @@ pub struct LineCode {
 }
 
 impl LineCode {
+    #[tracing::instrument(skip_all)]
     pub fn report(&self) {
         info!("Key: {}, Desc: {}", self.key, self.desc);
     }
@@ -44,6 +58,7 @@ pub struct LineCodes {
 }
 
 impl LineCodes {
+    #[tracing::instrument(skip_all)]
     pub fn report(&self) {
         self.iter().map(|c| c.report()).for_each(drop);
     }
@@ -76,6 +91,7 @@ pub struct BeaLineCodes {
 }
 
 impl BeaLineCodes {
+    #[tracing::instrument(skip_all)]
     pub fn results(&self) -> LineCodes {
         self.beaapi.results.clone()
     }

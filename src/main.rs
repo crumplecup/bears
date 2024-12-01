@@ -1,14 +1,11 @@
-use bea::{get_geofips, getdata, GeoFipsTask, GeoFipsTasks, Method};
-use bea::{BeaError, Config, User};
+use bea::{
+    get_geofips, getdata, trace_init, EnvError, GeoFipsTask, GeoFipsTasks, IoError, Method,
+    UrlParseError,
+};
+use bea::{BeaErr, Config, User};
 use clap::Parser;
 use indicatif::ProgressBar;
-use spreadsheet::prelude::BeaData;
-// use tracing::subscriber::set_global_default;
 use tracing::{info, trace};
-// use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
-// use tracing_log::LogTracer;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-// use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -20,27 +17,18 @@ struct Cli {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), BeaError> {
-    // LogTracer::init().expect("Failed to set logger.");
-    // let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-    // let formatting_layer = BunyanFormattingLayer::new("bea".into(), std::io::stdout);
-    // let subscriber = Registry::default()
-    //     .with(env_filter)
-    //     .with(JsonStorageLayer)
-    //     .with(formatting_layer);
-    // set_global_default(subscriber).expect("Failed to set subscriber.");
-    // trace!("Subscriber initialized.");
+async fn main() -> Result<(), BeaErr> {
     trace_init();
     dotenvy::dotenv().ok();
     trace!("Environmental variables loaded.");
 
-    let url = std::env::var("BEA_URL")?;
-    let url = url::Url::parse(&url)?;
-    let key = std::env::var("API_KEY")?;
-    let checklist = std::env::var("CHECKLIST")?;
-    let checklist_update = std::env::var("CHECKLIST_UPDATE")?;
-    let bea_data = std::env::var("BEA_CAINC5N")?;
-    let csv = std::env::var("BEA_CAINC5N_CSV")?;
+    let url = EnvError::from_env("BEA_URL")?;
+    let url = UrlParseError::into_url(&url)?;
+    let key = EnvError::from_env("API_KEY")?;
+    let checklist = EnvError::from_env("CHECKLIST")?;
+    let checklist_update = EnvError::from_env("CHECKLIST_UPDATE")?;
+    let bea_data = EnvError::from_env("BEA_CAINC5N")?;
+    // let csv = EnvError::from_env("BEA_CAINC5N_CSV")?;
     let user = User::new(url, &key);
     let mut config = Config::new(&user, "Regional");
     config.with_table("CAINC5N");
@@ -62,26 +50,33 @@ async fn main() -> Result<(), BeaError> {
             let fips = get_geofips(&config).await?;
             info!("FIPS obtained.");
             let tasks = GeoFipsTasks::from(&fips.results());
-            let encode: Vec<u8> = bincode::serialize(&tasks)?;
+            let encode = tasks.serialize()?;
             info!("Encoded to binary.");
-            std::fs::write(checklist.clone(), encode)?;
+            let mut path = std::path::PathBuf::new();
+            path.push(checklist.clone());
+            IoError::write(&encode, path)?;
             info!("Written to path {}", checklist);
         }
         "checklist_report" => {
             info!("Checklist report.");
-            let check = std::fs::read(checklist.clone())?;
-            let check: GeoFipsTasks = bincode::deserialize(&check)?;
+            let mut path = std::path::PathBuf::new();
+            path.push(checklist.clone());
+            let check = IoError::read(path)?;
+            let check = GeoFipsTasks::deserialize(&check)?;
             check.report();
         }
         "download" => {
             info!("Download data.");
             config.with_linecode("ALL").with_year("ALL");
-            let check = std::fs::read(&checklist)?;
-            let mut check: GeoFipsTasks = bincode::deserialize(&check)?;
+            let mut path = std::path::PathBuf::new();
+            path.push(checklist.clone());
+            let check = IoError::read(path)?;
+            let mut check = GeoFipsTasks::deserialize(&check)?;
             if std::path::PathBuf::from(checklist_update.clone()).exists() {
                 info!("Checklist found.");
-                let done = std::fs::read(&checklist_update)?;
-                let done: GeoFipsTasks = bincode::deserialize(&done)?;
+                let path = std::path::PathBuf::from(checklist_update.clone());
+                let done = IoError::read(path)?;
+                let done = GeoFipsTasks::deserialize(&done)?;
                 for item in done.tasks() {
                     for task in check.tasks_mut() {
                         if item.key() == task.key() {
@@ -107,17 +102,19 @@ async fn main() -> Result<(), BeaError> {
                         .collect::<Vec<&GeoFipsTask>>()
                         .len()
                 );
-                std::fs::remove_file(checklist_update.clone())?;
+                let path = std::path::PathBuf::from(&checklist_update);
+                IoError::remove_file(path)?;
             } else {
                 info!("Checklist update not found.");
             }
             let mut data = Vec::new();
             if std::path::PathBuf::from(bea_data.clone()).exists() {
                 info!("Existing BEA data found on disk.");
-                let file = std::fs::read(bea_data.clone())?;
-                let mut file: Vec<getdata::Datum> = bincode::deserialize(&file)?;
-                info!("BEA data loaded from disk.");
-                data.append(&mut file);
+                // let path = std::path::PathBuf::from(bea_data.clone());
+                // let file = IoError::read(path)?;
+                // let mut file: Vec<getdata::Datum> = bincode::deserialize(&file)?;
+                // info!("BEA data loaded from disk.");
+                // data.append(&mut file);
             }
             let bar = ProgressBar::new(check.tasks().len() as u64);
             bar.set_style(style);
@@ -134,57 +131,49 @@ async fn main() -> Result<(), BeaError> {
                             bar.inc(1);
                         }
                         Err(_) => {
-                            let encode: Vec<u8> = bincode::serialize(&done)?;
-                            std::fs::write(checklist_update.clone(), encode)?;
-                            let encode: Vec<u8> = bincode::serialize(&data)?;
-                            std::fs::write(bea_data.clone(), encode)?;
+                            // let path = std::path::PathBuf::from(&checklist_update);
+                            // let encode: Vec<u8> = bincode::serialize(&done)?;
+                            // IoError::write(&encode, path)?;
+                            // let encode: Vec<u8> = bincode::serialize(&data)?;
+                            // let path = std::path::PathBuf::from(&bea_data);
+                            // IoError::write(&encode, path)?;
                             info!("GeoFips {} failed to download.", task.key());
                         }
                     }
                 }
             }
-            let encode: Vec<u8> = bincode::serialize(&data)?;
-            std::fs::write(bea_data.clone(), encode)?;
-            let mut data = getdata::Data::new(&data);
-            data.to_csv(csv.into())?;
-            info!("Data download complete.");
-            if let Ok(check) = std::fs::exists(&checklist_update) {
-                if check {
-                    std::fs::remove_file(checklist_update)?;
-                    info!("Completed checklist removed.");
-                }
-            }
+            // let encode: Vec<u8> = bincode::serialize(&data)?;
+            // let path = std::path::PathBuf::from(&bea_data);
+            // IoError::write(&encode, path)?;
+            // let mut data = getdata::Data::new(&data);
+            // data.to_csv(csv.into())?;
+            // info!("Data download complete.");
+            // if let Ok(check) = std::fs::exists(&checklist_update) {
+            //     if check {
+            //         let path = std::path::PathBuf::from(&checklist_update);
+            //         IoError::remove_file(path)?;
+            //         info!("Completed checklist removed.");
+            //     }
+            // }
         }
-        "save" => {
-            let path = std::env::var("BEA_CAINC5N_CSV")?;
-            let records = BeaData::from_csv(path)?;
-            tracing::info!("Records: {}", records.records_ref().len());
-            info!("Serializing to binary.");
-            let encode = bincode::serialize(&records)?;
-            if let Some(source) = cli.source {
-                info!("Writing to file.");
-                std::fs::write(source, encode)?;
-            }
-        }
-        "inspect" => {
-            let data = std::fs::read(&bea_data)?;
-            let decode: BeaData = bincode::deserialize(&data)?;
-            info!("Records: {}", decode.records().len());
-        }
+        // "save" => {
+        //     let path = EnvError::from_env("BEA_CAINC5N_CSV")?;
+        //     let records = BeaData::from_csv(path)?;
+        //     tracing::info!("Records: {}", records.records_ref().len());
+        //     info!("Serializing to binary.");
+        //     let encode = bincode::serialize(&records)?;
+        //     if let Some(source) = cli.source {
+        //         info!("Writing to file.");
+        //         IoError::write(&encode, source)?;
+        //     }
+        // }
+        // "inspect" => {
+        //     let path = std::path::PathBuf::from(&bea_data);
+        //     let data = IoError::read(path)?;
+        //     let decode: BeaData = bincode::deserialize(&data)?;
+        //     info!("Records: {}", decode.records().len());
+        // }
         _ => info!("Command not recognized."),
     };
     Ok(())
-}
-
-pub fn trace_init() {
-    if tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "bea=info".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .try_init()
-        .is_ok()
-    {};
-    tracing::trace!("Loading Bea...");
 }

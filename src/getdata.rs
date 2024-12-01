@@ -1,14 +1,26 @@
-use crate::{deserialize_bool, BeaError, Config, RequestParameters};
+use crate::{deserialize_bool, Config, RequestParameters, ReqwestError};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-pub async fn get_data(config: &Config) -> Result<BeaDataResponse, BeaError> {
+#[tracing::instrument(skip_all)]
+pub async fn get_data(config: &Config) -> Result<BeaDataResponse, ReqwestError> {
     let mut body = config.body();
     body.push_str("&method=GetData");
+    let url = body.clone();
     let client = reqwest::Client::new();
-    let res = client.get(body).send().await?;
-    let res = res.json::<BeaDataResponse>().await?;
-    Ok(res)
+    match client.get(body).send().await {
+        Ok(res) => match res.json::<BeaDataResponse>().await {
+            Ok(data) => Ok(data),
+            Err(source) => {
+                let error = ReqwestError::new(url, "get".to_string(), source);
+                Err(error)
+            }
+        },
+        Err(source) => {
+            let error = ReqwestError::new(url, "get".to_string(), source);
+            Err(error)
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
@@ -77,6 +89,7 @@ pub struct Datum {
 }
 
 impl Datum {
+    #[tracing::instrument(skip_all)]
     pub fn report(&self) {
         info!("Desc: {}, Value: {}", self.description, self.data_value);
     }
@@ -100,10 +113,12 @@ impl Datum {
 pub struct Data(Vec<Datum>);
 
 impl Data {
+    #[tracing::instrument(skip_all)]
     pub fn new(data: &[Datum]) -> Self {
         Data(data.to_vec())
     }
 
+    #[tracing::instrument(skip(self))]
     pub fn to_csv(&mut self, title: std::path::PathBuf) -> Result<(), std::io::Error> {
         let mut wtr = csv::Writer::from_path(title)?;
         for i in self.iter() {
@@ -153,20 +168,35 @@ pub struct DataResponse {
 pub struct BeaDataResponse(DataResponse);
 
 impl BeaDataResponse {
+    #[tracing::instrument(skip_all)]
     pub fn results(&self) -> Vec<Datum> {
         self.0.results.data.clone()
     }
 
-    pub async fn get(config: &Config) -> Result<BeaDataResponse, BeaError> {
+    #[tracing::instrument(skip_all)]
+    pub async fn get(config: &Config) -> Result<BeaDataResponse, ReqwestError> {
         let mut params = config.user().params();
         params.insert("method".to_string(), "GetData".to_string());
+        let form = params
+            .clone()
+            .into_iter()
+            .collect::<Vec<(String, String)>>();
+        let url = config.user().url().clone();
         let client = reqwest::Client::new();
-        let res = client
-            .get(config.user().url().clone())
-            .form(&params)
-            .send()
-            .await?;
-        let res = res.json::<BeaDataResponse>().await?;
-        Ok(res)
+        match client.get(url.clone()).form(&params).send().await {
+            Ok(res) => match res.json::<BeaDataResponse>().await {
+                Ok(data) => Ok(data),
+                Err(source) => {
+                    let mut error = ReqwestError::new(url.to_string(), "get".to_string(), source);
+                    error.with_form(form);
+                    Err(error)
+                }
+            },
+            Err(source) => {
+                let mut error = ReqwestError::new(url.to_string(), "get".to_string(), source);
+                error.with_form(form);
+                Err(error)
+            }
+        }
     }
 }

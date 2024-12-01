@@ -1,15 +1,27 @@
-use crate::{BeaError, Config, RequestParameters};
+use crate::{error::BincodeError, Config, RequestParameters, ReqwestError};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-pub async fn get_geofips(config: &Config) -> Result<BeaGeoFips, BeaError> {
+pub async fn get_geofips(config: &Config) -> Result<BeaGeoFips, ReqwestError> {
     let mut body = config.body();
     body.push_str("&method=GetParameterValuesFiltered");
     body.push_str("&TargetParameter=GeoFips");
+    let url = body.clone();
     let client = reqwest::Client::new();
     info!("Sending request for {}", body);
-    let res = client.get(body).send().await?;
-    Ok(res.json::<BeaGeoFips>().await?)
+    match client.get(body).send().await {
+        Ok(res) => match res.json::<BeaGeoFips>().await {
+            Ok(data) => Ok(data),
+            Err(source) => {
+                let error = ReqwestError::new(url, "get".into(), source);
+                Err(error)
+            }
+        },
+        Err(source) => {
+            let error = ReqwestError::new(url, "get".into(), source);
+            Err(error)
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
@@ -72,7 +84,7 @@ pub struct GeoFipsResults {
 pub struct BeaGeoFips(GeoFipsResults);
 
 impl BeaGeoFips {
-    pub async fn get(config: &Config) -> Result<Self, BeaError> {
+    pub async fn get(config: &Config) -> Result<Self, ReqwestError> {
         let mut params = config.params();
         params.insert(
             "method".to_string(),
@@ -80,11 +92,29 @@ impl BeaGeoFips {
         );
         params.insert("TargetParameter".to_string(), "GeoFips".to_string());
         let client = reqwest::Client::new();
+        let url = config.user().url().to_string();
+        let body = params
+            .iter()
+            .map(|(a, b)| (a.clone(), b.clone()))
+            .collect::<Vec<(String, String)>>();
         let req = client.get(config.user().url().clone()).query(&params);
         info!("Sending request {:?}", req);
 
-        let res = req.send().await?;
-        Ok(res.json::<BeaGeoFips>().await?)
+        match req.send().await {
+            Ok(res) => match res.json::<BeaGeoFips>().await {
+                Ok(data) => Ok(data),
+                Err(source) => {
+                    let mut error = ReqwestError::new(url, "get".into(), source);
+                    error.with_body(body);
+                    Err(error)
+                }
+            },
+            Err(source) => {
+                let mut error = ReqwestError::new(url, "get".into(), source);
+                error.with_body(body);
+                Err(error)
+            }
+        }
     }
 
     pub fn results(&self) -> GeoFips {
@@ -138,23 +168,49 @@ impl From<&GeoFipsItem> for GeoFipsTask {
     Hash,
     Deserialize,
     Serialize,
+    derive_new::new,
     derive_more::Deref,
     derive_more::DerefMut,
 )]
 pub struct GeoFipsTasks(Vec<GeoFipsTask>);
 
 impl GeoFipsTasks {
+    #[tracing::instrument(skip_all)]
     pub fn tasks(&self) -> Vec<GeoFipsTask> {
         self.to_vec()
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn tasks_mut(&mut self) -> &mut Vec<GeoFipsTask> {
         &mut *self
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn report(&self) {
         for task in self.iter() {
             task.report();
+        }
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn serialize(&self) -> Result<Vec<u8>, BincodeError> {
+        match bincode::serialize(self) {
+            Ok(data) => Ok(data),
+            Err(source) => {
+                let error = BincodeError::new("serializing GeoFipsTasks".to_string(), source);
+                Err(error)
+            }
+        }
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn deserialize(bytes: &[u8]) -> Result<Self, BincodeError> {
+        match bincode::deserialize(bytes) {
+            Ok(data) => Ok(data),
+            Err(source) => {
+                let error = BincodeError::new("deserializing GeoFipsTasks".to_string(), source);
+                Err(error)
+            }
         }
     }
 }

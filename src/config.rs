@@ -1,4 +1,4 @@
-use crate::{Dataset, Method, User};
+use crate::{Dataset, Method, ParameterName, User};
 use std::collections::HashMap;
 
 #[derive(
@@ -19,15 +19,18 @@ pub struct Options {
     geofips: Option<String>,
     linecode: Option<String>,
     method: Option<Method>,
+    param_name: Option<ParameterName>,
     table: Option<String>,
     year: Option<String>,
 }
 
 impl Options {
+    #[tracing::instrument]
     pub fn new() -> Self {
         Default::default()
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn params(&self) -> HashMap<String, String> {
         let mut params = HashMap::new();
         if let Some(dataset) = self.dataset {
@@ -41,6 +44,9 @@ impl Options {
         }
         if let Some(method) = self.method {
             params.insert("METHOD".to_string(), method.to_string());
+        }
+        if let Some(param_name) = self.param_name {
+            params.insert("ParameterName".to_string(), param_name.to_string());
         }
         if let Some(table) = self.table.clone() {
             params.insert("TableName".to_string(), table);
@@ -73,6 +79,7 @@ pub struct NeoConfig {
 }
 
 impl NeoConfig {
+    #[tracing::instrument(skip_all)]
     pub fn params(&self) -> HashMap<String, String> {
         let mut params = self.options.params();
         params.insert("USERID".to_string(), self.key.clone());
@@ -102,6 +109,7 @@ pub struct Config {
 }
 
 impl Config {
+    #[tracing::instrument]
     pub fn new(user: &User, dataset: &str) -> Self {
         Config {
             user: user.clone(),
@@ -113,6 +121,7 @@ impl Config {
         }
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn body(&self) -> String {
         let mut body = self.user.body();
         body.push_str(&format!("&datasetname={}", self.dataset));
@@ -131,6 +140,7 @@ impl Config {
         body
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn params(&self) -> HashMap<String, String> {
         let mut params = self.user.params();
         if let Some(table) = self.table.clone() {
