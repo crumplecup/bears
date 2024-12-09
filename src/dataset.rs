@@ -1,10 +1,9 @@
 use crate::{
-    error::BincodeError, BeaParameters, JsonParseError, JsonParseErrorKind, RequestParameters,
+    map_to_string, BeaErr, BeaResponse, JsonParseError, JsonParseErrorKind, ParameterName,
     ReqwestError, User,
 };
 use convert_case::Casing;
 use serde::{Deserialize, Serialize};
-use tracing::info;
 
 #[derive(
     Debug,
@@ -19,6 +18,8 @@ use tracing::info;
     strum::EnumIter,
     derive_more::Display,
     derive_more::FromStr,
+    serde::Deserialize,
+    serde::Serialize,
 )]
 pub enum Dataset {
     #[default]
@@ -48,6 +49,111 @@ impl Dataset {
     pub fn lower(&self) -> String {
         self.to_string().to_case(convert_case::Case::Flat)
     }
+
+    pub fn names(&self) -> Vec<ParameterName> {
+        match self {
+            Self::Nipa => {
+                vec![
+                    ParameterName::Frequency,
+                    ParameterName::ShowMillions,
+                    ParameterName::TableID,
+                    ParameterName::TableName,
+                    ParameterName::Year,
+                ]
+            }
+            Self::NIUnderlyingDetail => {
+                vec![
+                    ParameterName::Frequency,
+                    ParameterName::TableID,
+                    ParameterName::TableName,
+                    ParameterName::Year,
+                ]
+            }
+            Self::Mne => {
+                vec![
+                    ParameterName::DirectionOfInvestment,
+                    ParameterName::OwnershipLevel,
+                    ParameterName::NonbankAffiliatesOnly,
+                    ParameterName::Classification,
+                    ParameterName::Country,
+                    ParameterName::Industry,
+                    ParameterName::Year,
+                    ParameterName::State,
+                    ParameterName::SeriesID,
+                    ParameterName::GetFootnotes,
+                    ParameterName::Investment,
+                    ParameterName::ParentInvestment,
+                ]
+            }
+            Self::FixedAssets => {
+                vec![ParameterName::TableName, ParameterName::Year]
+            }
+            Self::Ita => {
+                vec![
+                    ParameterName::Indicator,
+                    ParameterName::AreaOrCountry,
+                    ParameterName::Frequency,
+                    ParameterName::Year,
+                ]
+            }
+            Self::Iip => {
+                vec![
+                    ParameterName::TypeOfInvestment,
+                    ParameterName::Component,
+                    ParameterName::Frequency,
+                    ParameterName::Year,
+                ]
+            }
+            Self::InputOutput => {
+                vec![ParameterName::TableID, ParameterName::Year]
+            }
+            Self::IntlServTrade => {
+                vec![
+                    ParameterName::TypeOfService,
+                    ParameterName::TradeDirection,
+                    ParameterName::Affiliation,
+                    ParameterName::AreaOrCountry,
+                    ParameterName::Year,
+                ]
+            }
+            Self::IntlServSTA => {
+                vec![
+                    ParameterName::Channel,
+                    ParameterName::Destination,
+                    ParameterName::Industry,
+                    ParameterName::AreaOrCountry,
+                    ParameterName::Year,
+                ]
+            }
+            Self::GDPbyIndustry => {
+                vec![
+                    ParameterName::Frequency,
+                    ParameterName::Industry,
+                    ParameterName::TableID,
+                    ParameterName::Year,
+                ]
+            }
+            Self::Regional => {
+                vec![
+                    ParameterName::GeoFips,
+                    ParameterName::LineCode,
+                    ParameterName::TableName,
+                    ParameterName::Year,
+                ]
+            }
+            Self::UnderlyingGDPbyIndustry => {
+                vec![
+                    ParameterName::Frequency,
+                    ParameterName::Industry,
+                    ParameterName::TableID,
+                    ParameterName::Year,
+                ]
+            }
+            Self::APIDatasetMetadata => {
+                vec![ParameterName::Dataset]
+            }
+        }
+    }
 }
 
 #[derive(
@@ -72,7 +178,7 @@ pub struct DatasetDetails {
 
 impl DatasetDetails {
     #[tracing::instrument(skip_all)]
-    pub async fn parameters(&self, user: &User) -> Result<BeaParameters, ReqwestError> {
+    pub async fn parameters(&self, user: &User) -> Result<BeaResponse, ReqwestError> {
         let mut body = user.body();
         body.push_str("&method=GETPARAMETERLIST");
         body.push_str(&format!("&datasetname={}", self.dataset_name));
@@ -80,8 +186,8 @@ impl DatasetDetails {
         let client = reqwest::Client::new();
         match client.get(body).send().await {
             Ok(res) => {
-                info!("Response code: {}.", res.status());
-                match res.json::<BeaParameters>().await {
+                tracing::trace!("Response code: {}.", res.status());
+                match res.json::<BeaResponse>().await {
                     Ok(r) => Ok(r),
                     Err(source) => {
                         let error = ReqwestError::new(url, "get".into(), source);
@@ -102,31 +208,19 @@ impl DatasetDetails {
 }
 
 impl TryFrom<serde_json::Value> for DatasetDetails {
-    type Error = JsonParseError;
+    type Error = BeaErr;
     // #[tracing::instrument(skip_all)]
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         match value {
             serde_json::Value::Object(m) => {
-                let key_name = "DatasetName".to_string();
-                if let Some(name) = m.get(&key_name) {
-                    let key_desc = "DatasetDescription".to_string();
-                    if let Some(desc) = m.get(&key_desc) {
-                        let details = DatasetDetails::new(name.to_string(), desc.to_string());
-                        Ok(details)
-                    } else {
-                        tracing::info!("Invalid contents: {m:#?}");
-                        let error = JsonParseErrorKind::KeyMissing(key_desc);
-                        Err(error.into())
-                    }
-                } else {
-                    tracing::info!("Invalid Object: {m:#?}");
-                    let error = JsonParseErrorKind::KeyMissing(key_name);
-                    Err(error.into())
-                }
+                let name = map_to_string("DatasetName", &m)?;
+                let desc = map_to_string("DatasetDescription", &m)?;
+                Ok(Self::new(desc, name))
             }
             _ => {
-                tracing::info!("Invalid Value: {value:#?}");
+                tracing::trace!("Invalid Value: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;
+                let error = JsonParseError::from(error);
                 Err(error.into())
             }
         }
@@ -154,7 +248,7 @@ pub struct Datasets {
 }
 
 impl TryFrom<serde_json::Value> for Datasets {
-    type Error = JsonParseError;
+    type Error = BeaErr;
     // #[tracing::instrument(skip_all)]
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::info!("Reading DatasetDetails");
@@ -162,185 +256,26 @@ impl TryFrom<serde_json::Value> for Datasets {
             serde_json::Value::Object(m) => {
                 let key = "Dataset".to_string();
                 if let Some(serde_json::Value::Array(v)) = m.get(&key) {
-                    tracing::info!("Array found.");
+                    tracing::trace!("Array found.");
                     let mut dataset = Vec::new();
                     for val in v {
                         let details = DatasetDetails::try_from(val.clone())?;
                         dataset.push(details);
                     }
-                    tracing::info!("Details found.");
+                    tracing::trace!("Details found.");
                     let datasets = Datasets::new(dataset);
                     Ok(datasets)
                 } else {
                     tracing::warn!("Unexpected content: {m:#?}");
                     let error = JsonParseErrorKind::KeyMissing(key);
+                    let error = JsonParseError::from(error);
                     Err(error.into())
                 }
             }
             _ => {
                 tracing::warn!("Wrong Value type: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;
-                Err(error.into())
-            }
-        }
-    }
-}
-
-#[derive(
-    Clone,
-    Debug,
-    Default,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Deserialize,
-    Serialize,
-    derive_new::new,
-)]
-#[serde(rename_all = "PascalCase")]
-pub struct DatasetResults {
-    pub request: RequestParameters,
-    pub results: Datasets,
-}
-
-impl TryFrom<serde_json::Value> for DatasetResults {
-    type Error = JsonParseError;
-    // #[tracing::instrument(skip_all)]
-    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading DatasetResults");
-        match value {
-            serde_json::Value::Object(m) => {
-                tracing::info!("Object found.");
-                let key_request = "Request".to_string();
-                if let Some(req) = m.get(&key_request) {
-                    tracing::info!("Request found.");
-                    let key_results = "Results".to_string();
-                    if let Some(res) = m.get(&key_results) {
-                        tracing::info!("Results found.");
-                        let request = RequestParameters::try_from(req)?;
-                        tracing::info!("Request parameters read.");
-                        let results = Datasets::try_from(res.clone())?;
-                        tracing::info!("Datasets read.");
-                        let dataset = DatasetResults::new(request, results);
-                        Ok(dataset)
-                    } else {
-                        tracing::info!("Invalid contents: {m:#?}");
-                        let error = JsonParseErrorKind::KeyMissing(key_results);
-                        Err(error.into())
-                    }
-                } else {
-                    tracing::info!("Invalid Object: {m:#?}");
-                    let error = JsonParseErrorKind::KeyMissing(key_request);
-                    Err(error.into())
-                }
-            }
-            _ => {
-                tracing::info!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
-                Err(error.into())
-            }
-        }
-    }
-}
-
-#[derive(
-    Clone,
-    Debug,
-    Default,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Deserialize,
-    Serialize,
-    derive_new::new,
-    derive_getters::Getters,
-    derive_more::Deref,
-    derive_more::DerefMut,
-)]
-#[serde(rename_all = "UPPERCASE")]
-pub struct BeaDatasets {
-    beaapi: DatasetResults,
-}
-
-impl BeaDatasets {
-    #[tracing::instrument(skip_all)]
-    pub async fn get(user: &User) -> Result<Self, ReqwestError> {
-        let mut body = user.body();
-        body.push_str("&method=GETDATASETLIST");
-        let client = reqwest::Client::new();
-        let url = body.clone();
-        match client.get(body).send().await {
-            Ok(res) => {
-                info!("Response code: {}.", res.status());
-                match res.json::<BeaDatasets>().await {
-                    Ok(r) => Ok(r),
-                    Err(source) => {
-                        let error = ReqwestError::new(url, "get".into(), source);
-                        Err(error)
-                    }
-                }
-            }
-            Err(source) => {
-                let error = ReqwestError::new(url, "get".into(), source);
-                Err(error)
-            }
-        }
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub fn results(&self) -> Vec<DatasetDetails> {
-        self.beaapi.results.to_vec()
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub fn serialize(&self) -> Result<Vec<u8>, BincodeError> {
-        match bincode::serialize(self) {
-            Ok(data) => Ok(data),
-            Err(source) => {
-                let error = BincodeError::new("serializing BeaDatasets".to_string(), source);
-                Err(error)
-            }
-        }
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub fn deserialize(bytes: &[u8]) -> Result<Self, BincodeError> {
-        match bincode::deserialize(bytes) {
-            Ok(data) => Ok(data),
-            Err(source) => {
-                let error = BincodeError::new("deserializing BeaDatasets".to_string(), source);
-                Err(error)
-            }
-        }
-    }
-}
-
-impl TryFrom<serde_json::Value> for BeaDatasets {
-    type Error = JsonParseError;
-    #[tracing::instrument]
-    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading BeaDatasets");
-        match value {
-            serde_json::Value::Object(m) => {
-                let key = "BEAAPI".to_string();
-                if let Some(val) = m.get(&key) {
-                    tracing::info!("Val is: {val:#?}");
-                    let data = DatasetResults::try_from(val.clone())?;
-                    let data = BeaDatasets::new(data);
-                    Ok(data)
-                } else {
-                    tracing::info!("Invalid Object: {m:#?}");
-                    let error = JsonParseErrorKind::KeyMissing(key);
-                    Err(error.into())
-                }
-            }
-            _ => {
-                tracing::info!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = JsonParseError::from(error);
                 Err(error.into())
             }
         }

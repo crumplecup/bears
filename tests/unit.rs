@@ -1,61 +1,4 @@
-use bea::{check, BeaErr};
-
-#[cfg(feature = "api")]
-#[tokio::test]
-async fn dataset_to_json() -> Result<(), BeaErr> {
-    check::dataset_to_json().await
-}
-
-#[test]
-fn datasets_from_file() -> anyhow::Result<()> {
-    check::datasets_from_file()?;
-    Ok(())
-}
-
-#[cfg(feature = "api")]
-#[tokio::test]
-async fn deserialize_datasets() -> Result<(), BeaErr> {
-    check::deserialize_datasets().await
-}
-
-#[test]
-fn check_datasets() -> anyhow::Result<()> {
-    check::check_datasets()?;
-    Ok(())
-}
-
-#[cfg(feature = "api")]
-#[tokio::test]
-async fn parameters_to_json() -> Result<(), BeaErr> {
-    check::parameters_to_json().await
-}
-
-// reads response and native format from file
-// avoids making api calls to bea
-// used to test internal parsing of responses
-#[test]
-fn parameters_from_file() -> anyhow::Result<()> {
-    check::parameters_from_file()?;
-    Ok(())
-}
-
-#[test]
-fn parameters_json_to_bin() -> anyhow::Result<()> {
-    check::json_to_bin()?;
-    Ok(())
-}
-
-#[cfg(feature = "api")]
-#[tokio::test]
-async fn deserialize_parameters() -> Result<(), BeaErr> {
-    check::deserialize_parameters().await
-}
-
-#[test]
-fn diff_parameters() -> anyhow::Result<()> {
-    check::diff_parameters()?;
-    Ok(())
-}
+use bea::check;
 
 #[test]
 fn parameter_names() -> anyhow::Result<()> {
@@ -72,5 +15,45 @@ fn io_read() -> anyhow::Result<()> {
 #[test]
 fn env() -> anyhow::Result<()> {
     check::env()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn datasets() -> anyhow::Result<()> {
+    #[cfg(feature = "api")]
+    check::datasets_to_json().await?;
+    #[cfg(feature = "api")]
+    tracing::info!("Response received from BEA API.");
+    check::datasets_json_to_bin()?;
+    tracing::info!("Serialized into binary.");
+    check::datasets_from_file()?;
+    tracing::info!("Deserialized from file.");
+    check::check_datasets()?;
+    tracing::info!("Checked against dataset variants.");
+    Ok(())
+}
+
+#[tokio::test]
+async fn parameters() -> anyhow::Result<()> {
+    #[cfg(feature = "api")]
+    check::parameters_to_json().await?;
+    check::parameters_json_to_bin()?;
+    check::parameters_from_file()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn parameter_values() -> anyhow::Result<()> {
+    #[cfg(feature = "api")]
+    check::parameter_values_to_json().await?;
+    check::parameter_value_json_to_bin()?;
+    check::parameter_value_from_file()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn parameter_value_filtered() -> anyhow::Result<()> {
+    #[cfg(feature = "api")]
+    check::parameter_value_filtered().await?;
     Ok(())
 }

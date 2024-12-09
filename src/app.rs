@@ -38,12 +38,6 @@ impl App {
         let client = reqwest::Client::new();
         let req = client.get(self.url.clone()).query(&params);
         tracing::trace!("Sending request: {:?}", req);
-        // let res = req.send().await?;
-        // tracing::trace!("Response code: {}.", res.status());
-        // tracing::trace!("Response: {:#?}", res);
-        // tracing::trace!("Body: {:#?}", res.text().await?);
-        // let req = client.get(self.url.clone()).query(&params);
-        // tracing::trace!("Sending request: {:?}", req);
         match req.send().await {
             Ok(res) => Ok(res),
             Err(source) => {

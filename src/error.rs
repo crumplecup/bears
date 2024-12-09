@@ -101,6 +101,13 @@ impl From<IoError> for BeaErr {
     }
 }
 
+impl From<ParseInt> for BeaErr {
+    fn from(value: ParseInt) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
 impl From<UrlParseError> for BeaErr {
     fn from(value: UrlParseError) -> Self {
         let kind = BeaErrorKind::from(value).into();
@@ -125,6 +132,8 @@ pub enum BeaErrorKind {
     IoPass(Io),
     #[from(JsonParseError)]
     JsonParse(JsonParseError),
+    #[from(ParseInt)]
+    ParseInt(ParseInt),
     #[from(SerdeJson, serde_json::Error)]
     SerdeJson(SerdeJson),
     #[from(ReqwestError)]
@@ -157,6 +166,9 @@ impl std::fmt::Display for BeaErrorKind {
             Self::JsonParse(e) => {
                 write!(f, "{e}")
             }
+            Self::ParseInt(e) => {
+                write!(f, "{e}")
+            }
             Self::Reqwest(e) => {
                 write!(f, "{e}")
             }
@@ -180,6 +192,7 @@ impl std::error::Error for BeaErrorKind {
             Self::Io(e) => Some(e.source()),
             Self::IoPass(e) => Some(e.source()),
             Self::JsonParse(e) => e.source(),
+            Self::ParseInt(e) => Some(e.source()),
             Self::Reqwest(e) => Some(e.source()),
             Self::SerdeJson(e) => Some(e.source()),
             Self::UrlParse(e) => Some(e.source()),
@@ -545,5 +558,27 @@ pub struct Check {
 impl std::error::Error for Check {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
+    }
+}
+
+#[derive(
+    Debug,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    derive_more::Display,
+    derive_new::new,
+    derive_more::From,
+)]
+#[display("error from serde_json library")]
+#[setters(prefix = "with_", borrow_self)]
+#[from((&str, std::num::ParseIntError))]
+pub struct ParseInt {
+    pub input: String,
+    pub source: std::num::ParseIntError,
+}
+
+impl std::error::Error for ParseInt {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.source)
     }
 }

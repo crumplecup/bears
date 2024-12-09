@@ -1,4 +1,4 @@
-use crate::{JsonParseError, JsonParseErrorKind};
+use crate::{map_to_string, JsonParseError, JsonParseErrorKind};
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -24,28 +24,15 @@ impl TryFrom<serde_json::Value> for RequestParameter {
     type Error = JsonParseError;
     #[tracing::instrument(skip_all)]
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading RequestParameter");
+        tracing::trace!("Reading RequestParameter");
         match value {
             serde_json::Value::Object(m) => {
-                let key_name = "ParameterName".to_string();
-                if let Some(name) = m.get(&key_name) {
-                    let key_val = "ParameterValue".to_string();
-                    if let Some(val) = m.get(&key_val) {
-                        let details = RequestParameter::new(name.to_string(), val.to_string());
-                        Ok(details)
-                    } else {
-                        tracing::info!("Invalid contents: {m:#?}");
-                        let error = JsonParseErrorKind::KeyMissing(key_val);
-                        Err(error.into())
-                    }
-                } else {
-                    tracing::info!("Invalid Object: {m:#?}");
-                    let error = JsonParseErrorKind::KeyMissing(key_name);
-                    Err(error.into())
-                }
+                let parameter_name = map_to_string("ParameterName", &m)?;
+                let parameter_value = map_to_string("ParameterValue", &m)?;
+                Ok(Self::new(parameter_name, parameter_value))
             }
             _ => {
-                tracing::info!("Invalid Value: {value:#?}");
+                tracing::trace!("Invalid Value: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;
                 Err(error.into())
             }
@@ -77,7 +64,7 @@ impl TryFrom<&serde_json::Value> for RequestParameters {
     type Error = JsonParseError;
     // #[tracing::instrument(skip_all)]
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading RequestParameters");
+        tracing::trace!("Reading RequestParameters");
         match value {
             serde_json::Value::Object(m) => {
                 let key = "RequestParam".to_string();
@@ -90,7 +77,7 @@ impl TryFrom<&serde_json::Value> for RequestParameters {
                     let parameters = RequestParameters::new(request_param);
                     Ok(parameters)
                 } else {
-                    tracing::info!("Unexpected content: {m:#?}");
+                    tracing::trace!("Unexpected content: {m:#?}");
                     let error = JsonParseErrorKind::KeyMissing(key);
                     Err(error.into())
                 }

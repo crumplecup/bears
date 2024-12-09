@@ -21,6 +21,7 @@ pub struct Options {
     method: Option<Method>,
     param_name: Option<ParameterName>,
     table: Option<String>,
+    target: Option<ParameterName>,
     year: Option<String>,
 }
 
@@ -50,6 +51,9 @@ impl Options {
         }
         if let Some(table) = self.table.clone() {
             params.insert("TableName".to_string(), table);
+        }
+        if let Some(target) = self.target {
+            params.insert("TargetParameter".to_string(), target.to_string());
         }
         if let Some(year) = self.year.clone() {
             params.insert("Year".to_string(), year);

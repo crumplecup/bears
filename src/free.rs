@@ -75,10 +75,13 @@ pub fn map_to_bool(
     key: &str,
     m: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<bool, JsonParseError> {
+    tracing::info!("Mapping value to bool.");
     if let Some(value) = m.get(key) {
+        tracing::info!("Boolean candidate found.");
         let flag = json_bool(value)?;
         Ok(flag)
     } else {
+        tracing::warn!("Key missing: {key}");
         let error = JsonParseErrorKind::KeyMissing(key.to_string());
         Err(error.into())
     }

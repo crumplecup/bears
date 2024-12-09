@@ -1,11 +1,10 @@
 use crate::{
-    json_str, map_to_bool, map_to_string, BeaParameterValues, BincodeError, FromStrError,
-    JsonParseError, JsonParseErrorKind, NotParameterName, RequestParameters, ReqwestError, User,
+    json_str, map_to_bool, map_to_string, BeaResponse, FromStrError, JsonParseError,
+    JsonParseErrorKind, NotParameterName, ReqwestError, User,
 };
 use derive_more::FromStr;
 use serde::de::Deserializer;
 use serde::{Deserialize, Serialize};
-use tracing::info;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
@@ -31,11 +30,7 @@ pub struct Parameter {
 
 impl Parameter {
     #[tracing::instrument(skip_all)]
-    pub async fn values(
-        &self,
-        user: &User,
-        dataset: &str,
-    ) -> Result<BeaParameterValues, ReqwestError> {
+    pub async fn values(&self, user: &User, dataset: &str) -> Result<BeaResponse, ReqwestError> {
         let mut body = user.body();
         body.push_str("&method=GETPARAMETERVALUES");
         body.push_str(&format!("&datasetname={}", dataset));
@@ -44,7 +39,7 @@ impl Parameter {
         let client = reqwest::Client::new();
         match client.get(body.clone()).send().await {
             Ok(res) => match res.text().await {
-                Ok(text) => tracing::info!("Response: {text}"),
+                Ok(text) => tracing::trace!("Response: {text}"),
                 Err(source) => {
                     let error = ReqwestError::new(url, "get".to_string(), source);
                     return Err(error);
@@ -57,8 +52,8 @@ impl Parameter {
         }
         match client.get(body).send().await {
             Ok(res) => {
-                info!("Response code: {}.", res.status());
-                match res.json::<BeaParameterValues>().await {
+                tracing::trace!("Response code: {}.", res.status());
+                match res.json::<BeaResponse>().await {
                     Ok(data) => Ok(data),
                     Err(source) => {
                         let error = ReqwestError::new(url, "get".to_string(), source);
@@ -157,18 +152,18 @@ impl TryFrom<&serde_json::Value> for Parameters {
                 if let Some(data) = m.get(&key) {
                     match data {
                         serde_json::Value::Array(v) => {
-                            tracing::info!("Array found.");
+                            tracing::trace!("Array found.");
                             let mut parameter = Vec::new();
                             for val in v {
                                 let param = Parameter::try_from(val.clone())?;
                                 parameter.push(param);
                             }
-                            tracing::info!("Parameters found.");
+                            tracing::trace!("Parameters found.");
                             let parameters = Self::new(parameter);
                             Ok(parameters)
                         }
                         serde_json::Value::Object(mp) => {
-                            tracing::info!("Object found.");
+                            tracing::trace!("Object found.");
                             let param = Parameter::read_json(mp)?;
                             let params = Parameters::new(vec![param]);
                             Ok(params)
@@ -187,131 +182,6 @@ impl TryFrom<&serde_json::Value> for Parameters {
             }
             _ => {
                 tracing::warn!("Wrong Value type: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
-                Err(error.into())
-            }
-        }
-    }
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct ParameterList {
-    request: RequestParameters,
-    results: Parameters,
-}
-
-impl ParameterList {
-    #[tracing::instrument(skip_all)]
-    pub fn read_json(
-        m: &serde_json::Map<String, serde_json::Value>,
-    ) -> Result<Self, JsonParseError> {
-        let mut param = Self::default();
-        let key = "Request".to_string();
-        if let Some(value) = m.get(&key) {
-            param.request = RequestParameters::try_from(value)?;
-        } else {
-            let error = JsonParseErrorKind::KeyMissing(key);
-            return Err(error.into());
-        }
-        let key = "Results".to_string();
-        if let Some(value) = m.get(&key) {
-            param.results = Parameters::try_from(value)?;
-        } else {
-            let error = JsonParseErrorKind::KeyMissing(key);
-            return Err(error.into());
-        }
-        Ok(param)
-    }
-}
-
-impl TryFrom<&serde_json::Value> for ParameterList {
-    type Error = JsonParseError;
-    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading ParameterList.");
-        match value {
-            serde_json::Value::Object(m) => {
-                let param = Self::read_json(m)?;
-                Ok(param)
-            }
-            _ => {
-                tracing::warn!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
-                Err(error.into())
-            }
-        }
-    }
-}
-
-#[derive(
-    Clone,
-    Debug,
-    Default,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Deserialize,
-    Serialize,
-    derive_new::new,
-    derive_more::Deref,
-    derive_more::DerefMut,
-)]
-#[serde(rename_all = "UPPERCASE")]
-pub struct BeaParameters {
-    beaapi: ParameterList,
-}
-
-impl BeaParameters {
-    #[tracing::instrument(skip_all)]
-    pub fn results(&self) -> Vec<Parameter> {
-        self.beaapi.results.to_vec()
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub fn serialize(&self) -> Result<Vec<u8>, BincodeError> {
-        match bincode::serialize(self) {
-            Ok(data) => Ok(data),
-            Err(source) => {
-                let error = BincodeError::new("serializing BeaParameters".to_string(), source);
-                Err(error)
-            }
-        }
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub fn deserialize(bytes: &[u8]) -> Result<Self, BincodeError> {
-        match bincode::deserialize(bytes) {
-            Ok(data) => Ok(data),
-            Err(source) => {
-                let error = BincodeError::new("deserializing BeaParameters".to_string(), source);
-                Err(error)
-            }
-        }
-    }
-}
-
-impl TryFrom<&serde_json::Value> for BeaParameters {
-    type Error = JsonParseError;
-    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading BeaParameters.");
-        match value {
-            serde_json::Value::Object(m) => {
-                let key = "BEAAPI".to_string();
-                if let Some(val) = m.get(&key) {
-                    tracing::info!("Val is: {val:#?}");
-                    let data = ParameterList::try_from(val)?;
-                    let data = BeaParameters::new(data);
-                    Ok(data)
-                } else {
-                    tracing::info!("Invalid Object: {m:#?}");
-                    let error = JsonParseErrorKind::KeyMissing(key);
-                    Err(error.into())
-                }
-            }
-            _ => {
-                tracing::info!("Invalid Value: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;
                 Err(error.into())
             }

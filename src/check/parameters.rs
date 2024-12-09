@@ -1,5 +1,5 @@
 use crate::{
-    trace_init, App, BeaErr, BeaParameters, Check, Dataset, EnvError, IoError, Json, ParameterName,
+    trace_init, App, BeaErr, BeaResponse, Dataset, EnvError, IoError, Json, ParameterName,
     ReqwestError,
 };
 use derive_more::FromStr;
@@ -39,7 +39,9 @@ pub async fn parameter_to_json(app: &mut App, dataset: Dataset) -> Result<(), Be
         Err(source) => {
             let url = app.url().to_string();
             let method = "get".to_string();
-            let error = ReqwestError::new(url, method, source);
+            let body = app.params().into_iter().collect::<Vec<(String, String)>>();
+            let mut error = ReqwestError::new(url, method, source);
+            error.with_body(body);
             Err(error.into())
         }
     }
@@ -50,7 +52,7 @@ pub fn parameter_from_json(path: std::path::PathBuf) -> Result<(), BeaErr> {
     let file = IoError::open(path)?;
     let rdr = std::io::BufReader::new(file);
     let res: serde_json::Value = serde_json::from_reader(rdr)?;
-    let data = BeaParameters::try_from(&res)?;
+    let data = BeaResponse::try_from(&res)?;
     tracing::info!("Parameters read.");
     tracing::trace!("Response: {data:#?}");
     Ok(())
@@ -60,7 +62,8 @@ pub fn parameter_from_json(path: std::path::PathBuf) -> Result<(), BeaErr> {
 pub fn parameter_from_bin(path: std::path::PathBuf) -> Result<(), BeaErr> {
     let decode = IoError::read(path)?;
     tracing::info!("Path read.");
-    let data = BeaParameters::deserialize(&decode)?;
+    let data: serde_json::Value = serde_json::from_slice(&decode)?;
+    let data = BeaResponse::try_from(&data)?;
     tracing::info!("Native: {data:#?}");
     Ok(())
 }
@@ -74,38 +77,21 @@ pub fn parameters_from_file() -> Result<(), BeaErr> {
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     let bea_data = EnvError::from_env("BEA_DATA")?;
-    let fails_res = 0;
-    // let mut fails_res = 0;
-    let mut fails_nat = 0;
     for dataset in datasets {
         tracing::info!("Response pass.");
         let path = std::path::PathBuf::from(&format!("{bea_data}/parameters_{dataset}.json"));
         parameter_from_json(path)?;
-        // if parameter_from_json(path).is_err() {
-        //     fails_res += 1;
-        // }
 
         tracing::info!("Native pass.");
         let path = std::path::PathBuf::from(&format!("{bea_data}/parameters_{dataset}.bin"));
         tracing::info!("Reading from {path:?}");
-        // parameter_from_bin(path)?;
-        if parameter_from_bin(path).is_err() {
-            fails_nat += 1;
-        }
+        parameter_from_bin(path)?;
     }
-    if fails_res + fails_nat > 0 {
-        tracing::warn!("Fails from response: {fails_res}");
-        tracing::warn!("Fails from native: {fails_nat}");
-
-        let desc = format!("response: {fails_res}, native: {fails_nat}");
-        let error = Check::new(desc);
-        Err(error.into())
-    } else {
-        Ok(())
-    }
+    Ok(())
 }
 
-pub fn json_to_bin() -> Result<(), BeaErr> {
+#[tracing::instrument]
+pub fn parameters_json_to_bin() -> Result<(), BeaErr> {
     trace_init();
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
@@ -119,15 +105,13 @@ pub fn json_to_bin() -> Result<(), BeaErr> {
         let rdr = std::io::BufReader::new(file);
         // Deserialize to serde_json::Value.
         let res: serde_json::Value = serde_json::from_reader(rdr)?;
-        // Parse to BeaParameters.
-        let data = BeaParameters::try_from(&res)?;
         // Serialize to binary.
-        let contents = data.serialize()?;
+        let encode = serde_json::to_vec(&res)?;
         // Set path for binary file.
         let path = format!("{bea_data}/parameters_{dataset}.bin");
         let path = std::path::PathBuf::from(path);
         // Write binary to file.
-        IoError::write(&contents, path)?;
+        IoError::write(&encode, path)?;
     }
     Ok(())
 }
@@ -154,9 +138,9 @@ pub async fn deserialize_parameter(app: &mut App, dataset: Dataset) -> Result<()
     let data = app.get().await?;
     match data.json::<serde_json::Value>().await {
         Ok(json) => {
-            let params = BeaParameters::try_from(&json)?;
+            let params = BeaResponse::try_from(&json)?;
             tracing::trace!("Result: {:#?}", params);
-            let encode = BeaParameters::serialize(&params)?;
+            let encode = BeaResponse::serialize(&params)?;
             dotenvy::dotenv().ok();
             let bea_data = EnvError::from_env("BEA_DATA")?;
             let path = format!("{bea_data}/parameters_{dataset}.bin");

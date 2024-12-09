@@ -1,4 +1,4 @@
-use crate::{BeaDatasets, ReqwestError, User};
+use crate::{BeaResponse, ReqwestError, User};
 use convert_case::Casing;
 
 #[derive(
@@ -52,7 +52,7 @@ impl Method {
     // }
 
     #[tracing::instrument(skip_all)]
-    pub async fn get_dataset_list(user: &User) -> Result<BeaDatasets, ReqwestError> {
+    pub async fn get_dataset_list(user: &User) -> Result<BeaResponse, ReqwestError> {
         let url = user.url();
         let mut params = user.params();
         params.insert("METHOD".to_string(), "GETDATASETLIST".to_string());
@@ -69,7 +69,7 @@ impl Method {
         // info!("Response: {:#?}", res);
         // info!("Body: {:#?}", res.text().await?);
         match client.get(url.clone()).query(&params).send().await {
-            Ok(res) => match res.json::<BeaDatasets>().await {
+            Ok(res) => match res.json::<BeaResponse>().await {
                 Ok(data) => Ok(data),
                 Err(source) => {
                     let mut error = ReqwestError::new(url.to_string(), "get".to_string(), source);
