@@ -1,6 +1,6 @@
 use crate::{
-    parameter_value::ParameterValueTable, BeaErr, GeoFips, LineCode, ParameterValues, TableName,
-    Year,
+    BeaErr, BeaResponse, GeoFips, JsonParseError, JsonParseErrorKind, LineCode, ParameterName,
+    ParameterValueTable, ParameterValueTableVariant, ParameterValues, Results, TableName, Year,
 };
 
 #[derive(
@@ -48,22 +48,45 @@ pub enum Value {
 #[from(&[Value])]
 pub struct Values(Vec<Value>);
 
-// impl TryFrom<&ParameterValues> for Values {
+// impl TryFrom<&BeaResponse> for Values {
 //     type Error = BeaErr;
-//     fn try_from(value: &ParameterValues) -> Result<Self, Self::Error> {
-//         let mut values = Vec::new();
-//         for param in value.iter() {
-//             match param {
-//                 ParameterValueTable::ParameterFields(fields) => {
-//             let v = Value::try_from(param)?;
-//             values.push(v);
-//
+//     fn try_from(value: &BeaResponse) -> Result<Self, Self::Error> {
+//         let (request, results) = value.into_parts();
+//         match request.name()? {
+//             ParameterName::GeoFips => match results {
+//                 Results::ParameterValues(pv) => {
+//                     let mut fips = Vec::new();
+//                     for v in pv.iter() {
+//                         match *v {
+//                             ParameterValueTable::ParameterFields(pf) => {
+//                                 let geo = GeoFips::try_from(pf)?;
+//                                 let geo = Value::from(geo);
+//                                 fips.push(geo);
+//                             }
+//                             other => {
+//                                 tracing::warn!("Unexpected ParameterValueTable variant.");
+//                                 let error = ParameterValueTableVariant::new(
+//                                     "expected ParamterFields variant".to_string(),
+//                                 );
+//                                 return Err(error.into());
+//                             }
+//                         }
+//                     }
+//                     Ok(Self::new(fips))
 //                 }
 //                 _ => {
-//                     let error =
+//                     tracing::warn!("Unexpected Results variant.");
 //                 }
+//             },
+//             ParameterName::LineCode => {}
+//             ParameterName::TableName => {}
+//             ParameterName::Year => {}
+//             other => {
+//                 tracing::warn!("Unexpected parameter name {other}.");
+//                 let error = JsonParseErrorKind::KeyMissing(format!("invalid key {other}"));
+//                 let error = JsonParseError::from(error);
+//                 Err(error.into())
 //             }
 //         }
-//         Ok(values)
 //     }
 // }

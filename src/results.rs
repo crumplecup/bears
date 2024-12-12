@@ -106,6 +106,7 @@ impl Results {
     serde::Deserialize,
     serde::Serialize,
     derive_new::new,
+    derive_getters::Getters,
 )]
 #[serde(rename_all = "PascalCase")]
 pub struct Beaapi {
@@ -166,6 +167,8 @@ impl TryFrom<&serde_json::Value> for Beaapi {
     serde::Deserialize,
     serde::Serialize,
     derive_more::From,
+    derive_more::Deref,
+    derive_more::DerefMut,
 )]
 #[from(Beaapi)]
 pub struct BeaResponse {
@@ -211,6 +214,12 @@ impl BeaResponse {
             }
         }
     }
+
+    pub fn into_parts(&self) -> (RequestParameters, Results) {
+        let req = self.request().clone();
+        let res = self.results().clone();
+        (req, res)
+    }
 }
 
 impl TryFrom<&serde_json::Value> for BeaResponse {
@@ -251,7 +260,9 @@ impl TryFrom<&serde_json::Value> for BeaResponse {
     serde::Deserialize,
     serde::Serialize,
     derive_new::new,
+    derive_more::Display,
 )]
+#[display("API Error - Code: {} - Description: {}", self.code, self.description)]
 pub struct ApiError {
     #[serde(rename = "APIErrorCode")]
     code: i32,
@@ -259,22 +270,43 @@ pub struct ApiError {
     description: String,
 }
 
+impl ApiError {
+    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+        let key = "Error".to_string();
+        if let Some(value) = mp.get(&key) {
+            match value {
+                serde_json::Value::Object(m) => {
+                    let description = map_to_string("APIErrorDescription", m)?;
+                    let code = map_to_string("APIErrorCode", m)?;
+                    match str::parse::<i32>(&code) {
+                        Ok(code) => Ok(Self::new(code, description)),
+                        Err(source) => {
+                            let error = ParseInt::new(code, source);
+                            Err(error.into())
+                        }
+                    }
+                }
+                _ => {
+                    tracing::info!("Invalid Value: {value:#?}");
+                    let error = JsonParseErrorKind::NotObject;
+                    let error = JsonParseError::from(error);
+                    Err(error.into())
+                }
+            }
+        } else {
+            let error = JsonParseErrorKind::KeyMissing(key);
+            let error = JsonParseError::from(error);
+            Err(error.into())
+        }
+    }
+}
+
 impl TryFrom<&serde_json::Value> for ApiError {
     type Error = BeaErr;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::info!("Reading ApiError.");
         match value {
-            serde_json::Value::Object(m) => {
-                let description = map_to_string("APIErrorDescription", m)?;
-                let code = map_to_string("APIErrorCode", m)?;
-                match str::parse::<i32>(&code) {
-                    Ok(code) => Ok(Self::new(code, description)),
-                    Err(source) => {
-                        let error = ParseInt::new(code, source);
-                        Err(error.into())
-                    }
-                }
-            }
+            serde_json::Value::Object(m) => ApiError::read_json(m),
             _ => {
                 tracing::info!("Invalid Value: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;

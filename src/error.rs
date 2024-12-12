@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, derive_more::Deref, derive_more::DerefMut)]
 pub struct BeaErr {
     kind: Box<BeaErrorKind>,
 }
@@ -38,6 +38,13 @@ impl From<Check> for BeaErr {
 
 impl From<DatasetMissing> for BeaErr {
     fn from(value: DatasetMissing) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
+impl From<DeriveFromStr> for BeaErr {
+    fn from(value: DeriveFromStr) -> Self {
         let kind = BeaErrorKind::from(value).into();
         Self { kind }
     }
@@ -101,6 +108,13 @@ impl From<IoError> for BeaErr {
     }
 }
 
+impl From<ParameterValueTableVariant> for BeaErr {
+    fn from(value: ParameterValueTableVariant) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
 impl From<ParseInt> for BeaErr {
     fn from(value: ParseInt) -> Self {
         let kind = BeaErrorKind::from(value).into();
@@ -124,6 +138,8 @@ pub enum BeaErrorKind {
     Check(Check),
     #[from(DatasetMissing)]
     DatasetMissing(DatasetMissing),
+    #[from(DeriveFromStr)]
+    DeriveFromStr(DeriveFromStr),
     #[from(EnvError)]
     Env(EnvError),
     #[from(IoError)]
@@ -132,6 +148,8 @@ pub enum BeaErrorKind {
     IoPass(Io),
     #[from(JsonParseError)]
     JsonParse(JsonParseError),
+    #[from(ParameterValueTableVariant)]
+    ParameterValueTableVariant(ParameterValueTableVariant),
     #[from(ParseInt)]
     ParseInt(ParseInt),
     #[from(SerdeJson, serde_json::Error)]
@@ -154,6 +172,9 @@ impl std::fmt::Display for BeaErrorKind {
             Self::DatasetMissing(e) => {
                 write!(f, "{e}")
             }
+            Self::DeriveFromStr(e) => {
+                write!(f, "{e}")
+            }
             Self::Env(e) => {
                 write!(f, "{e}")
             }
@@ -164,6 +185,9 @@ impl std::fmt::Display for BeaErrorKind {
                 write!(f, "{e}")
             }
             Self::JsonParse(e) => {
+                write!(f, "{e}")
+            }
+            Self::ParameterValueTableVariant(e) => {
                 write!(f, "{e}")
             }
             Self::ParseInt(e) => {
@@ -188,10 +212,12 @@ impl std::error::Error for BeaErrorKind {
             Self::Bincode(e) => Some(e.source()),
             Self::Check(e) => e.source(),
             Self::DatasetMissing(e) => e.source(),
+            Self::DeriveFromStr(e) => e.source(),
             Self::Env(e) => Some(e.source()),
             Self::Io(e) => Some(e.source()),
             Self::IoPass(e) => Some(e.source()),
             Self::JsonParse(e) => e.source(),
+            Self::ParameterValueTableVariant(e) => e.source(),
             Self::ParseInt(e) => Some(e.source()),
             Self::Reqwest(e) => Some(e.source()),
             Self::SerdeJson(e) => Some(e.source()),
@@ -239,7 +265,7 @@ impl From<JsonParseErrorKind> for JsonParseError {
     }
 }
 
-#[derive(Debug, derive_new::new)]
+#[derive(Debug, derive_new::new, derive_more::Deref, derive_more::DerefMut)]
 #[non_exhaustive]
 pub struct JsonParseError {
     kind: JsonParseErrorKind,
@@ -581,4 +607,32 @@ impl std::error::Error for ParseInt {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         Some(&self.source)
     }
+}
+
+#[derive(
+    Debug,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    derive_more::Display,
+    derive_new::new,
+    derive_more::From,
+)]
+#[display("{}", self.issue)]
+#[setters(prefix = "with_", borrow_self)]
+#[from(&str)]
+pub struct ParameterValueTableVariant {
+    pub issue: String,
+}
+
+impl std::error::Error for ParameterValueTableVariant {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, derive_new::new, derive_more::Display, derive_more::Error)]
+#[display("could not parse from {} into target value", self.value)]
+pub struct DeriveFromStr {
+    value: String,
+    source: derive_more::FromStrError,
 }

@@ -150,7 +150,7 @@ pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
     for dataset in &datasets {
         let names = dataset.names();
         for name in names {
-            if *dataset == Dataset::Regional && name == ParameterName::TableName {
+            if *dataset == Dataset::Nipa && name == ParameterName::Frequency {
                 let mut options = app.options().clone();
                 options.with_dataset(*dataset);
                 options.with_target(name);
@@ -160,13 +160,24 @@ pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
                 match data.json::<serde_json::Value>().await {
                     Ok(json) => {
                         tracing::info!("{json:#?}");
-                        // let contents = serde_json::to_vec(&json)?;
-                        // dotenvy::dotenv().ok();
-                        // let bea_data = EnvError::from_env("BEA_DATA")?;
-                        // let path = std::path::PathBuf::from(&format!(
-                        //     "{bea_data}/parameter_values_{dataset}_{name}.json"
-                        // ));
-                        // IoError::write(&contents, path)?;
+                        // let bea = BeaResponse::try_from(&json)?;
+                        // match bea.results() {
+                        //     Results::ParameterValues(pv) => {}
+                        //     Results::ApiError(e) => {
+                        //         tracing::info!("{e}");
+                        //     }
+                        //     unexpected => {
+                        //         tracing::warn!("Unexpected type {unexpected:#?}");
+                        //     }
+                        // }
+
+                        let contents = serde_json::to_vec(&json)?;
+                        dotenvy::dotenv().ok();
+                        let bea_data = EnvError::from_env("BEA_DATA")?;
+                        let path = std::path::PathBuf::from(&format!(
+                            "{bea_data}/values_api_error.json" // "{bea_data}/values_{dataset}_{name}.json"
+                        ));
+                        IoError::write(&contents, path)?;
                     }
                     Err(source) => {
                         let url = app.url().to_string();
