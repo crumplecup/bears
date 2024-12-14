@@ -23,8 +23,8 @@ pub use config::{Config, NeoConfig, Options};
 pub use dataset::{Dataset, Datasets};
 pub use error::{
     BeaErr, BeaErrorKind, BincodeError, Check, DatasetMissing, DeriveFromStr, EnvError,
-    FromStrError, IoError, JsonParseError, JsonParseErrorKind, NotParameterName,
-    ParameterValueTableVariant, ParseInt, ReqwestError, UrlParseError,
+    FromStrError, IoError, Jiff, JsonParseError, JsonParseErrorKind, NotParameterName,
+    ParameterValueTableVariant, ParseInt, ReqwestError, Set, UrlParseError,
 };
 pub use free::{json_bool, json_str, map_to_bool, map_to_string, trace_init};
 pub use geofips::{get_geofips, BeaGeoFips, GeoFipsTask, GeoFipsTasks};
@@ -32,10 +32,13 @@ pub use json::Json;
 pub use method::Method;
 pub use parameter::{deserialize_bool, ParameterName, Parameters};
 pub use parameter_value::{
-    NipaFrequency, NipaShowMillions, NipaTable, NipaYear, ParameterFields, ParameterValueTable,
-    ParameterValues,
+    Metadata, NipaFrequency, NipaShowMillions, NipaTable, NipaYear, ParameterFields,
+    ParameterValueTable, ParameterValues,
 };
 pub use request::{RequestParameter, RequestParameters};
 pub use results::{BeaResponse, Results};
 pub use user::User;
-pub use value::{GeoFips, LineCode, TableName, Value, Values, Year};
+pub use value::{
+    ApiMetadata, Iip, InputOutput, Integer, IntlServSta, IntlServTrade, Ita, Regional, TableName,
+    ValueSet, ValueSets, Year,
+};

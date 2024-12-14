@@ -57,6 +57,13 @@ impl From<EnvError> for BeaErr {
     }
 }
 
+impl From<Jiff> for BeaErr {
+    fn from(value: Jiff) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
 impl From<JsonParseError> for BeaErr {
     fn from(value: JsonParseError) -> Self {
         let kind = BeaErrorKind::from(value).into();
@@ -81,6 +88,13 @@ impl From<serde_json::Error> for BeaErr {
 
 impl From<SerdeJson> for BeaErr {
     fn from(value: SerdeJson) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
+impl From<Set> for BeaErr {
+    fn from(value: Set) -> Self {
         let kind = BeaErrorKind::from(value).into();
         Self { kind }
     }
@@ -130,7 +144,6 @@ impl From<UrlParseError> for BeaErr {
 }
 
 #[derive(Debug, derive_more::From)]
-#[non_exhaustive]
 pub enum BeaErrorKind {
     #[from(BincodeError)]
     Bincode(BincodeError),
@@ -146,16 +159,20 @@ pub enum BeaErrorKind {
     Io(IoError),
     #[from(Io, std::io::Error)]
     IoPass(Io),
+    #[from(Jiff)]
+    Jiff(Jiff),
     #[from(JsonParseError)]
     JsonParse(JsonParseError),
     #[from(ParameterValueTableVariant)]
     ParameterValueTableVariant(ParameterValueTableVariant),
     #[from(ParseInt)]
     ParseInt(ParseInt),
-    #[from(SerdeJson, serde_json::Error)]
-    SerdeJson(SerdeJson),
     #[from(ReqwestError)]
     Reqwest(ReqwestError),
+    #[from(Set)]
+    Set(Set),
+    #[from(SerdeJson, serde_json::Error)]
+    SerdeJson(SerdeJson),
     #[from(UrlParseError)]
     UrlParse(UrlParseError),
 }
@@ -184,6 +201,9 @@ impl std::fmt::Display for BeaErrorKind {
             Self::IoPass(e) => {
                 write!(f, "{e}")
             }
+            Self::Jiff(e) => {
+                write!(f, "{e}")
+            }
             Self::JsonParse(e) => {
                 write!(f, "{e}")
             }
@@ -194,6 +214,9 @@ impl std::fmt::Display for BeaErrorKind {
                 write!(f, "{e}")
             }
             Self::Reqwest(e) => {
+                write!(f, "{e}")
+            }
+            Self::Set(e) => {
                 write!(f, "{e}")
             }
             Self::SerdeJson(e) => {
@@ -216,10 +239,12 @@ impl std::error::Error for BeaErrorKind {
             Self::Env(e) => Some(e.source()),
             Self::Io(e) => Some(e.source()),
             Self::IoPass(e) => Some(e.source()),
+            Self::Jiff(e) => e.source(),
             Self::JsonParse(e) => e.source(),
             Self::ParameterValueTableVariant(e) => e.source(),
             Self::ParseInt(e) => Some(e.source()),
             Self::Reqwest(e) => Some(e.source()),
+            Self::Set(e) => e.source(),
             Self::SerdeJson(e) => Some(e.source()),
             Self::UrlParse(e) => Some(e.source()),
         }
@@ -266,7 +291,6 @@ impl From<JsonParseErrorKind> for JsonParseError {
 }
 
 #[derive(Debug, derive_new::new, derive_more::Deref, derive_more::DerefMut)]
-#[non_exhaustive]
 pub struct JsonParseError {
     kind: JsonParseErrorKind,
 }
@@ -635,4 +659,36 @@ impl std::error::Error for ParameterValueTableVariant {
 pub struct DeriveFromStr {
     value: String,
     source: derive_more::FromStrError,
+}
+
+#[derive(Debug, Clone, derive_new::new, derive_more::Display, derive_more::Error)]
+#[display("could not parse from {} into target type", self.value)]
+pub struct Jiff {
+    value: String,
+    source: jiff::Error,
+}
+
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    derive_more::Display,
+    derive_more::FromStr,
+    strum::EnumIter,
+)]
+pub enum Set {
+    Empty,
+    ParameterValuesMissing,
+    ParameterFieldsMissing,
+}
+
+impl std::error::Error for Set {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
 }

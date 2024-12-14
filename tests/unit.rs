@@ -53,13 +53,19 @@ async fn parameter_values() -> anyhow::Result<()> {
 
 #[tokio::test]
 #[cfg(feature = "api")]
-async fn parameter_value_filtered() -> anyhow::Result<()> {
-    check::parameter_value_filtered().await?;
+async fn values_filtered() -> anyhow::Result<()> {
+    check::values_filtered().await?;
     Ok(())
 }
 
 #[tokio::test]
 async fn api_error() -> anyhow::Result<()> {
     check::api_error()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn value_sets() -> anyhow::Result<()> {
+    check::value_sets()?;
     Ok(())
 }

@@ -1,4 +1,7 @@
-use crate::{map_to_string, JsonParseError, JsonParseErrorKind};
+use crate::{
+    map_to_string, BeaErr, Dataset, DeriveFromStr, Jiff, JsonParseError, JsonParseErrorKind,
+};
+use derive_more::FromStr;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
@@ -365,7 +368,6 @@ impl TryFrom<serde_json::Value> for MneDoi {
     Eq,
     PartialOrd,
     Ord,
-    Hash,
     serde::Deserialize,
     serde::Serialize,
     derive_getters::Getters,
@@ -374,17 +376,17 @@ impl TryFrom<serde_json::Value> for MneDoi {
 #[serde(rename_all = "PascalCase")]
 #[setters(prefix = "with_", strip_option, borrow_self)]
 pub struct Metadata {
-    dataset: String,
+    dataset: Dataset,
     dataset_description: String,
     #[serde(rename = "JSONUpdateDate")]
-    json_update_date: Option<String>,
+    json_update_date: Option<jiff::Timestamp>,
     #[serde(rename = "XMLUpdateDate")]
-    xml_update_date: Option<String>,
+    xml_update_date: Option<jiff::Timestamp>,
 }
 
 impl Metadata {
     #[tracing::instrument(skip_all)]
-    pub fn new(dataset: String, dataset_description: String) -> Self {
+    pub fn new(dataset: Dataset, dataset_description: String) -> Self {
         Self {
             dataset,
             dataset_description,
@@ -394,17 +396,33 @@ impl Metadata {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn read_json(
-        m: &serde_json::Map<String, serde_json::Value>,
-    ) -> Result<Self, JsonParseError> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         use ParameterValueKind as pvk;
-        let dataset = map_to_string(&pvk::Dataset.to_string(), m)?;
-        let dataset_description = map_to_string(&pvk::DatasetDescription.to_string(), m)?;
+        tracing::info!("Converting {} to Metadata.", &pvk::Dataset);
+        let dataset = map_to_string("Key", m)?;
+        let dataset = match Dataset::from_str(&dataset) {
+            Ok(value) => value,
+            Err(source) => {
+                let error = DeriveFromStr::new(dataset, source);
+                return Err(error.into());
+            }
+        };
+        tracing::info!("Dataset identified: {dataset}");
+        let dataset_description = map_to_string("Desc", m)?;
+        tracing::info!("Description: {dataset_description}");
         let mut param = Self::new(dataset, dataset_description);
         if let Ok(date) = map_to_string(&pvk::JsonUpdateDate.to_string(), m) {
+            let date = date
+                .parse::<jiff::Timestamp>()
+                .map_err(|e| Jiff::new(date, e))?;
+            tracing::info!("Json Update Date: {date}");
             param.json_update_date = Some(date);
         }
         if let Ok(date) = map_to_string(&pvk::XmlUpdateDate.to_string(), m) {
+            let date = date
+                .parse::<jiff::Timestamp>()
+                .map_err(|e| Jiff::new(date, e))?;
+            tracing::info!("Xml Update Date: {date}");
             param.xml_update_date = Some(date);
         }
         Ok(param)
@@ -412,7 +430,7 @@ impl Metadata {
 }
 
 impl TryFrom<serde_json::Value> for Metadata {
-    type Error = JsonParseError;
+    type Error = BeaErr;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading Metadata.");
         match value {
@@ -423,6 +441,7 @@ impl TryFrom<serde_json::Value> for Metadata {
             _ => {
                 tracing::warn!("Invalid Value: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;
+                let error = JsonParseError::from(error);
                 Err(error.into())
             }
         }
@@ -486,7 +505,6 @@ impl TryFrom<serde_json::Value> for ParameterFields {
     Eq,
     PartialOrd,
     Ord,
-    Hash,
     serde::Deserialize,
     serde::Serialize,
     derive_more::From,
@@ -516,13 +534,13 @@ impl ParameterValueTable {
         let tables = Self::iter().collect::<Vec<Self>>();
         for table in tables {
             match table {
-                Self::ParameterFields(_) => {
-                    if let Ok(t) = ParameterFields::try_from(value.clone()) {
+                Self::Metadata(_) => {
+                    if let Ok(t) = Metadata::try_from(value.clone()) {
                         return Ok(Self::from(t));
                     }
                 }
-                Self::Metadata(_) => {
-                    if let Ok(t) = Metadata::try_from(value.clone()) {
+                Self::ParameterFields(_) => {
+                    if let Ok(t) = ParameterFields::try_from(value.clone()) {
                         return Ok(Self::from(t));
                     }
                 }
@@ -571,7 +589,6 @@ impl ParameterValueTable {
     Eq,
     PartialOrd,
     Ord,
-    Hash,
     Deserialize,
     Serialize,
     derive_new::new,

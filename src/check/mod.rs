@@ -19,4 +19,4 @@ pub use parameters::{
     deserialize_parameters, diff_parameters, parameter_names, parameters_from_file,
     parameters_json_to_bin, parameters_to_json,
 };
-pub use values::api_error;
+pub use values::{api_error, value_sets, values_filtered};

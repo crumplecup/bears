@@ -1,7 +1,4 @@
-use crate::{
-    BeaErr, ParameterFields, ParameterValueTable, ParameterValueTableVariant, ParameterValues,
-    ParseInt,
-};
+use crate::{BeaErr, ParameterFields, ParameterValueTable, ParameterValueTableVariant, ParseInt};
 
 #[derive(
     Debug,
@@ -18,12 +15,12 @@ use crate::{
     serde::Serialize,
 )]
 #[display("{}", self.value)]
-pub struct GeoFips {
+pub struct Integer {
     value: i32,
     description: String,
 }
 
-impl TryFrom<&ParameterFields> for GeoFips {
+impl TryFrom<&ParameterFields> for Integer {
     type Error = ParseInt;
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
         match value.key().parse::<i32>() {
@@ -36,44 +33,15 @@ impl TryFrom<&ParameterFields> for GeoFips {
     }
 }
 
-impl TryFrom<&ParameterValueTable> for GeoFips {
+impl TryFrom<&ParameterValueTable> for Integer {
     type Error = BeaErr;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
-            ParameterValueTable::ParameterFields(pf) => Ok(GeoFips::try_from(pf)?),
+            ParameterValueTable::ParameterFields(pf) => Ok(Integer::try_from(pf)?),
             _ => {
                 let error = ParameterValueTableVariant::new("ParameterFields needed".to_string());
                 Err(error.into())
             }
         }
-    }
-}
-
-#[derive(
-    Debug,
-    Default,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    derive_more::Deref,
-    derive_more::DerefMut,
-    derive_new::new,
-    serde::Deserialize,
-    serde::Serialize,
-)]
-pub struct GeoFipsData(Vec<GeoFips>);
-
-impl TryFrom<&ParameterValues> for GeoFipsData {
-    type Error = BeaErr;
-    fn try_from(value: &ParameterValues) -> Result<Self, Self::Error> {
-        let mut geo = Vec::new();
-        for table in value.iter() {
-            let fips = GeoFips::try_from(table)?;
-            geo.push(fips);
-        }
-        Ok(Self::new(geo))
     }
 }

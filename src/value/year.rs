@@ -33,7 +33,7 @@ impl TryFrom<&ParameterFields> for Year {
                 return Err(error);
             }
         };
-        let date = jiff::civil::date(num, 0, 0);
+        let date = jiff::civil::date(num, 1, 1);
         Ok(Self::new(date, value.desc().into()))
     }
 }
