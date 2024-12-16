@@ -5,7 +5,8 @@ mod year;
 
 pub use numeric::Integer;
 pub use sets::{
-    ApiMetadata, Iip, InputOutput, IntlServSta, IntlServTrade, Ita, Regional, ValueSet, ValueSets,
+    ApiMetadata, GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, Ita, Regional,
+    UnderlyingGdpByIndustry, ValueSet, ValueSets,
 };
 pub use table_name::TableName;
 pub use year::Year;

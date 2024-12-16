@@ -14,6 +14,7 @@ use crate::{
     Hash,
     derive_more::Display,
     derive_new::new,
+    derive_getters::Getters,
     serde::Deserialize,
     serde::Serialize,
 )]

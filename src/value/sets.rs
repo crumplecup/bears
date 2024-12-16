@@ -5,17 +5,7 @@ use crate::{
 
 use super::{Integer, TableName, Year};
 
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    serde::Serialize,
-    serde::Deserialize,
-    derive_more::From,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, derive_more::From)]
 pub enum ValueSet {
     #[from(ApiMetadata)]
     APIDatasetMetadata(ApiMetadata),
@@ -50,8 +40,6 @@ pub enum ValueSet {
     Clone,
     PartialEq,
     Eq,
-    PartialOrd,
-    Ord,
     serde::Serialize,
     serde::Deserialize,
     derive_more::Deref,
@@ -122,7 +110,16 @@ impl TryFrom<&std::path::PathBuf> for ApiMetadata {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    derive_getters::Getters,
 )]
 pub struct FixedAssets {
     table_name: Vec<TableName>,
@@ -130,13 +127,130 @@ pub struct FixedAssets {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+    Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, derive_getters::Getters,
 )]
 pub struct GdpByIndustry {
     frequency: Vec<ParameterFields>,
-    industry: Vec<ParameterFields>,
-    table_name: Vec<TableName>,
-    year: Vec<Year>,
+    industry: std::collections::HashMap<Integer, Vec<ParameterFields>>,
+    table_id: Vec<Integer>,
+    year: std::collections::HashMap<Integer, Vec<Year>>,
+}
+
+impl GdpByIndustry {
+    pub fn read_industry<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<std::collections::HashMap<Integer, Vec<ParameterFields>>, BeaErr> {
+        let path = path.as_ref();
+        let table_id = Self::read_table_id(path)?;
+        let dataset = Dataset::GDPbyIndustry;
+        // start with table_id because it is a precondition for other parameter values
+        let name = ParameterName::Industry;
+        // year values vary by table id
+        let path = path.join(format!("values_{dataset}_{name}"));
+        let mut industries = std::collections::HashMap::new();
+        for id in table_id {
+            // open the file at the expected storage location, error if missing
+            let path = path.join(format!(
+                "values_{dataset}_{name}_byTableId_{}.json",
+                id.value()
+            ));
+            let file = IoError::open(path)?;
+            // read the file to json
+            let rdr = std::io::BufReader::new(file);
+            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            // parse to internal bea response format
+            let data = BeaResponse::try_from(&res)?;
+            let results = data.results();
+            let mut industry = Vec::new();
+            // access parameter values from response
+            if let Some(pv) = results.into_parameter_values() {
+                for table in pv.iter() {
+                    match table {
+                        ParameterValueTable::ParameterFields(pf) => {
+                            industry.push(pf.clone());
+                        }
+                        _ => {
+                            return Err(Set::ParameterFieldsMissing.into());
+                        }
+                    }
+                }
+                tracing::info!("{dataset} contains {} {name} values.", industry.len());
+                industries.insert(id, industry);
+            } else {
+                tracing::warn!("Results must be of type ParameterValues");
+                return Err(Set::ParameterValuesMissing.into());
+            }
+        }
+        Ok(industries)
+    }
+    pub fn read_table_id<P: AsRef<std::path::Path>>(path: P) -> Result<Vec<Integer>, BeaErr> {
+        let path = path.as_ref();
+        let dataset = Dataset::GDPbyIndustry;
+        // start with table_id because it is a precondition for other parameter values
+        let name = ParameterName::TableID;
+        // open the file at the expected storage location, error if missing
+        let path = path.join(format!("values_{dataset}_{name}.json"));
+        let file = IoError::open(path)?;
+        // read the file to json
+        let rdr = std::io::BufReader::new(file);
+        let res: serde_json::Value = serde_json::from_reader(rdr)?;
+        // parse to internal bea response format
+        let data = BeaResponse::try_from(&res)?;
+        let results = data.results();
+
+        let mut table_id = Vec::new();
+        // access parameter values from response
+        if let Some(pv) = results.into_parameter_values() {
+            for table in pv.iter() {
+                table_id.push(Integer::try_from(table)?);
+            }
+            tracing::info!("{dataset} contains {} {name} values.", table_id.len());
+            Ok(table_id)
+        } else {
+            tracing::warn!("Results must be of type ParameterValues");
+            Err(Set::ParameterValuesMissing.into())
+        }
+    }
+
+    pub fn read_year<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<std::collections::HashMap<Integer, Vec<Year>>, BeaErr> {
+        let path = path.as_ref();
+        let table_id = Self::read_table_id(path)?;
+        let dataset = Dataset::GDPbyIndustry;
+        // start with table_id because it is a precondition for other parameter values
+        let name = ParameterName::Year;
+        // year values vary by table id
+        let path = path.join(format!("values_{dataset}_{name}"));
+        let mut years = std::collections::HashMap::new();
+        for id in table_id {
+            // open the file at the expected storage location, error if missing
+            let path = path.join(format!(
+                "values_{dataset}_{name}_byTableId_{}.json",
+                id.value()
+            ));
+            let file = IoError::open(path)?;
+            // read the file to json
+            let rdr = std::io::BufReader::new(file);
+            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            // parse to internal bea response format
+            let data = BeaResponse::try_from(&res)?;
+            let results = data.results();
+            let mut year = Vec::new();
+            // access parameter values from response
+            if let Some(pv) = results.into_parameter_values() {
+                for table in pv.iter() {
+                    year.push(Year::try_from(table)?);
+                }
+                tracing::info!("{dataset} contains {} {name} values.", year.len());
+                years.insert(id, year);
+            } else {
+                tracing::warn!("Results must be of type ParameterValues");
+                return Err(Set::ParameterValuesMissing.into());
+            }
+        }
+        Ok(years)
+    }
 }
 
 #[derive(

@@ -39,6 +39,6 @@ pub use request::{RequestParameter, RequestParameters};
 pub use results::{BeaResponse, Results};
 pub use user::User;
 pub use value::{
-    ApiMetadata, Iip, InputOutput, Integer, IntlServSta, IntlServTrade, Ita, Regional, TableName,
-    ValueSet, ValueSets, Year,
+    ApiMetadata, GdpByIndustry, Iip, InputOutput, Integer, IntlServSta, IntlServTrade, Ita,
+    Regional, TableName, UnderlyingGdpByIndustry, ValueSet, ValueSets, Year,
 };

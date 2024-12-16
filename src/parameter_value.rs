@@ -474,9 +474,19 @@ impl ParameterFields {
         m: &serde_json::Map<String, serde_json::Value>,
     ) -> Result<Self, JsonParseError> {
         let desc = map_to_string("Desc", m)?;
-        let key = map_to_string("Key", m)?;
-        let param = Self::new(desc, key);
-        Ok(param)
+        match map_to_string("Key", m) {
+            Ok(key) => {
+                let param = Self::new(desc, key);
+                Ok(param)
+            }
+            Err(_) => {
+                // by now we know desc exists,
+                // so if key is missing we need to record it or dump it
+                let key = String::new();
+                let param = Self::new(desc, key);
+                Ok(param)
+            }
+        }
     }
 }
 

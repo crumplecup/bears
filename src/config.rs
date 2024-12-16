@@ -16,11 +16,13 @@ use std::collections::HashMap;
 #[setters(prefix = "with_", into, strip_option, borrow_self)]
 pub struct Options {
     dataset: Option<Dataset>,
-    geofips: Option<String>,
-    linecode: Option<String>,
+    geofips: Option<i32>,
+    industry: Option<String>,
+    linecode: Option<i32>,
     method: Option<Method>,
     param_name: Option<ParameterName>,
     table: Option<String>,
+    table_id: Option<i32>,
     target: Option<ParameterName>,
     year: Option<String>,
 }
@@ -37,11 +39,14 @@ impl Options {
         if let Some(dataset) = self.dataset {
             params.insert("DatasetName".to_string(), dataset.to_string());
         }
-        if let Some(geofips) = self.geofips.clone() {
-            params.insert("GeoFips".to_string(), geofips);
+        if let Some(geofips) = self.geofips {
+            params.insert("GeoFips".to_string(), geofips.to_string());
         }
-        if let Some(linecode) = self.linecode.clone() {
-            params.insert("LineCode".to_string(), linecode);
+        if let Some(industry) = &self.industry {
+            params.insert("Industry".to_string(), industry.to_string());
+        }
+        if let Some(linecode) = self.linecode {
+            params.insert("LineCode".to_string(), linecode.to_string());
         }
         if let Some(method) = self.method {
             params.insert("METHOD".to_string(), method.to_string());
@@ -49,8 +54,11 @@ impl Options {
         if let Some(param_name) = self.param_name {
             params.insert("ParameterName".to_string(), param_name.to_string());
         }
-        if let Some(table) = self.table.clone() {
-            params.insert("TableName".to_string(), table);
+        if let Some(table) = &self.table {
+            params.insert("TableName".to_string(), table.to_string());
+        }
+        if let Some(table_id) = self.table_id {
+            params.insert("TableID".to_string(), table_id.to_string());
         }
         if let Some(target) = self.target {
             params.insert("TargetParameter".to_string(), target.to_string());

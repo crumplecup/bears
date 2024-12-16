@@ -59,6 +59,13 @@ async fn values_filtered() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+#[cfg(feature = "api")]
+async fn values_gdp_filtered() -> anyhow::Result<()> {
+    check::values_gdp_filtered().await?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn api_error() -> anyhow::Result<()> {
     check::api_error()?;
     Ok(())
