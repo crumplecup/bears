@@ -251,7 +251,7 @@ impl TryFrom<serde_json::Value> for Datasets {
     type Error = BeaErr;
     // #[tracing::instrument(skip_all)]
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading DatasetDetails");
+        tracing::trace!("Reading DatasetDetails");
         match value {
             serde_json::Value::Object(m) => {
                 let key = "Dataset".to_string();
@@ -266,14 +266,14 @@ impl TryFrom<serde_json::Value> for Datasets {
                     let datasets = Datasets::new(dataset);
                     Ok(datasets)
                 } else {
-                    tracing::warn!("Unexpected content: {m:#?}");
+                    tracing::trace!("Unexpected content: {m:#?}");
                     let error = JsonParseErrorKind::KeyMissing(key);
                     let error = JsonParseError::from(error);
                     Err(error.into())
                 }
             }
             _ => {
-                tracing::warn!("Wrong Value type: {value:#?}");
+                tracing::trace!("Wrong Value type: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;
                 let error = JsonParseError::from(error);
                 Err(error.into())

@@ -58,31 +58,31 @@ impl Results {
         for table in tables {
             match table {
                 Self::ApiError(_) => {
-                    tracing::info!("Trying ApiError...");
+                    tracing::trace!("Trying ApiError...");
                     if let Ok(t) = ApiError::try_from(value) {
                         return Ok(Self::from(t));
                     }
                 }
                 Self::Datasets(_) => {
-                    tracing::info!("Trying datasets...");
+                    tracing::trace!("Trying datasets...");
                     if let Ok(t) = Datasets::try_from(value.clone()) {
                         return Ok(Self::from(t));
                     }
                 }
                 Self::Parameters(_) => {
-                    tracing::info!("Trying parameters...");
+                    tracing::trace!("Trying parameters...");
                     match Parameters::try_from(value) {
                         Ok(t) => {
-                            tracing::info!("Parameters found, returning...");
+                            tracing::trace!("Parameters found, returning...");
                             return Ok(Self::from(t));
                         }
                         Err(source) => {
-                            tracing::warn!("{source}");
+                            tracing::trace!("{source}");
                         }
                     }
                 }
                 Self::ParameterValues(_) => {
-                    tracing::info!("Trying parameter values...");
+                    tracing::trace!("Trying parameter values...");
                     if let Ok(t) = ParameterValues::try_from(value) {
                         return Ok(Self::from(t));
                     }
@@ -139,7 +139,7 @@ impl Beaapi {
 impl TryFrom<&serde_json::Value> for Beaapi {
     type Error = JsonParseError;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading Beaapi.");
+        tracing::trace!("Reading Beaapi.");
         match value {
             serde_json::Value::Object(m) => {
                 let bea = Self::read_json(m)?;
@@ -202,7 +202,7 @@ impl BeaResponse {
 
     #[tracing::instrument(skip_all)]
     pub fn deserialize(bytes: &[u8]) -> Result<Self, BincodeError> {
-        tracing::info!("Deserializing BeaResponse");
+        tracing::trace!("Deserializing BeaResponse");
         match bincode::deserialize(bytes) {
             Ok(data) => Ok(data),
             Err(source) => {
@@ -222,22 +222,22 @@ impl BeaResponse {
 impl TryFrom<&serde_json::Value> for BeaResponse {
     type Error = JsonParseError;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading BeaResponse.");
+        tracing::trace!("Reading BeaResponse.");
         match value {
             serde_json::Value::Object(m) => {
                 let key = "BEAAPI".to_string();
                 if let Some(val) = m.get(&key) {
-                    tracing::info!("Val is: {val:#?}");
+                    tracing::trace!("Val is: {val:#?}");
                     let beaapi = Beaapi::try_from(val)?;
                     Ok(Self { beaapi })
                 } else {
-                    tracing::info!("Invalid Object: {m:#?}");
+                    tracing::trace!("Invalid Object: {m:#?}");
                     let error = JsonParseErrorKind::KeyMissing(key);
                     Err(error.into())
                 }
             }
             _ => {
-                tracing::info!("Invalid Value: {value:#?}");
+                tracing::trace!("Invalid Value: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;
                 Err(error.into())
             }
@@ -284,7 +284,7 @@ impl ApiError {
                     }
                 }
                 _ => {
-                    tracing::info!("Invalid Value: {value:#?}");
+                    tracing::trace!("Invalid Value: {value:#?}");
                     let error = JsonParseErrorKind::NotObject;
                     let error = JsonParseError::from(error);
                     Err(error.into())
@@ -301,11 +301,11 @@ impl ApiError {
 impl TryFrom<&serde_json::Value> for ApiError {
     type Error = BeaErr;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading ApiError.");
+        tracing::trace!("Reading ApiError.");
         match value {
             serde_json::Value::Object(m) => ApiError::read_json(m),
             _ => {
-                tracing::info!("Invalid Value: {value:#?}");
+                tracing::trace!("Invalid Value: {value:#?}");
                 let error = JsonParseErrorKind::NotObject;
                 let error = JsonParseError::from(error);
                 Err(error.into())

@@ -173,51 +173,25 @@ pub async fn values_gdp_filtered() -> Result<(), BeaErr> {
                                                         tracing::info!("{json:#?}");
                                                     }
                                                     Err(source) => {
-                                                        let url = app.url().to_string();
-                                                        let method = "get".to_string();
-                                                        let body = app
-                                                            .params()
-                                                            .into_iter()
-                                                            .collect::<Vec<(String, String)>>();
-                                                        let mut error =
-                                                            ReqwestError::new(url, method, source);
-                                                        error.with_body(body);
-                                                        return Err(error.into());
+                                                        tracing::warn!("{source}");
+                                                        use std::error::Error;
+                                                        if let Some(src) = source.source() {
+                                                            tracing::warn!("Caused by: {src}.");
+                                                        }
+                                                        // let url = app.url().to_string();
+                                                        // let method = "get".to_string();
+                                                        // let body = app
+                                                        //     .params()
+                                                        //     .into_iter()
+                                                        //     .collect::<Vec<(String, String)>>();
+                                                        // let mut error =
+                                                        //     ReqwestError::new(url, method, source);
+                                                        // error.with_body(body);
+                                                        // return Err(error.into());
                                                     }
                                                 }
-                                                //
                                             }
                                         }
-                                    }
-                                }
-                            }
-                            if id == first {
-                                options.with_table_id(*id.value());
-                                app.with_options(options.clone());
-                                let data = app.get().await?;
-                                tracing::info!("{data:#?}");
-                                match data.json::<serde_json::Value>().await {
-                                    Ok(json) => {
-                                        tracing::info!("{json:#?}");
-                                        // let contents = serde_json::to_vec(&json)?;
-                                        // // let path = std::path::PathBuf::from(format!("{bea_data}/values_{dataset}_{name}/values_{dataset}_{name}_byTableId_{}.json", id.value()));
-                                        // let path = path.join(format!(
-                                        //     "values_{dataset}_{name}_byTableId_{}.json",
-                                        //     id.value()
-                                        // ));
-                                        // tracing::info!("Current target path: {path:?}");
-                                        // IoError::write(&contents, path)?;
-                                    }
-                                    Err(source) => {
-                                        let url = app.url().to_string();
-                                        let method = "get".to_string();
-                                        let body = app
-                                            .params()
-                                            .into_iter()
-                                            .collect::<Vec<(String, String)>>();
-                                        let mut error = ReqwestError::new(url, method, source);
-                                        error.with_body(body);
-                                        return Err(error.into());
                                     }
                                 }
                             }

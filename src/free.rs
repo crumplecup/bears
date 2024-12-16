@@ -21,7 +21,7 @@ pub fn trace_init() {
 pub fn json_str(json: &serde_json::Value) -> Result<String, JsonParseError> {
     match json {
         serde_json::Value::String(s) => {
-            tracing::info!("String detected: {s}");
+            tracing::trace!("String detected: {s}");
             if s.starts_with('"') {
                 match serde_json::from_str(s) {
                     Ok(v) => Ok(v),
@@ -47,7 +47,7 @@ pub fn json_str(json: &serde_json::Value) -> Result<String, JsonParseError> {
 pub fn json_bool(json: &serde_json::Value) -> Result<bool, JsonParseError> {
     match json {
         serde_json::Value::Number(n) => {
-            tracing::info!("Number detected: {n}");
+            tracing::trace!("Number detected: {n}");
             if n.as_u64() == Some(1) {
                 Ok(true)
             } else {
@@ -55,7 +55,7 @@ pub fn json_bool(json: &serde_json::Value) -> Result<bool, JsonParseError> {
             }
         }
         serde_json::Value::String(s) => {
-            tracing::info!("String detected: {s}");
+            tracing::trace!("String detected: {s}");
             if s == "1" {
                 Ok(true)
             } else {
@@ -75,9 +75,9 @@ pub fn map_to_bool(
     key: &str,
     m: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<bool, JsonParseError> {
-    tracing::info!("Mapping value to bool.");
+    tracing::trace!("Mapping value to bool.");
     if let Some(value) = m.get(key) {
-        tracing::info!("Boolean candidate found.");
+        tracing::trace!("Boolean candidate found.");
         let flag = json_bool(value)?;
         Ok(flag)
     } else {
