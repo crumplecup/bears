@@ -1,6 +1,6 @@
 use crate::{
-    BeaErr, ParameterFields, ParameterValueTable, ParameterValueTableVariant, ParameterValues,
-    ParseInt,
+    BeaErr, MneDoi, NipaYear, ParameterFields, ParameterValueTable, ParameterValueTableVariant,
+    ParseInt, YearInvalid,
 };
 
 #[derive(
@@ -27,15 +27,29 @@ pub struct Year {
 impl TryFrom<&ParameterFields> for Year {
     type Error = ParseInt;
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
-        let num = match value.key().parse::<i16>() {
-            Ok(num) => num,
-            Err(source) => {
-                let error = ParseInt::new(value.key().into(), source);
-                return Err(error);
-            }
-        };
-        let date = jiff::civil::date(num, 1, 1);
+        let date = parse_year(value.key())?;
         Ok(Self::new(date, value.desc().into()))
+    }
+}
+
+impl TryFrom<&MneDoi> for Year {
+    type Error = ParseInt;
+    fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
+        let date = parse_year(value.key())?;
+        Ok(Self::new(date, value.desc().into()))
+    }
+}
+
+pub fn parse_year(input: &str) -> Result<jiff::civil::Date, ParseInt> {
+    match input.parse::<i16>() {
+        Ok(num) => {
+            let date = jiff::civil::date(num, 1, 1);
+            Ok(date)
+        }
+        Err(source) => {
+            let error = ParseInt::new(input.into(), source, line!(), file!().into());
+            Err(error)
+        }
     }
 }
 
@@ -45,7 +59,11 @@ impl TryFrom<&ParameterValueTable> for Year {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),
             _ => {
-                let error = ParameterValueTableVariant::new("ParameterFields needed".to_string());
+                let error = ParameterValueTableVariant::new(
+                    "ParameterFields needed".to_string(),
+                    line!(),
+                    file!().to_string(),
+                );
                 Err(error.into())
             }
         }
@@ -61,22 +79,191 @@ impl TryFrom<&ParameterValueTable> for Year {
     PartialOrd,
     Ord,
     Hash,
-    derive_more::Deref,
-    derive_more::DerefMut,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumIter,
+)]
+pub enum YearKind {
+    #[default]
+    All,
+    Year(Year),
+}
+
+impl TryFrom<&ParameterFields> for YearKind {
+    type Error = BeaErr;
+    fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
+        match Year::try_from(value) {
+            Ok(year) => Ok(Self::Year(year)),
+            Err(_) => match value.key().as_str() {
+                "all" => Ok(Self::All),
+                other => {
+                    let error = YearInvalid::new(other.into(), line!(), file!().to_string());
+                    Err(error.into())
+                }
+            },
+        }
+    }
+}
+
+impl TryFrom<&MneDoi> for YearKind {
+    type Error = BeaErr;
+    fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
+        match Year::try_from(value) {
+            Ok(year) => Ok(Self::Year(year)),
+            Err(_) => match value.key().as_str() {
+                "all" => Ok(Self::All),
+                other => {
+                    let error = YearInvalid::new(other.into(), line!(), file!().to_string());
+                    Err(error.into())
+                }
+            },
+        }
+    }
+}
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
     derive_new::new,
+    derive_getters::Getters,
     serde::Deserialize,
     serde::Serialize,
 )]
-pub struct YearData(Vec<Year>);
+pub struct YearOptions {
+    key: String,
+    kind: YearKind,
+}
 
-impl TryFrom<&ParameterValues> for YearData {
+impl TryFrom<&ParameterFields> for YearOptions {
     type Error = BeaErr;
-    fn try_from(value: &ParameterValues) -> Result<Self, Self::Error> {
-        let mut results = Vec::new();
-        for table in value.iter() {
-            let item = Year::try_from(table)?;
-            results.push(item);
+    fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
+        let key = value.key().to_string();
+        let kind = YearKind::try_from(value)?;
+        Ok(Self::new(key, kind))
+    }
+}
+
+impl TryFrom<&MneDoi> for YearOptions {
+    type Error = BeaErr;
+    fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
+        let key = value.key().to_string();
+        let kind = YearKind::try_from(value)?;
+        Ok(Self::new(key, kind))
+    }
+}
+
+impl TryFrom<&ParameterValueTable> for YearOptions {
+    type Error = BeaErr;
+    fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
+        match value {
+            ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),
+            ParameterValueTable::MneDoi(tab) => Ok(Self::try_from(tab)?),
+            other => {
+                let error = ParameterValueTableVariant::new(
+                    format!("ParameterFields or MneDoi needed, found {other:#?}"),
+                    line!(),
+                    file!().to_string(),
+                );
+                Err(error.into())
+            }
         }
-        Ok(Self::new(results))
+    }
+}
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    derive_more::Display,
+    derive_new::new,
+    derive_getters::Getters,
+    serde::Deserialize,
+    serde::Serialize,
+)]
+#[display("{}-{}", self.first.year(), self.last.year())]
+pub struct YearRange {
+    first: jiff::civil::Date,
+    last: jiff::civil::Date,
+}
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    derive_new::new,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    serde::Deserialize,
+    serde::Serialize,
+)]
+#[setters(prefix = "with_", strip_option)]
+pub struct NipaRange {
+    annual: Option<YearRange>,
+    monthly: Option<YearRange>,
+    quarterly: Option<YearRange>,
+}
+
+pub fn year_opt(input: &str) -> Result<Option<jiff::civil::Date>, ParseInt> {
+    match input {
+        "0" => Ok(None),
+        num => Ok(Some(parse_year(num)?)),
+    }
+}
+
+impl TryFrom<&NipaYear> for NipaRange {
+    type Error = ParseInt;
+    fn try_from(value: &NipaYear) -> Result<Self, Self::Error> {
+        let from = year_opt(value.first_annual_year())?;
+        let to = year_opt(value.last_annual_year())?;
+        let annual = match (from, to) {
+            (Some(first), Some(last)) => Some(YearRange::new(first, last)),
+            _ => None,
+        };
+        let from = year_opt(value.first_monthly_year())?;
+        let to = year_opt(value.last_monthly_year())?;
+        let monthly = match (from, to) {
+            (Some(first), Some(last)) => Some(YearRange::new(first, last)),
+            _ => None,
+        };
+        let from = year_opt(value.first_quarterly_year())?;
+        let to = year_opt(value.last_quarterly_year())?;
+        let quarterly = match (from, to) {
+            (Some(first), Some(last)) => Some(YearRange::new(first, last)),
+            _ => None,
+        };
+        Ok(Self::new(annual, monthly, quarterly))
+    }
+}
+
+impl TryFrom<&ParameterValueTable> for NipaRange {
+    type Error = BeaErr;
+    fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
+        match value {
+            ParameterValueTable::NipaYear(nipa_year) => Ok(Self::try_from(nipa_year)?),
+            _ => {
+                let error = ParameterValueTableVariant::new(
+                    "NipaFrequency needed".to_string(),
+                    line!(),
+                    file!().to_string(),
+                );
+                Err(error.into())
+            }
+        }
     }
 }

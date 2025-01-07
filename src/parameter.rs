@@ -1,6 +1,6 @@
 use crate::{
     json_str, map_to_bool, map_to_string, BeaResponse, FromStrError, JsonParseError,
-    JsonParseErrorKind, NotParameterName, ReqwestError, User,
+    JsonParseErrorKind, NotArray, NotObject, NotParameterName, ReqwestError, User,
 };
 use derive_more::FromStr;
 use serde::de::Deserializer;
@@ -29,6 +29,7 @@ pub struct Parameter {
 }
 
 impl Parameter {
+    #[deprecated]
     #[tracing::instrument(skip_all)]
     pub async fn values(&self, user: &User, dataset: &str) -> Result<BeaResponse, ReqwestError> {
         let mut body = user.body();
@@ -41,12 +42,19 @@ impl Parameter {
             Ok(res) => match res.text().await {
                 Ok(text) => tracing::trace!("Response: {text}"),
                 Err(source) => {
-                    let error = ReqwestError::new(url, "get".to_string(), source);
+                    let error = ReqwestError::new(
+                        url,
+                        "get".to_string(),
+                        source,
+                        line!(),
+                        file!().to_string(),
+                    );
                     return Err(error);
                 }
             },
             Err(source) => {
-                let error = ReqwestError::new(url, "get".to_string(), source);
+                let error =
+                    ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
                 return Err(error);
             }
         }
@@ -56,23 +64,33 @@ impl Parameter {
                 match res.json::<BeaResponse>().await {
                     Ok(data) => Ok(data),
                     Err(source) => {
-                        let error = ReqwestError::new(url, "get".to_string(), source);
+                        let error = ReqwestError::new(
+                            url,
+                            "get".to_string(),
+                            source,
+                            line!(),
+                            file!().to_string(),
+                        );
                         return Err(error);
                     }
                 }
             }
             Err(source) => {
-                let error = ReqwestError::new(url, "get".to_string(), source);
+                let error =
+                    ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
                 return Err(error);
             }
         }
     }
 
+    #[deprecated]
     #[tracing::instrument(skip_all)]
     pub fn name(&self) -> String {
         self.parameter_name.to_string()
     }
 
+    /// Given a [`serde_json::Map`] object, attempts to parse `Self` from anticipated keys.  Can
+    /// fail if the expected key is missing or if coercion to expected type (such as bool) fails.
     #[tracing::instrument(skip_all)]
     pub fn read_json(
         m: &serde_json::Map<String, serde_json::Value>,
@@ -115,13 +133,15 @@ impl TryFrom<serde_json::Value> for Parameter {
             }
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
     }
 }
 
+/// Thin wrapper around a vector of type [`Parameter`].
 #[derive(
     Clone,
     Debug,
@@ -139,6 +159,7 @@ impl TryFrom<serde_json::Value> for Parameter {
 )]
 #[serde(rename_all = "PascalCase")]
 pub struct Parameters {
+    /// The explicit field facilitates idempotent conversion back to JSON.
     parameter: Vec<Parameter>,
 }
 
@@ -170,7 +191,8 @@ impl TryFrom<&serde_json::Value> for Parameters {
                         }
                         _ => {
                             tracing::trace!("Unexpected content: {m:#?}");
-                            let error = JsonParseErrorKind::NotArray;
+                            let error = NotArray::new(line!(), file!().to_string());
+                            let error = JsonParseErrorKind::from(error);
                             Err(error.into())
                         }
                     }
@@ -182,7 +204,8 @@ impl TryFrom<&serde_json::Value> for Parameters {
             }
             _ => {
                 tracing::trace!("Wrong Value type: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -214,6 +237,12 @@ where
     }
 }
 
+/// Each variant of the `ParameterName` enum represents a valid input for the `PARAMETERNAME`
+/// parameter of the BEA REST API.
+///
+/// A single enum is not an ideal data structure because parameter names are only valid within a
+/// context of a [`Dataset`](crate::Dataset) variant, a [`Method`](crate::Method) variant, and
+/// potentially other parameters.
 #[derive(
     Debug,
     Default,
@@ -263,9 +292,11 @@ pub enum ParameterName {
 }
 
 impl ParameterName {
+    /// Invoked when parsing from JSON, used in the `TryFrom` impl.
     #[tracing::instrument]
     pub fn from_json(json: &str) -> Result<Self, JsonParseError> {
         let mut name = json.to_string();
+        // May include quotes added around a String, strip the quotes.
         if json.starts_with('"') {
             match serde_json::from_str(json) {
                 Ok(v) => name = v,
@@ -288,6 +319,11 @@ impl ParameterName {
         }
     }
 
+    /// Invoked by [`Parameters::read_json`].  A wrapper around the `TryFrom` impl that accepts a
+    /// [`serde_json::Map`].
+    ///
+    /// Produces an error if the String value under the `PARAMETERNAME` key does not parse to a
+    /// valid variant.
     #[tracing::instrument(skip_all)]
     pub fn from_map(
         key: &str,

@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use url::Url;
 
+/// Deprecated.  Use [`Options`](crate::Options).
+#[deprecated]
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, derive_getters::Getters, derive_new::new,
 )]
@@ -12,6 +14,7 @@ pub struct User {
 }
 
 impl User {
+    #[deprecated]
     #[tracing::instrument(skip_all)]
     pub fn body(&self) -> String {
         let mut body = self.url.to_string();
@@ -19,6 +22,7 @@ impl User {
         body
     }
 
+    #[deprecated]
     #[tracing::instrument(skip_all)]
     pub fn params(&self) -> HashMap<String, String> {
         let mut params = HashMap::new();

@@ -17,13 +17,18 @@ pub async fn datasets_to_json() -> Result<(), BeaErr> {
             dotenvy::dotenv().ok();
             let bea_data = EnvError::from_env("BEA_DATA")?;
             let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
-            IoError::write(&contents, path)?;
-            Ok(())
+            match std::fs::write(&path, contents) {
+                Ok(()) => Ok(()),
+                Err(source) => {
+                    let error = IoError::new(path, source, line!(), file!().to_string());
+                    Err(error.into())
+                }
+            }
         }
         Err(source) => {
             let url = app.url().to_string();
             let method = "get".to_string();
-            let error = ReqwestError::new(url, method, source);
+            let error = ReqwestError::new(url, method, source, line!(), file!().to_string());
             Err(error.into())
         }
     }
@@ -39,7 +44,13 @@ pub fn datasets_from_file() -> Result<(), BeaErr> {
     let bea_data = EnvError::from_env("BEA_DATA")?;
     tracing::info!("BEA_DATA present.");
     let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
-    let file = IoError::open(path)?;
+    let file = match std::fs::File::open(&path) {
+        Ok(f) => f,
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            return Err(error.into());
+        }
+    };
     tracing::info!("File opened.");
     let rdr = std::io::BufReader::new(file);
     let json: serde_json::Value = serde_json::from_reader(rdr)?;
@@ -48,7 +59,13 @@ pub fn datasets_from_file() -> Result<(), BeaErr> {
 
     let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.bin"));
     tracing::info!("Reading {path:?}.");
-    let decode = IoError::read(path)?;
+    let decode = match std::fs::read(&path) {
+        Ok(data) => data,
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            return Err(error.into());
+        }
+    };
     tracing::info!("File read to Vec<u8>.");
     let data: serde_json::Value = serde_json::from_slice(&decode)?;
     let data = BeaResponse::try_from(&data)?;
@@ -67,19 +84,24 @@ pub async fn deserialize_datasets() -> Result<(), BeaErr> {
     match data.json::<BeaResponse>().await {
         Ok(datasets) => {
             tracing::info!("Result: {:#?}", datasets);
-            let encode = BeaResponse::serialize(&datasets)?;
+            let contents = BeaResponse::serialize(&datasets)?;
             dotenvy::dotenv().ok();
             let bea_data = EnvError::from_env("BEA_DATA")?;
             let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.bin"));
             tracing::info!("Writing to path {:?}", path);
-            IoError::write(&encode, path)?;
-            Ok(())
+            match std::fs::write(&path, contents) {
+                Ok(()) => Ok(()),
+                Err(source) => {
+                    let error = IoError::new(path, source, line!(), file!().to_string());
+                    Err(error.into())
+                }
+            }
         }
         Err(source) => {
             let url = app.url().to_string();
             let method = "get".to_string();
             let body = app.params().into_iter().collect::<Vec<(String, String)>>();
-            let mut error = ReqwestError::new(url, method, source);
+            let mut error = ReqwestError::new(url, method, source, line!(), file!().to_string());
             if !body.is_empty() {
                 error.with_body(body);
             }
@@ -96,7 +118,13 @@ pub fn check_datasets() -> Result<(), BeaErr> {
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
-    let file = IoError::open(path)?;
+    let file = match std::fs::File::open(&path) {
+        Ok(f) => f,
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            return Err(error.into());
+        }
+    };
     let rdr = std::io::BufReader::new(file);
     let json: serde_json::Value = serde_json::from_reader(rdr)?;
     let data = BeaResponse::try_from(&json)?;
@@ -128,16 +156,27 @@ pub fn datasets_json_to_bin() -> Result<(), BeaErr> {
     let path = format!("{bea_data}/datasets.json");
     let path = std::path::PathBuf::from(path);
     // Create reader from path.
-    let file = IoError::open(path)?;
+    let file = match std::fs::File::open(&path) {
+        Ok(f) => f,
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            return Err(error.into());
+        }
+    };
     let rdr = std::io::BufReader::new(file);
     // Deserialize to serde_json::Value.
     let res: serde_json::Value = serde_json::from_reader(rdr)?;
     // Serialize to binary.
-    let encode = serde_json::to_vec(&res)?;
+    let contents = serde_json::to_vec(&res)?;
     // Set path for binary file.
     let path = format!("{bea_data}/datasets.bin");
     let path = std::path::PathBuf::from(path);
     // Write binary to file.
-    IoError::write(&encode, path)?;
-    Ok(())
+    match std::fs::write(&path, contents) {
+        Ok(()) => Ok(()),
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            Err(error.into())
+        }
+    }
 }

@@ -1,6 +1,8 @@
 use crate::{BeaResponse, ReqwestError, User};
 use convert_case::Casing;
 
+/// The variants of the `Method` enum represent different valid inputs for the `METHOD` parameter
+/// when calling into the BEA REST API.
 #[derive(
     Debug,
     Default,
@@ -13,10 +15,15 @@ use convert_case::Casing;
     Hash,
     strum::EnumIter,
     derive_more::Display,
+    derive_more::FromStr,
 )]
 pub enum Method {
+    /// Primary data retrieval method.
     #[default]
+    GetData,
+    /// Available BEA datasets, corresponding to variants of [`Dataset`].
     GetDataSetList,
+    /// Valid [`ParameterName`] values for a given [`Dataset`].
     GetParameterList,
     GetParameterValues,
     GetParameterValuesFiltered,
@@ -72,13 +79,25 @@ impl Method {
             Ok(res) => match res.json::<BeaResponse>().await {
                 Ok(data) => Ok(data),
                 Err(source) => {
-                    let mut error = ReqwestError::new(url.to_string(), "get".to_string(), source);
+                    let mut error = ReqwestError::new(
+                        url.to_string(),
+                        "get".to_string(),
+                        source,
+                        line!(),
+                        file!().to_string(),
+                    );
                     error.with_body(body);
                     Err(error)
                 }
             },
             Err(source) => {
-                let mut error = ReqwestError::new(url.to_string(), "get".to_string(), source);
+                let mut error = ReqwestError::new(
+                    url.to_string(),
+                    "get".to_string(),
+                    source,
+                    line!(),
+                    file!().to_string(),
+                );
                 error.with_body(body);
                 Err(error)
             }

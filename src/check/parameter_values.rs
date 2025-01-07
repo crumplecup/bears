@@ -38,24 +38,32 @@ pub async fn parameter_value_to_json(
     let mut opts = app.options().clone();
     opts.with_dataset(dataset);
     opts.with_param_name(name);
-    app.with_options(opts);
+    app.add_options(opts);
     let data = app.get().await?;
     match data.json::<serde_json::Value>().await {
         Ok(json) => {
             let contents = serde_json::to_vec(&json)?;
             dotenvy::dotenv().ok();
             let bea_data = EnvError::from_env("BEA_DATA")?;
-            let path = std::path::PathBuf::from(&format!(
-                "{bea_data}/parameter_values_{dataset}_{name}.json"
-            ));
-            IoError::write(&contents, path)?;
-            Ok(())
+            let path = std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
+            if !std::fs::exists(&path)? {
+                std::fs::DirBuilder::new().create(&path)?;
+                tracing::info!("Target directory for Parameter Values created.");
+            }
+            let path = path.join(format!("{dataset}_{name}_parameter_values.json"));
+            match std::fs::write(&path, contents) {
+                Ok(()) => Ok(()),
+                Err(source) => {
+                    let error = IoError::new(path, source, line!(), file!().to_string());
+                    Err(error.into())
+                }
+            }
         }
         Err(source) => {
             let url = app.url().to_string();
             let method = "get".to_string();
             let body = app.params().into_iter().collect::<Vec<(String, String)>>();
-            let mut error = ReqwestError::new(url, method, source);
+            let mut error = ReqwestError::new(url, method, source, line!(), file!().to_string());
             error.with_body(body);
             Err(error.into())
         }
@@ -72,20 +80,33 @@ pub fn parameter_value_json_to_bin() -> Result<(), BeaErr> {
         let names = dataset.names();
         for name in names {
             // Set path for json file.
-            let path = format!("{bea_data}/parameter_values_{dataset}_{name}.json");
+            let path =
+                format!("{bea_data}/parameter_values/{dataset}_{name}_parameter_values.json");
             let path = std::path::PathBuf::from(path);
             // Create reader from path.
-            let file = IoError::open(path)?;
+            let file = match std::fs::File::open(&path) {
+                Ok(f) => f,
+                Err(source) => {
+                    let error = IoError::new(path, source, line!(), file!().to_string());
+                    return Err(error.into());
+                }
+            };
             let rdr = std::io::BufReader::new(file);
             // Deserialize to serde_json::Value.
             let res: serde_json::Value = serde_json::from_reader(rdr)?;
             // Serialize to binary.
-            let encode = serde_json::to_vec(&res)?;
+            let contents = serde_json::to_vec(&res)?;
             // Set path for binary file.
-            let path = format!("{bea_data}/parameter_values_{dataset}_{name}.bin");
+            let path = format!("{bea_data}/parameter_values/{dataset}_{name}_parameter_values.bin");
             let path = std::path::PathBuf::from(path);
             // Write binary to file.
-            IoError::write(&encode, path)?;
+            match std::fs::write(&path, contents) {
+                Ok(()) => {}
+                Err(source) => {
+                    let error = IoError::new(path, source, line!(), file!().to_string());
+                    return Err(error.into());
+                }
+            }
         }
     }
     Ok(())
@@ -93,7 +114,13 @@ pub fn parameter_value_json_to_bin() -> Result<(), BeaErr> {
 
 #[tracing::instrument(skip_all)]
 pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), BeaErr> {
-    let file = IoError::open(path)?;
+    let file = match std::fs::File::open(&path) {
+        Ok(f) => f,
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            return Err(error.into());
+        }
+    };
     let rdr = std::io::BufReader::new(file);
     let res: serde_json::Value = serde_json::from_reader(rdr)?;
     let data = BeaResponse::try_from(&res)?;
@@ -104,7 +131,13 @@ pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), BeaErr>
 
 #[tracing::instrument(skip_all)]
 pub fn parameter_value_from_bin(path: std::path::PathBuf) -> Result<(), BeaErr> {
-    let decode = IoError::read(path)?;
+    let decode = match std::fs::read(&path) {
+        Ok(data) => data,
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            return Err(error.into());
+        }
+    };
     tracing::info!("Path read.");
     let data: serde_json::Value = serde_json::from_slice(&decode)?;
     let data = BeaResponse::try_from(&data)?;
@@ -126,13 +159,13 @@ pub fn parameter_value_from_file() -> Result<(), BeaErr> {
         for name in names {
             tracing::info!("Response pass for {name} in {dataset}");
             let path = std::path::PathBuf::from(&format!(
-                "{bea_data}/parameter_values_{dataset}_{name}.json"
+                "{bea_data}/parameter_values/{dataset}_{name}_parameter_values.json"
             ));
             parameter_value_from_json(path)?;
 
             tracing::info!("Native pass for {name} in {dataset}");
             let path = std::path::PathBuf::from(&format!(
-                "{bea_data}/parameter_values_{dataset}_{name}.bin"
+                "{bea_data}/parameter_values/{dataset}_{name}_parameter_values.bin"
             ));
             tracing::info!("Reading from {path:?}");
             parameter_value_from_bin(path)?;
@@ -154,7 +187,7 @@ pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
                 let mut options = app.options().clone();
                 options.with_dataset(*dataset);
                 options.with_target(name);
-                app.with_options(options.clone());
+                app.add_options(options.clone());
                 let data = app.get().await?;
                 tracing::info!("{data:#?}");
                 match data.json::<serde_json::Value>().await {
@@ -177,13 +210,21 @@ pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
                         let path = std::path::PathBuf::from(&format!(
                             "{bea_data}/values_api_error.json" // "{bea_data}/values_{dataset}_{name}.json"
                         ));
-                        IoError::write(&contents, path)?;
+                        match std::fs::write(&path, contents) {
+                            Ok(()) => {}
+                            Err(source) => {
+                                let error =
+                                    IoError::new(path, source, line!(), file!().to_string());
+                                return Err(error.into());
+                            }
+                        }
                     }
                     Err(source) => {
                         let url = app.url().to_string();
                         let method = "get".to_string();
                         let body = app.params().into_iter().collect::<Vec<(String, String)>>();
-                        let mut error = ReqwestError::new(url, method, source);
+                        let mut error =
+                            ReqwestError::new(url, method, source, line!(), file!().to_string());
                         error.with_body(body);
                         return Err(error.into());
                     }

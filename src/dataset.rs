@@ -1,10 +1,18 @@
 use crate::{
-    map_to_string, BeaErr, BeaResponse, JsonParseError, JsonParseErrorKind, ParameterName,
-    ReqwestError, User,
+    map_to_string, BeaErr, BeaResponse, JsonParseError, JsonParseErrorKind, NotObject,
+    ParameterName, ReqwestError, User,
 };
 use convert_case::Casing;
 use serde::{Deserialize, Serialize};
 
+/// The `Dataset` enum contains variants for each dataset published by the BEA.
+///
+/// The enum should technically be marked as exhaustive, but the developer needs to lean on Rust's
+/// exhaustive enum matching as a crutch.
+///
+/// We match the variants against the response from the
+/// [`Method::GetDataSetList`](crate::Method::GetDataSetList) in a unit test to detect new
+/// additions.
 #[derive(
     Debug,
     Default,
@@ -50,6 +58,14 @@ impl Dataset {
         self.to_string().to_case(convert_case::Case::Flat)
     }
 
+    /// The `names` method returns the vector of valid [`ParameterName`] inputs for a given
+    /// `Dataset`.
+    ///
+    /// We match values for each variant manually against the responses from the
+    /// [`Method::GetParameterList`](crate::Method::GetParameterList) call for each [`Dataset`]
+    /// variant.
+    ///
+    /// TODO: Match the output against the responses in a unit test to detect changes or additions.
     pub fn names(&self) -> Vec<ParameterName> {
         match self {
             Self::Nipa => {
@@ -177,6 +193,7 @@ pub struct DatasetDetails {
 }
 
 impl DatasetDetails {
+    #[deprecated]
     #[tracing::instrument(skip_all)]
     pub async fn parameters(&self, user: &User) -> Result<BeaResponse, ReqwestError> {
         let mut body = user.body();
@@ -190,18 +207,26 @@ impl DatasetDetails {
                 match res.json::<BeaResponse>().await {
                     Ok(r) => Ok(r),
                     Err(source) => {
-                        let error = ReqwestError::new(url, "get".into(), source);
+                        let error = ReqwestError::new(
+                            url,
+                            "get".into(),
+                            source,
+                            line!(),
+                            file!().to_string(),
+                        );
                         return Err(error);
                     }
                 }
             }
             Err(source) => {
-                let error = ReqwestError::new(url, "get".into(), source);
+                let error =
+                    ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
                 return Err(error);
             }
         }
     }
 
+    #[deprecated]
     pub fn name(&self) -> String {
         self.dataset_name.to_owned()
     }
@@ -219,7 +244,8 @@ impl TryFrom<serde_json::Value> for DatasetDetails {
             }
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 let error = JsonParseError::from(error);
                 Err(error.into())
             }
@@ -249,7 +275,6 @@ pub struct Datasets {
 
 impl TryFrom<serde_json::Value> for Datasets {
     type Error = BeaErr;
-    // #[tracing::instrument(skip_all)]
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading DatasetDetails");
         match value {
@@ -274,7 +299,8 @@ impl TryFrom<serde_json::Value> for Datasets {
             }
             _ => {
                 tracing::trace!("Wrong Value type: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 let error = JsonParseError::from(error);
                 Err(error.into())
             }

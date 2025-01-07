@@ -12,12 +12,14 @@ pub async fn get_data(config: &Config) -> Result<BeaDataResponse, ReqwestError> 
         Ok(res) => match res.json::<BeaDataResponse>().await {
             Ok(data) => Ok(data),
             Err(source) => {
-                let error = ReqwestError::new(url, "get".to_string(), source);
+                let error =
+                    ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
                 Err(error)
             }
         },
         Err(source) => {
-            let error = ReqwestError::new(url, "get".to_string(), source);
+            let error =
+                ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
             Err(error)
         }
     }
@@ -187,13 +189,25 @@ impl BeaDataResponse {
             Ok(res) => match res.json::<BeaDataResponse>().await {
                 Ok(data) => Ok(data),
                 Err(source) => {
-                    let mut error = ReqwestError::new(url.to_string(), "get".to_string(), source);
+                    let mut error = ReqwestError::new(
+                        url.to_string(),
+                        "get".to_string(),
+                        source,
+                        line!(),
+                        file!().to_string(),
+                    );
                     error.with_form(form);
                     Err(error)
                 }
             },
             Err(source) => {
-                let mut error = ReqwestError::new(url.to_string(), "get".to_string(), source);
+                let mut error = ReqwestError::new(
+                    url.to_string(),
+                    "get".to_string(),
+                    source,
+                    line!(),
+                    file!().to_string(),
+                );
                 error.with_form(form);
                 Err(error)
             }

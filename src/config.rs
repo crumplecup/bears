@@ -71,6 +71,7 @@ impl Options {
     }
 }
 
+#[deprecated]
 #[derive(
     Debug,
     Clone,
@@ -99,6 +100,7 @@ impl NeoConfig {
     }
 }
 
+#[deprecated]
 #[derive(
     Debug,
     Clone,

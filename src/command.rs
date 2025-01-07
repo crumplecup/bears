@@ -1,6 +1,8 @@
 use nom::character::complete::alphanumeric1;
 use nom::IResult;
 
+/// Variants of the `Action` enum encapsulate the different actions a user can select, exposing the
+/// different capabilities of the library.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub enum Action {
     Checklist,
@@ -28,9 +30,12 @@ impl std::str::FromStr for Action {
     }
 }
 
+/// Context information around the failure to parse a String into a library type.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_new::new)]
 pub struct FromStrError {
+    /// What the user attempted to parse into the `target` type.
     input: String,
+    /// Type the user is trying to parse the `input` into.
     target: String,
 }
 

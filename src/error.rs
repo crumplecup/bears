@@ -29,6 +29,13 @@ impl From<BincodeError> for BeaErr {
     }
 }
 
+impl From<BoolInvalid> for BeaErr {
+    fn from(value: BoolInvalid) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
 impl From<Check> for BeaErr {
     fn from(value: Check) -> Self {
         let kind = BeaErrorKind::from(value).into();
@@ -108,6 +115,20 @@ impl From<std::io::Error> for BeaErr {
     }
 }
 
+impl From<IntegerInvalid> for BeaErr {
+    fn from(value: IntegerInvalid) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
+impl From<InvestmentInvalid> for BeaErr {
+    fn from(value: InvestmentInvalid) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
 impl From<Io> for BeaErr {
     fn from(value: Io) -> Self {
         let kind = BeaErrorKind::from(value).into();
@@ -117,6 +138,13 @@ impl From<Io> for BeaErr {
 
 impl From<IoError> for BeaErr {
     fn from(value: IoError) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
+impl From<OwnershipInvalid> for BeaErr {
+    fn from(value: OwnershipInvalid) -> Self {
         let kind = BeaErrorKind::from(value).into();
         Self { kind }
     }
@@ -143,10 +171,26 @@ impl From<UrlParseError> for BeaErr {
     }
 }
 
+impl From<VariantMissing> for BeaErr {
+    fn from(value: VariantMissing) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
+impl From<YearInvalid> for BeaErr {
+    fn from(value: YearInvalid) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
 #[derive(Debug, derive_more::From)]
 pub enum BeaErrorKind {
     #[from(BincodeError)]
     Bincode(BincodeError),
+    #[from(BoolInvalid)]
+    BoolInvalid(BoolInvalid),
     #[from(Check)]
     Check(Check),
     #[from(DatasetMissing)]
@@ -155,6 +199,10 @@ pub enum BeaErrorKind {
     DeriveFromStr(DeriveFromStr),
     #[from(EnvError)]
     Env(EnvError),
+    #[from(IntegerInvalid)]
+    IntegerInvalid(IntegerInvalid),
+    #[from(InvestmentInvalid)]
+    InvestmentInvalid(InvestmentInvalid),
     #[from(IoError)]
     Io(IoError),
     #[from(Io, std::io::Error)]
@@ -163,6 +211,8 @@ pub enum BeaErrorKind {
     Jiff(Jiff),
     #[from(JsonParseError)]
     JsonParse(JsonParseError),
+    #[from(OwnershipInvalid)]
+    OwnershipInvalid(OwnershipInvalid),
     #[from(ParameterValueTableVariant)]
     ParameterValueTableVariant(ParameterValueTableVariant),
     #[from(ParseInt)]
@@ -175,12 +225,19 @@ pub enum BeaErrorKind {
     SerdeJson(SerdeJson),
     #[from(UrlParseError)]
     UrlParse(UrlParseError),
+    #[from(VariantMissing)]
+    VariantMissing(VariantMissing),
+    #[from(YearInvalid)]
+    YearInvalid(YearInvalid),
 }
 
 impl std::fmt::Display for BeaErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Bincode(e) => {
+                write!(f, "{e}")
+            }
+            Self::BoolInvalid(e) => {
                 write!(f, "{e}")
             }
             Self::Check(e) => {
@@ -195,6 +252,12 @@ impl std::fmt::Display for BeaErrorKind {
             Self::Env(e) => {
                 write!(f, "{e}")
             }
+            Self::IntegerInvalid(e) => {
+                write!(f, "{e}")
+            }
+            Self::InvestmentInvalid(e) => {
+                write!(f, "{e}")
+            }
             Self::Io(e) => {
                 write!(f, "{e}")
             }
@@ -205,6 +268,9 @@ impl std::fmt::Display for BeaErrorKind {
                 write!(f, "{e}")
             }
             Self::JsonParse(e) => {
+                write!(f, "{e}")
+            }
+            Self::OwnershipInvalid(e) => {
                 write!(f, "{e}")
             }
             Self::ParameterValueTableVariant(e) => {
@@ -225,6 +291,12 @@ impl std::fmt::Display for BeaErrorKind {
             Self::UrlParse(e) => {
                 write!(f, "{e}")
             }
+            Self::VariantMissing(e) => {
+                write!(f, "{e}")
+            }
+            Self::YearInvalid(e) => {
+                write!(f, "{e}")
+            }
         }
     }
 }
@@ -233,20 +305,26 @@ impl std::error::Error for BeaErrorKind {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Bincode(e) => Some(e.source()),
+            Self::BoolInvalid(e) => e.source(),
             Self::Check(e) => e.source(),
             Self::DatasetMissing(e) => e.source(),
             Self::DeriveFromStr(e) => e.source(),
             Self::Env(e) => Some(e.source()),
+            Self::IntegerInvalid(e) => e.source(),
+            Self::InvestmentInvalid(e) => e.source(),
             Self::Io(e) => Some(e.source()),
             Self::IoPass(e) => Some(e.source()),
             Self::Jiff(e) => e.source(),
             Self::JsonParse(e) => e.source(),
+            Self::OwnershipInvalid(e) => e.source(),
             Self::ParameterValueTableVariant(e) => e.source(),
             Self::ParseInt(e) => Some(e.source()),
             Self::Reqwest(e) => Some(e.source()),
             Self::Set(e) => e.source(),
             Self::SerdeJson(e) => Some(e.source()),
             Self::UrlParse(e) => Some(e.source()),
+            Self::VariantMissing(e) => e.source(),
+            Self::YearInvalid(e) => e.source(),
         }
     }
 }
@@ -256,12 +334,22 @@ pub enum JsonParseErrorKind {
     #[from(FromStrError)]
     FromStr(FromStrError),
     KeyMissing(String),
-    NotArray,
+    #[from(NotArray)]
+    NotArray(NotArray),
     NotBool,
-    NotObject,
+    #[from(NotFloat)]
+    NotFloat(NotFloat),
+    #[from(NotInteger)]
+    NotInteger(NotInteger),
+    #[from(NotObject)]
+    NotObject(NotObject),
     #[from(NotParameterName)]
     NotParameterName(NotParameterName),
     NotString,
+    #[from(ParseFloat)]
+    ParseFloat(ParseFloat),
+    #[from(ParseInteger)]
+    ParseInteger(ParseInteger),
 }
 
 impl std::fmt::Display for JsonParseErrorKind {
@@ -269,11 +357,15 @@ impl std::fmt::Display for JsonParseErrorKind {
         match self {
             Self::FromStr(e) => write!(f, "problem converting str to json: {e}"),
             Self::KeyMissing(s) => write!(f, "missing key {s}"),
-            Self::NotArray => write!(f, "serde_json::Value is not an Array or Object variant"),
+            Self::NotArray(e) => write!(f, "{e}"),
             Self::NotBool => write!(f, "serde_json::Value is not a Number or String variant"),
+            Self::NotFloat(e) => write!(f, "{e}"),
+            Self::NotInteger(e) => write!(f, "{e}"),
             Self::NotParameterName(e) => write!(f, "{e}"),
-            Self::NotObject => write!(f, "serde_json::Value is not an Object variant"),
+            Self::NotObject(e) => write!(f, "{e}"),
             Self::NotString => write!(f, "serde_json::Value is not a String variant"),
+            Self::ParseFloat(e) => write!(f, "{e}"),
+            Self::ParseInteger(e) => write!(f, "{e}"),
         }
     }
 }
@@ -350,11 +442,19 @@ pub struct ReqwestError {
     pub body: Option<Vec<(String, String)>>,
     pub form: Option<Vec<(String, String)>>,
     pub source: reqwest::Error,
+    line: u32,
+    file: String,
 }
 
 impl ReqwestError {
     #[tracing::instrument(skip_all)]
-    pub fn new<S: std::fmt::Display>(url: S, method: S, source: reqwest::Error) -> Self {
+    pub fn new<S: std::fmt::Display>(
+        url: S,
+        method: S,
+        source: reqwest::Error,
+        line: u32,
+        file: String,
+    ) -> Self {
         let url = url.to_string();
         let method = method.to_string();
         Self {
@@ -364,6 +464,8 @@ impl ReqwestError {
             body: None,
             form: None,
             source,
+            line,
+            file,
         }
     }
 }
@@ -489,57 +591,13 @@ impl std::error::Error for Io {
 #[derive(
     Debug, derive_getters::Getters, derive_setters::Setters, derive_more::Display, derive_new::new,
 )]
-#[display("io error at path {:?}", self.path)]
+#[display("io error at path {path:?} in line {line} of {file}")]
 #[setters(prefix = "with_", borrow_self)]
 pub struct IoError {
     pub path: std::path::PathBuf,
     pub source: std::io::Error,
-}
-
-impl IoError {
-    #[tracing::instrument(skip(contents))]
-    pub fn write(contents: &Vec<u8>, path: std::path::PathBuf) -> Result<(), Self> {
-        match std::fs::write(path.clone(), contents) {
-            Ok(()) => Ok(()),
-            Err(source) => {
-                let error = IoError::new(path, source);
-                Err(error)
-            }
-        }
-    }
-
-    #[tracing::instrument]
-    pub fn read(path: std::path::PathBuf) -> Result<Vec<u8>, Self> {
-        match std::fs::read(path.clone()) {
-            Ok(data) => Ok(data),
-            Err(source) => {
-                let error = Self::new(path, source);
-                Err(error)
-            }
-        }
-    }
-
-    #[tracing::instrument]
-    pub fn open(path: std::path::PathBuf) -> Result<std::fs::File, Self> {
-        match std::fs::File::open(&path) {
-            Ok(file) => Ok(file),
-            Err(source) => {
-                let error = Self::new(path, source);
-                Err(error)
-            }
-        }
-    }
-
-    #[tracing::instrument]
-    pub fn remove_file(path: std::path::PathBuf) -> Result<(), Self> {
-        match std::fs::remove_file(path.clone()) {
-            Ok(()) => Ok(()),
-            Err(source) => {
-                let error = IoError::new(path, source);
-                Err(error)
-            }
-        }
-    }
+    line: u32,
+    file: String,
 }
 
 impl std::error::Error for IoError {
@@ -621,10 +679,11 @@ impl std::error::Error for Check {
 )]
 #[display("error from serde_json library")]
 #[setters(prefix = "with_", borrow_self)]
-#[from((&str, std::num::ParseIntError))]
 pub struct ParseInt {
-    pub input: String,
-    pub source: std::num::ParseIntError,
+    input: String,
+    source: std::num::ParseIntError,
+    line: u32,
+    file: String,
 }
 
 impl std::error::Error for ParseInt {
@@ -641,11 +700,12 @@ impl std::error::Error for ParseInt {
     derive_new::new,
     derive_more::From,
 )]
-#[display("{}", self.issue)]
+#[display("{} at line {} in {}", self.issue, self.line, self.file)]
 #[setters(prefix = "with_", borrow_self)]
-#[from(&str)]
 pub struct ParameterValueTableVariant {
-    pub issue: String,
+    issue: String,
+    line: u32,
+    file: String,
 }
 
 impl std::error::Error for ParameterValueTableVariant {
@@ -655,10 +715,12 @@ impl std::error::Error for ParameterValueTableVariant {
 }
 
 #[derive(Debug, Clone, derive_new::new, derive_more::Display, derive_more::Error)]
-#[display("could not parse from {} into target value", self.value)]
+#[display("could not parse from {} into target value on line {} in {}", self.value, self.line, self.file)]
 pub struct DeriveFromStr {
     value: String,
     source: derive_more::FromStrError,
+    line: u32,
+    file: String,
 }
 
 #[derive(Debug, Clone, derive_new::new, derive_more::Display, derive_more::Error)]
@@ -669,25 +731,197 @@ pub struct Jiff {
 }
 
 #[derive(
-    Debug,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    derive_more::Display,
-    derive_more::FromStr,
-    strum::EnumIter,
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, strum::EnumIter,
 )]
 pub enum Set {
     Empty,
-    ParameterValuesMissing,
     ParameterFieldsMissing,
+    ParameterNameMissing(String),
+    ParameterValuesMissing,
 }
 
 impl std::error::Error for Set {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
+)]
+#[display("{clue} with {input} at line {line} in file {file}")]
+pub struct VariantMissing {
+    clue: String,
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for VariantMissing {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
+)]
+#[display("{input} is not a valid Year at line {line} in file {file}")]
+pub struct YearInvalid {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for YearInvalid {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
+)]
+#[display("{input} is not a valid Integer at line {line} in file {file}")]
+pub struct IntegerInvalid {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for IntegerInvalid {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
+)]
+#[display("{input} is not a valid Ownership at line {line} in file {file}")]
+pub struct OwnershipInvalid {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for OwnershipInvalid {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
+)]
+#[display("{input} is not a valid bool at line {line} in file {file}")]
+pub struct BoolInvalid {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for BoolInvalid {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
+)]
+#[display("{input} is not a valid Investment at line {line} in file {file}")]
+pub struct InvestmentInvalid {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for InvestmentInvalid {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("could not parse {input} to float at line {line} in file {file}")]
+pub struct ParseFloat {
+    input: String,
+    source: std::num::ParseFloatError,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for ParseFloat {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.source)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("could not parse {input} to integer at line {line} in file {file}")]
+pub struct ParseInteger {
+    input: String,
+    source: std::num::ParseIntError,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for ParseInteger {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.source)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("could not parse {input} to float at line {line} in file {file}")]
+pub struct NotFloat {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for NotFloat {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("could not parse {input} to integer at line {line} in file {file}")]
+pub struct NotInteger {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for NotInteger {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("serde::Value::Object variant expected at line {line} in file {file}")]
+pub struct NotObject {
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for NotObject {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("serde::Value::Array variant expected at line {line} in file {file}")]
+pub struct NotArray {
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for NotArray {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }

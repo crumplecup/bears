@@ -110,7 +110,13 @@ impl Json {
         P: AsRef<std::path::Path>,
     {
         let path = std::path::PathBuf::from(path.as_ref());
-        let file = IoError::open(path)?;
+        let file = match std::fs::File::open(&path) {
+            Ok(f) => f,
+            Err(source) => {
+                let error = IoError::new(path, source, line!(), file!().to_string());
+                return Err(error.into());
+            }
+        };
         Ok(std::io::BufReader::new(file).lines())
     }
 }

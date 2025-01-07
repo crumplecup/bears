@@ -1,6 +1,6 @@
 use crate::{
-    map_to_string, BeaErr, BeaErrorKind, DeriveFromStr, JsonParseError, JsonParseErrorKind,
-    ParameterName,
+    map_to_string, BeaErr, BeaErrorKind, DeriveFromStr, JsonParseError, JsonParseErrorKind, Method,
+    NotObject, ParameterName,
 };
 use derive_more::FromStr;
 use serde::{Deserialize, Serialize};
@@ -56,12 +56,39 @@ impl RequestParameter {
             match ParameterName::from_str(&self.parameter_value) {
                 Ok(name) => Ok(name),
                 Err(source) => {
-                    let error = DeriveFromStr::new(self.parameter_value.clone(), source);
+                    let error = DeriveFromStr::new(
+                        self.parameter_value.clone(),
+                        source,
+                        line!(),
+                        file!().to_string(),
+                    );
                     Err(error.into())
                 }
             }
         } else {
             let error = JsonParseErrorKind::KeyMissing(format!("neither {key_1} nor {key_2}"));
+            let error = JsonParseError::from(error);
+            Err(error.into())
+        }
+    }
+
+    pub fn method(&self) -> Result<Method, BeaErr> {
+        let key = "METHOD".to_string();
+        if self.parameter_name == key {
+            match Method::from_str(&self.parameter_value) {
+                Ok(method) => Ok(method),
+                Err(source) => {
+                    let error = DeriveFromStr::new(
+                        self.parameter_value.clone(),
+                        source,
+                        line!(),
+                        file!().to_string(),
+                    );
+                    Err(error.into())
+                }
+            }
+        } else {
+            let error = JsonParseErrorKind::KeyMissing(key);
             let error = JsonParseError::from(error);
             Err(error.into())
         }
@@ -81,7 +108,8 @@ impl TryFrom<serde_json::Value> for RequestParameter {
             }
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -109,6 +137,34 @@ pub struct RequestParameters {
 }
 
 impl RequestParameters {
+    pub fn method(&self) -> Result<Method, BeaErr> {
+        let mut methods = Vec::new();
+        let mut errs = Vec::new();
+        for req in self.iter() {
+            match req.method() {
+                Ok(method) => methods.push(method),
+                Err(source) => errs.push(source),
+            }
+        }
+        if !methods.is_empty() {
+            Ok(methods[0])
+        } else {
+            tracing::warn!("Failed to locate method in request.");
+            match &**errs[0] {
+                BeaErrorKind::DeriveFromStr(x) => Err(BeaErr::from(x.clone())),
+                BeaErrorKind::JsonParse(kind) => match &**kind {
+                    JsonParseErrorKind::KeyMissing(key) => {
+                        let error = JsonParseErrorKind::KeyMissing(key.clone());
+                        let error = JsonParseError::from(error);
+                        Err(error.into())
+                    }
+                    _ => unreachable!(),
+                },
+                _ => unreachable!(),
+            }
+        }
+    }
+
     pub fn contains_name(&self, name: ParameterName) -> bool {
         let mut contains = false;
         for item in self.iter() {
@@ -148,7 +204,6 @@ impl RequestParameters {
 
 impl TryFrom<&serde_json::Value> for RequestParameters {
     type Error = JsonParseError;
-    // #[tracing::instrument(skip_all)]
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading RequestParameters");
         match value {
@@ -170,7 +225,8 @@ impl TryFrom<&serde_json::Value> for RequestParameters {
             }
             _ => {
                 tracing::warn!("Wrong Value type: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }

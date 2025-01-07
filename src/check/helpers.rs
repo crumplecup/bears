@@ -32,6 +32,7 @@ pub fn init() -> Result<App, BeaErr> {
 )]
 pub enum Request {
     #[default]
+    Data,
     Dataset,
     Parameter,
     ParameterValue,
@@ -42,40 +43,54 @@ impl Request {
     #[tracing::instrument(skip_all)]
     pub fn init(&self) -> Result<App, BeaErr> {
         match self {
+            Self::Data => {
+                let mut app = init()?;
+                tracing::info!("App initialized.");
+                let mut options = Options::default();
+                let method = Method::GetData;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
+                Ok(app)
+            }
             Self::Dataset => {
                 let mut app = init()?;
                 tracing::info!("App initialized.");
                 let mut options = Options::default();
-                options.with_method(Method::GetDataSetList);
-                app.with_options(options);
-                tracing::info!("App configured.");
+                let method = Method::GetDataSetList;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
                 Ok(app)
             }
             Self::Parameter => {
                 let mut app = init()?;
                 tracing::info!("App initialized.");
                 let mut options = Options::default();
-                options.with_method(Method::GetParameterList);
-                app.with_options(options.clone());
-                tracing::info!("App configured.");
+                let method = Method::GetParameterList;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
                 Ok(app)
             }
             Self::ParameterValue => {
                 let mut app = init()?;
                 tracing::info!("App initialized.");
                 let mut options = Options::default();
-                options.with_method(Method::GetParameterValues);
-                app.with_options(options.clone());
-                tracing::info!("App configured.");
+                let method = Method::GetParameterValues;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
                 Ok(app)
             }
             Self::ParameterValueFilter => {
                 let mut app = init()?;
                 tracing::info!("App initialized.");
                 let mut options = Options::default();
-                options.with_method(Method::GetParameterValuesFiltered);
-                app.with_options(options.clone());
-                tracing::info!("App configured.");
+                let method = Method::GetParameterValuesFiltered;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
                 Ok(app)
             }
         }

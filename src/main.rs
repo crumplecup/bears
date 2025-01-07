@@ -54,14 +54,26 @@ async fn main() -> Result<(), BeaErr> {
             info!("Encoded to binary.");
             let mut path = std::path::PathBuf::new();
             path.push(checklist.clone());
-            IoError::write(&encode, path)?;
+            match std::fs::write(&path, &encode) {
+                Ok(()) => {}
+                Err(source) => {
+                    let error = IoError::new(path, source, line!(), file!().to_string());
+                    return Err(error.into());
+                }
+            }
             info!("Written to path {}", checklist);
         }
         "checklist_report" => {
             info!("Checklist report.");
             let mut path = std::path::PathBuf::new();
             path.push(checklist.clone());
-            let check = IoError::read(path)?;
+            let check = match std::fs::read(&path) {
+                Ok(f) => f,
+                Err(source) => {
+                    let error = IoError::new(path, source, line!(), file!().to_string());
+                    return Err(error.into());
+                }
+            };
             let check = GeoFipsTasks::deserialize(&check)?;
             check.report();
         }
@@ -70,12 +82,24 @@ async fn main() -> Result<(), BeaErr> {
             config.with_linecode("ALL").with_year("ALL");
             let mut path = std::path::PathBuf::new();
             path.push(checklist.clone());
-            let check = IoError::read(path)?;
+            let check = match std::fs::read(&path) {
+                Ok(f) => f,
+                Err(source) => {
+                    let error = IoError::new(path, source, line!(), file!().to_string());
+                    return Err(error.into());
+                }
+            };
             let mut check = GeoFipsTasks::deserialize(&check)?;
             if std::path::PathBuf::from(checklist_update.clone()).exists() {
                 info!("Checklist found.");
                 let path = std::path::PathBuf::from(checklist_update.clone());
-                let done = IoError::read(path)?;
+                let done = match std::fs::read(&path) {
+                    Ok(f) => f,
+                    Err(source) => {
+                        let error = IoError::new(path, source, line!(), file!().to_string());
+                        return Err(error.into());
+                    }
+                };
                 let done = GeoFipsTasks::deserialize(&done)?;
                 for item in done.tasks() {
                     for task in check.tasks_mut() {
@@ -103,7 +127,13 @@ async fn main() -> Result<(), BeaErr> {
                         .len()
                 );
                 let path = std::path::PathBuf::from(&checklist_update);
-                IoError::remove_file(path)?;
+                match std::fs::remove_file(&path) {
+                    Ok(()) => {}
+                    Err(source) => {
+                        let error = IoError::new(path, source, line!(), file!().to_string());
+                        return Err(error.into());
+                    }
+                }
             } else {
                 info!("Checklist update not found.");
             }

@@ -1,5 +1,6 @@
 use crate::{
-    BeaErr, ParameterFields, ParameterValueTable, ParameterValueTableVariant, ParameterValues,
+    BeaErr, NipaTable, ParameterFields, ParameterValueTable, ParameterValueTableVariant,
+    ParameterValues,
 };
 
 #[derive(
@@ -13,6 +14,7 @@ use crate::{
     Hash,
     derive_more::Display,
     derive_new::new,
+    derive_getters::Getters,
     serde::Deserialize,
     serde::Serialize,
 )]
@@ -20,6 +22,12 @@ use crate::{
 pub struct TableName {
     name: String,
     description: String,
+}
+
+impl From<&NipaTable> for TableName {
+    fn from(value: &NipaTable) -> Self {
+        Self::new(value.table_name().into(), value.description().into())
+    }
 }
 
 impl From<&ParameterFields> for TableName {
@@ -32,9 +40,14 @@ impl TryFrom<&ParameterValueTable> for TableName {
     type Error = BeaErr;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
-            ParameterValueTable::ParameterFields(pf) => Ok(TableName::from(pf)),
-            _ => {
-                let error = ParameterValueTableVariant::new("ParameterFields needed".to_string());
+            ParameterValueTable::NipaTable(tab) => Ok(TableName::from(tab)),
+            ParameterValueTable::ParameterFields(tab) => Ok(TableName::from(tab)),
+            other => {
+                let error = ParameterValueTableVariant::new(
+                    format!("NipaTable or ParameterFields needed, found {other:#?}"),
+                    line!(),
+                    file!().to_string(),
+                );
                 Err(error.into())
             }
         }

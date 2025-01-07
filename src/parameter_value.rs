@@ -1,5 +1,6 @@
 use crate::{
     map_to_string, BeaErr, Dataset, DeriveFromStr, Jiff, JsonParseError, JsonParseErrorKind,
+    NotArray, NotObject,
 };
 use derive_more::FromStr;
 use serde::{Deserialize, Serialize};
@@ -52,6 +53,7 @@ pub enum ParameterValueKind {
     Hash,
     serde::Deserialize,
     serde::Serialize,
+    derive_getters::Getters,
 )]
 #[serde(rename_all = "PascalCase")]
 pub struct NipaFrequency {
@@ -85,7 +87,8 @@ impl TryFrom<serde_json::Value> for NipaFrequency {
             }
             _ => {
                 tracing::warn!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -103,6 +106,7 @@ impl TryFrom<serde_json::Value> for NipaFrequency {
     Hash,
     serde::Deserialize,
     serde::Serialize,
+    derive_getters::Getters,
 )]
 #[serde(rename_all = "PascalCase")]
 pub struct NipaShowMillions {
@@ -137,7 +141,8 @@ impl TryFrom<serde_json::Value> for NipaShowMillions {
             }
             _ => {
                 tracing::warn!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -155,6 +160,7 @@ impl TryFrom<serde_json::Value> for NipaShowMillions {
     Hash,
     serde::Deserialize,
     serde::Serialize,
+    derive_getters::Getters,
 )]
 #[serde(rename_all = "PascalCase")]
 pub struct NipaTable {
@@ -188,7 +194,8 @@ impl TryFrom<serde_json::Value> for NipaTable {
             }
             _ => {
                 tracing::warn!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -239,7 +246,8 @@ impl TryFrom<serde_json::Value> for NipaTableNumber {
             }
             _ => {
                 tracing::warn!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -257,6 +265,7 @@ impl TryFrom<serde_json::Value> for NipaTableNumber {
     Hash,
     serde::Deserialize,
     serde::Serialize,
+    derive_getters::Getters,
 )]
 #[serde(rename_all = "PascalCase")]
 pub struct NipaYear {
@@ -305,7 +314,8 @@ impl TryFrom<serde_json::Value> for NipaYear {
             }
             _ => {
                 tracing::warn!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -324,6 +334,7 @@ impl TryFrom<serde_json::Value> for NipaYear {
     Deserialize,
     Serialize,
     derive_new::new,
+    derive_getters::Getters,
 )]
 pub struct MneDoi {
     desc: String,
@@ -353,7 +364,8 @@ impl TryFrom<serde_json::Value> for MneDoi {
             }
             _ => {
                 tracing::warn!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -399,16 +411,16 @@ impl Metadata {
     pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         use ParameterValueKind as pvk;
         tracing::trace!("Converting {} to Metadata.", &pvk::Dataset);
-        let dataset = map_to_string("Key", m)?;
+        let dataset = map_to_string(&pvk::Dataset.to_string(), m)?;
         let dataset = match Dataset::from_str(&dataset) {
             Ok(value) => value,
             Err(source) => {
-                let error = DeriveFromStr::new(dataset, source);
+                let error = DeriveFromStr::new(dataset, source, line!(), file!().to_string());
                 return Err(error.into());
             }
         };
         tracing::trace!("Dataset identified: {dataset}");
-        let dataset_description = map_to_string("Desc", m)?;
+        let dataset_description = map_to_string(&pvk::DatasetDescription.to_string(), m)?;
         tracing::trace!("Description: {dataset_description}");
         let mut param = Self::new(dataset, dataset_description);
         if let Ok(date) = map_to_string(&pvk::JsonUpdateDate.to_string(), m) {
@@ -440,7 +452,8 @@ impl TryFrom<serde_json::Value> for Metadata {
             }
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 let error = JsonParseError::from(error);
                 Err(error.into())
             }
@@ -501,7 +514,8 @@ impl TryFrom<serde_json::Value> for ParameterFields {
             }
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }
@@ -540,6 +554,9 @@ pub enum ParameterValueTable {
 }
 
 impl ParameterValueTable {
+    /// This method tries to convert the input to each variant in sequence, returning the first
+    /// successful conversion.  Do we need individual conversion methods that we can call into
+    /// based on the expected output?
     pub fn read_json(value: &serde_json::Value) -> Result<Self, JsonParseError> {
         let tables = Self::iter().collect::<Vec<Self>>();
         for table in tables {
@@ -591,6 +608,7 @@ impl ParameterValueTable {
     }
 }
 
+/// Thin wrapper around a vector of type [`ParameterValueTable`].
 #[derive(
     Clone,
     Debug,
@@ -624,7 +642,7 @@ impl TryFrom<&serde_json::Value> for ParameterValues {
                                 let param = ParameterValueTable::read_json(val)?;
                                 parameter.push(param);
                             }
-                            tracing::trace!("Parameter Vablue Table found.");
+                            tracing::trace!("Parameter Value Table found.");
                             let parameters = Self::new(parameter);
                             Ok(parameters)
                         }
@@ -636,7 +654,8 @@ impl TryFrom<&serde_json::Value> for ParameterValues {
                         }
                         _ => {
                             tracing::trace!("Unexpected content: {m:#?}");
-                            let error = JsonParseErrorKind::NotArray;
+                            let error = NotArray::new(line!(), file!().to_string());
+                            let error = JsonParseErrorKind::from(error);
                             Err(error.into())
                         }
                     }
@@ -648,7 +667,8 @@ impl TryFrom<&serde_json::Value> for ParameterValues {
             }
             _ => {
                 tracing::trace!("Wrong Value type: {value:#?}");
-                let error = JsonParseErrorKind::NotObject;
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
                 Err(error.into())
             }
         }

@@ -1,6 +1,11 @@
-use crate::{FromStrError, JsonParseError, JsonParseErrorKind};
+use crate::{
+    FromStrError, JsonParseError, JsonParseErrorKind, NotFloat, NotInteger, ParseFloat,
+    ParseInteger,
+};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+/// Initiates a subscriber for the tracing library. Used to instrument internal library functions
+/// for debugging and diagnostics.
 #[tracing::instrument]
 pub fn trace_init() {
     if tracing_subscriber::registry()
@@ -15,8 +20,8 @@ pub fn trace_init() {
     tracing::trace!("Loading Bea...");
 }
 
-// pub fn from_str(s: &str) -> Result<String,
-
+/// Converts a [`serde_json::Value`] to a String.
+/// Called by [`map_to_string`].
 #[tracing::instrument]
 pub fn json_str(json: &serde_json::Value) -> Result<String, JsonParseError> {
     match json {
@@ -43,6 +48,8 @@ pub fn json_str(json: &serde_json::Value) -> Result<String, JsonParseError> {
     }
 }
 
+/// Converts a [`serde_json::Value`] to a [`bool`] based on BEA data conventions.
+/// Called by [`map_to_bool`].
 #[tracing::instrument]
 pub fn json_bool(json: &serde_json::Value) -> Result<bool, JsonParseError> {
     match json {
@@ -70,6 +77,95 @@ pub fn json_bool(json: &serde_json::Value) -> Result<bool, JsonParseError> {
     }
 }
 
+/// Converts a [`serde_json::Value`] to a [`f64`] based on BEA data conventions.
+/// Called by [`map_to_float`].
+#[tracing::instrument]
+pub fn json_float(json: &serde_json::Value) -> Result<f64, JsonParseError> {
+    match json {
+        serde_json::Value::Number(n) => {
+            tracing::info!("Number detected: {n}");
+            if let Some(num) = n.as_f64() {
+                Ok(num)
+            } else {
+                tracing::warn!("Number failed to parse as float.");
+                let error = NotFloat::new(
+                    format!("Number {n} failed to parse as float"),
+                    line!(),
+                    file!().to_string(),
+                );
+                let error = JsonParseErrorKind::from(error);
+                Err(error.into())
+            }
+        }
+        serde_json::Value::String(s) => {
+            tracing::info!("String detected: {s}");
+            match s.parse::<f64>() {
+                Ok(num) => Ok(num),
+                Err(source) => {
+                    let error = ParseFloat::new(s.into(), source, line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
+                    Err(error.into())
+                }
+            }
+        }
+        _ => {
+            tracing::warn!("Unexpected value.");
+            let error = NotFloat::new(
+                format!("Value {json:#?} is not a Number or String variant of serde_json::Value"),
+                line!(),
+                file!().to_string(),
+            );
+            let error = JsonParseErrorKind::from(error);
+            Err(error.into())
+        }
+    }
+}
+
+/// Converts a [`serde_json::Value`] to an [`i64`] based on BEA data conventions.
+/// Called by [`map_to_int`].
+#[tracing::instrument]
+pub fn json_int(json: &serde_json::Value) -> Result<i64, JsonParseError> {
+    match json {
+        serde_json::Value::Number(n) => {
+            tracing::info!("Number detected: {n}");
+            if let Some(num) = n.as_i64() {
+                Ok(num)
+            } else {
+                tracing::warn!("Number failed to parse as integer.");
+                let error = NotInteger::new(
+                    format!("Number {n} failed to parse as float"),
+                    line!(),
+                    file!().to_string(),
+                );
+                let error = JsonParseErrorKind::from(error);
+                Err(error.into())
+            }
+        }
+        serde_json::Value::String(s) => {
+            tracing::info!("String detected: {s}");
+            match s.parse::<i64>() {
+                Ok(num) => Ok(num),
+                Err(source) => {
+                    let error = ParseInteger::new(s.into(), source, line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
+                    Err(error.into())
+                }
+            }
+        }
+        _ => {
+            tracing::warn!("Unexpected value.");
+            let error = NotInteger::new(
+                format!("Value {json:#?} is not a Number or String variant of serde_json::Value"),
+                line!(),
+                file!().to_string(),
+            );
+            let error = JsonParseErrorKind::from(error);
+            Err(error.into())
+        }
+    }
+}
+
+/// Convenience function for when we expect a boolean value stored as a JSON string.
 #[tracing::instrument(skip(m))]
 pub fn map_to_bool(
     key: &str,
@@ -87,6 +183,43 @@ pub fn map_to_bool(
     }
 }
 
+/// Convenience function for when we expect a float stored as a JSON string.
+#[tracing::instrument(skip(m))]
+pub fn map_to_float(
+    key: &str,
+    m: &serde_json::Map<String, serde_json::Value>,
+) -> Result<f64, JsonParseError> {
+    tracing::trace!("Mapping value to float.");
+    if let Some(value) = m.get(key) {
+        tracing::trace!("Float candidate found.");
+        let float = json_float(value)?;
+        Ok(float)
+    } else {
+        tracing::warn!("Key missing: {key}");
+        let error = JsonParseErrorKind::KeyMissing(key.to_string());
+        Err(error.into())
+    }
+}
+
+/// Convenience function for when we expect an integer stored as a JSON string.
+#[tracing::instrument(skip(m))]
+pub fn map_to_int(
+    key: &str,
+    m: &serde_json::Map<String, serde_json::Value>,
+) -> Result<i64, JsonParseError> {
+    tracing::trace!("Mapping value to integer.");
+    if let Some(value) = m.get(key) {
+        tracing::trace!("Integer candidate found.");
+        let flag = json_int(value)?;
+        Ok(flag)
+    } else {
+        tracing::warn!("Key missing: {key}");
+        let error = JsonParseErrorKind::KeyMissing(key.to_string());
+        Err(error.into())
+    }
+}
+
+/// Convenience function for when we expect a String value stored as a JSON string.
 #[tracing::instrument(skip(m))]
 pub fn map_to_string(
     key: &str,

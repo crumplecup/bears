@@ -13,12 +13,14 @@ pub async fn get_line_codes(config: &Config) -> Result<BeaLineCodes, ReqwestErro
         Ok(res) => match res.json::<BeaLineCodes>().await {
             Ok(data) => Ok(data),
             Err(source) => {
-                let error = ReqwestError::new(url, "get".to_string(), source);
+                let error =
+                    ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
                 Err(error)
             }
         },
         Err(source) => {
-            let error = ReqwestError::new(url, "get".to_string(), source);
+            let error =
+                ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
             Err(error)
         }
     }

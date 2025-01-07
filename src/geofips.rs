@@ -13,12 +13,13 @@ pub async fn get_geofips(config: &Config) -> Result<BeaGeoFips, ReqwestError> {
         Ok(res) => match res.json::<BeaGeoFips>().await {
             Ok(data) => Ok(data),
             Err(source) => {
-                let error = ReqwestError::new(url, "get".into(), source);
+                let error =
+                    ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
                 Err(error)
             }
         },
         Err(source) => {
-            let error = ReqwestError::new(url, "get".into(), source);
+            let error = ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
             Err(error)
         }
     }
@@ -104,13 +105,15 @@ impl BeaGeoFips {
             Ok(res) => match res.json::<BeaGeoFips>().await {
                 Ok(data) => Ok(data),
                 Err(source) => {
-                    let mut error = ReqwestError::new(url, "get".into(), source);
+                    let mut error =
+                        ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
                     error.with_body(body);
                     Err(error)
                 }
             },
             Err(source) => {
-                let mut error = ReqwestError::new(url, "get".into(), source);
+                let mut error =
+                    ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
                 error.with_body(body);
                 Err(error)
             }
