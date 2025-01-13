@@ -1,6 +1,6 @@
 use crate::{
-    map_to_float, map_to_int, map_to_string, quarter, BeaErr, JsonParseError, JsonParseErrorKind,
-    KeyMissing, NotArray, NotObject,
+    map_to_float, map_to_int, map_to_string, quarter, BeaErr, BeaResponse, IoError, JsonParseError,
+    JsonParseErrorKind, KeyMissing, NotArray, NotObject, VariantMissing,
 };
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize, derive_more::From,
@@ -91,6 +91,43 @@ impl TryFrom<serde_json::Value> for NipaDatum {
 )]
 #[from(Vec<NipaDatum>)]
 pub struct NipaData(Vec<NipaDatum>);
+
+impl TryFrom<&std::path::PathBuf> for NipaData {
+    type Error = BeaErr;
+
+    fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
+        let file = match std::fs::File::open(value) {
+            Ok(f) => f,
+            Err(source) => {
+                let error = IoError::new(value.clone(), source, line!(), file!().to_string());
+                return Err(error.into());
+            }
+        };
+        let rdr = std::io::BufReader::new(file);
+        let res: serde_json::Value = serde_json::from_reader(rdr)?;
+        let data = BeaResponse::try_from(&res)?;
+        tracing::info!("Response read.");
+        tracing::trace!("Response: {data:#?}");
+        let results = data.results();
+        if let Some(data) = results.into_data() {
+            match data {
+                Data::Nipa(nipa) => {
+                    tracing::info!("{} Nipa records read.", nipa.len());
+                    Ok(nipa)
+                }
+            }
+        } else {
+            tracing::warn!("Data variant missing.");
+            let error = VariantMissing::new(
+                "Data variant missing".to_string(),
+                "Results".to_string(),
+                line!(),
+                file!().to_string(),
+            );
+            Err(error.into())
+        }
+    }
+}
 
 impl TryFrom<&serde_json::Value> for NipaData {
     type Error = BeaErr;

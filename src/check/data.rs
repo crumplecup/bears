@@ -1,6 +1,6 @@
 use crate::{
-    trace_init, BeaErr, BeaResponse, Dataset, EnvError, IoError, NiUnderlyingDetail, Nipa, Request,
-    ReqwestError,
+    trace_init, BeaErr, BeaResponse, Data, Dataset, EnvError, IoError, NiUnderlyingDetail, Nipa,
+    Request, ReqwestError,
 };
 
 /// Pings the BEA API.
@@ -75,5 +75,13 @@ pub fn data_from_json() -> Result<(), BeaErr> {
     let data = BeaResponse::try_from(&res)?;
     tracing::info!("Response read.");
     tracing::trace!("Response: {data:#?}");
+    let results = data.results();
+    if let Some(data) = results.into_data() {
+        match data {
+            Data::Nipa(nipa) => {
+                tracing::info!("{} Nipa records read.", nipa.len());
+            }
+        }
+    }
     Ok(())
 }

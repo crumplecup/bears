@@ -22,6 +22,14 @@ pub enum Results {
 
 impl Results {
     #[tracing::instrument(skip_all)]
+    pub fn into_data(&self) -> Option<Data> {
+        match self {
+            Self::Data(d) => Some(d.clone()),
+            _ => None,
+        }
+    }
+
+    #[tracing::instrument(skip_all)]
     pub fn into_datasets(&self) -> Option<Datasets> {
         match self {
             Self::Datasets(d) => Some(d.clone()),
