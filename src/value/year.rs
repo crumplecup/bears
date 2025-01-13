@@ -1,6 +1,6 @@
 use crate::{
-    BeaErr, MneDoi, NipaYear, ParameterFields, ParameterValueTable, ParameterValueTableVariant,
-    ParseInt, YearInvalid,
+    BeaErr, Frequency, JsonParseError, JsonParseErrorKind, MneDoi, NipaYear, NotQuarter,
+    ParameterFields, ParameterValueTable, ParameterValueTableVariant, ParseInt, YearInvalid,
 };
 
 #[derive(
@@ -22,6 +22,12 @@ use crate::{
 pub struct Year {
     date: jiff::civil::Date,
     description: String,
+}
+
+impl Year {
+    pub fn key(&self) -> String {
+        self.date.year().to_string()
+    }
 }
 
 impl TryFrom<&ParameterFields> for Year {
@@ -53,6 +59,36 @@ pub fn parse_year(input: &str) -> Result<jiff::civil::Date, ParseInt> {
     }
 }
 
+pub fn quarter(input: &str) -> Result<jiff::civil::Date, BeaErr> {
+    if let Some((q, _)) = input.match_indices("Q").next() {
+        let (year, quarter) = input.split_at(q);
+        match year.parse::<i16>() {
+            Ok(num) => match quarter {
+                "Q1" => Ok(jiff::civil::date(num, 1, 1)),
+                "Q2" => Ok(jiff::civil::date(num, 4, 1)),
+                "Q3" => Ok(jiff::civil::date(num, 7, 1)),
+                "Q4" => Ok(jiff::civil::date(num, 10, 1)),
+                other => {
+                    let error = NotQuarter::new(
+                        format!("Q* pattern expected, found {other}"),
+                        line!(),
+                        file!().to_string(),
+                    );
+                    let error = JsonParseErrorKind::from(error);
+                    let error = JsonParseError::from(error);
+                    Err(error.into())
+                }
+            },
+            Err(source) => {
+                let error = ParseInt::new(input.into(), source, line!(), file!().into());
+                Err(error.into())
+            }
+        }
+    } else {
+        Ok(parse_year(input)?)
+    }
+}
+
 impl TryFrom<&ParameterValueTable> for Year {
     type Error = BeaErr;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
@@ -81,12 +117,22 @@ impl TryFrom<&ParameterValueTable> for Year {
     Hash,
     serde::Serialize,
     serde::Deserialize,
-    strum::EnumIter,
+    derive_more::From,
 )]
 pub enum YearKind {
     #[default]
     All,
     Year(Year),
+    #[from(NipaRange)]
+    Range(NipaRange),
+    #[from(NipaRanges)]
+    Ranges(NipaRanges),
+}
+
+impl YearKind {
+    pub fn keys(&self) -> YearKindIterator {
+        YearKindIterator::from(self)
+    }
 }
 
 impl TryFrom<&ParameterFields> for YearKind {
@@ -121,9 +167,83 @@ impl TryFrom<&MneDoi> for YearKind {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
+pub struct YearKindIterator<'a> {
+    kind: &'a YearKind,
+    range: Option<NipaRangeIterator<'a>>,
+    ranges: Option<NipaRangesIterator<'a>>,
+    finish: bool,
+}
+
+impl<'a> YearKindIterator<'a> {
+    pub fn new(kind: &'a YearKind) -> Self {
+        Self {
+            kind,
+            range: None,
+            ranges: None,
+            finish: false,
+        }
+    }
+}
+
+impl<'a> From<&'a YearKind> for YearKindIterator<'a> {
+    fn from(value: &'a YearKind) -> Self {
+        Self::new(value)
+    }
+}
+
+impl Iterator for YearKindIterator<'_> {
+    type Item = Vec<String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.finish {
+            return None;
+        }
+        match self.kind {
+            YearKind::All => {
+                self.finish = true;
+                Some(vec!["ALL".to_string()])
+            }
+            YearKind::Year(year) => {
+                self.finish = true;
+                Some(vec![year.key()])
+            }
+            YearKind::Range(range) => {
+                self.range = Some(range.iter());
+                if let Some(rng) = &mut self.range {
+                    match rng.next() {
+                        Some(next) => Some(next),
+                        None => {
+                            self.finish = true;
+                            None
+                        }
+                    }
+                } else {
+                    tracing::error!("Range failed to set.");
+                    None
+                }
+            }
+            YearKind::Ranges(ranges) => {
+                self.ranges = Some(ranges.iter());
+                if let Some(rng) = &mut self.ranges {
+                    match rng.next() {
+                        Some(next) => Some(next),
+                        None => {
+                            self.finish = true;
+                            None
+                        }
+                    }
+                } else {
+                    tracing::error!("Ranges failed to set.");
+                    None
+                }
+            }
+        }
+    }
+}
+
 #[derive(
     Debug,
-    Default,
     Clone,
     PartialEq,
     Eq,
@@ -138,6 +258,26 @@ impl TryFrom<&MneDoi> for YearKind {
 pub struct YearOptions {
     key: String,
     kind: YearKind,
+}
+
+impl From<YearKind> for YearOptions {
+    fn from(kind: YearKind) -> Self {
+        let key = kind
+            .keys()
+            .next()
+            .expect("Each impl has at least one valid key.");
+        // strings of keys have at least one value, so this won't panic.
+        // intended use is to return ALL for the default value
+        let key = key[0].clone();
+        Self { key, kind }
+    }
+}
+
+impl Default for YearOptions {
+    fn default() -> Self {
+        let kind = YearKind::default();
+        Self::from(kind)
+    }
 }
 
 impl TryFrom<&ParameterFields> for YearOptions {
@@ -197,6 +337,14 @@ pub struct YearRange {
     last: jiff::civil::Date,
 }
 
+impl YearRange {
+    pub fn keys(&self) -> Vec<String> {
+        let first = self.first.year();
+        let last = self.last.year();
+        (first..=last).map(|year| year.to_string()).collect()
+    }
+}
+
 #[derive(
     Debug,
     Default,
@@ -217,6 +365,12 @@ pub struct NipaRange {
     annual: Option<YearRange>,
     monthly: Option<YearRange>,
     quarterly: Option<YearRange>,
+}
+
+impl NipaRange {
+    pub fn iter(&self) -> NipaRangeIterator {
+        NipaRangeIterator::new(self)
+    }
 }
 
 pub fn year_opt(input: &str) -> Result<Option<jiff::civil::Date>, ParseInt> {
@@ -266,4 +420,162 @@ impl TryFrom<&ParameterValueTable> for NipaRange {
             }
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
+pub struct NipaRangeIterator<'a> {
+    range: &'a NipaRange,
+    frequency: Frequency,
+    finish: bool,
+}
+
+impl<'a> NipaRangeIterator<'a> {
+    pub fn new(range: &'a NipaRange) -> Self {
+        let frequency = Frequency::Annual;
+        Self {
+            range,
+            frequency,
+            finish: false,
+        }
+    }
+}
+
+impl Iterator for NipaRangeIterator<'_> {
+    type Item = Vec<String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.frequency {
+            Frequency::Annual => {
+                self.frequency = Frequency::Monthly;
+                if let Some(range) = self.range.annual() {
+                    Some(range.keys())
+                } else {
+                    self.next()
+                }
+            }
+            Frequency::Monthly => {
+                self.frequency = Frequency::Quarterly;
+                if let Some(range) = self.range.quarterly() {
+                    Some(range.keys())
+                } else {
+                    self.next()
+                }
+            }
+            Frequency::Quarterly => {
+                if self.finish {
+                    return None;
+                }
+                if let Some(range) = self.range.quarterly() {
+                    self.finish = true;
+                    Some(range.keys())
+                } else {
+                    None
+                }
+            }
+        }
+    }
+}
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    derive_new::new,
+    derive_more::Deref,
+    derive_more::DerefMut,
+    derive_more::From,
+    serde::Deserialize,
+    serde::Serialize,
+)]
+#[from(std::collections::BTreeMap<String, NipaRange>)]
+pub struct NipaRanges(std::collections::BTreeMap<String, NipaRange>);
+
+impl NipaRanges {
+    pub fn iter(&self) -> NipaRangesIterator {
+        NipaRangesIterator::new(self)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
+pub struct NipaRangesIterator<'a> {
+    ranges: &'a NipaRanges,
+    keys: Vec<&'a String>,
+    index: usize,
+    range: Option<NipaRangeIterator<'a>>,
+}
+
+impl<'a> NipaRangesIterator<'a> {
+    pub fn new(ranges: &'a NipaRanges) -> Self {
+        let keys = ranges.keys().collect::<Vec<&String>>();
+        let range = if let Some(k) = ranges.get(keys[0]) {
+            Some(k.iter())
+        } else {
+            tracing::error!("Range iterator should be set.");
+            None
+        };
+        Self {
+            ranges,
+            keys,
+            index: 0,
+            range,
+        }
+    }
+}
+
+impl Iterator for NipaRangesIterator<'_> {
+    type Item = Vec<String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(range) = &mut self.range {
+            match range.next() {
+                Some(keys) => Some(keys),
+                None => {
+                    if self.index < self.keys.len() - 1 {
+                        self.index += 1;
+                    } else {
+                        return None;
+                    }
+                    if let Some(rng) = self.ranges.get(self.keys[self.index]) {
+                        self.range = Some(rng.iter());
+                    } else {
+                        tracing::error!("Range should have valid values.");
+                        self.range = None;
+                    }
+                    if let Some(r) = &mut self.range {
+                        r.next()
+                    } else {
+                        tracing::error!("Range should have valid values.");
+                        None
+                    }
+                }
+            }
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(
+    Debug,
+    Default,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumIter,
+)]
+pub enum YearSelection {
+    #[default]
+    All,
+    Yearly,
 }

@@ -1,6 +1,6 @@
 use crate::{
     error::ParseInt, map_to_string, BeaErr, BincodeError, Data, Datasets, JsonParseError,
-    JsonParseErrorKind, Method, NipaData, NotObject, ParameterValues, Parameters,
+    JsonParseErrorKind, KeyMissing, Method, NipaData, NotObject, ParameterValues, Parameters,
     RequestParameters,
 };
 
@@ -53,7 +53,7 @@ impl Results {
         let method = request.method()?;
         match method {
             Method::GetData => {
-                tracing::trace!("Trying Data...");
+                tracing::info!("Trying Data...");
                 if let Ok(t) = NipaData::try_from(value) {
                     let data = Data::from(t);
                     return Ok(Self::from(data));
@@ -88,7 +88,12 @@ impl Results {
         if let Ok(t) = ApiError::try_from(value) {
             return Ok(Self::from(t));
         }
-        let error = JsonParseErrorKind::KeyMissing("Not results table.".to_string());
+        let error = KeyMissing::new(
+            "Not results table.".to_string(),
+            line!(),
+            file!().to_string(),
+        );
+        let error = JsonParseErrorKind::from(error);
         let error = JsonParseError::from(error);
         Err(error.into())
     }
@@ -117,7 +122,8 @@ impl Beaapi {
         let request = if let Some(value) = m.get(&key) {
             RequestParameters::try_from(value)?
         } else {
-            let error = JsonParseErrorKind::KeyMissing(key);
+            let error = KeyMissing::new(key, line!(), file!().to_string());
+            let error = JsonParseErrorKind::from(error);
             let error = JsonParseError::from(error);
             return Err(error.into());
         };
@@ -125,7 +131,8 @@ impl Beaapi {
         let results = if let Some(value) = m.get(&key) {
             Results::read_json(value, &request)?
         } else {
-            let error = JsonParseErrorKind::KeyMissing(key);
+            let error = KeyMissing::new(key, line!(), file!().to_string());
+            let error = JsonParseErrorKind::from(error);
             let error = JsonParseError::from(error);
             return Err(error.into());
         };
@@ -230,7 +237,8 @@ impl TryFrom<&serde_json::Value> for BeaResponse {
                     Ok(Self { beaapi })
                 } else {
                     tracing::trace!("Invalid Object: {m:#?}");
-                    let error = JsonParseErrorKind::KeyMissing(key);
+                    let error = KeyMissing::new(key, line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
                     let error = JsonParseError::from(error);
                     Err(error.into())
                 }
@@ -295,7 +303,8 @@ impl ApiError {
                 }
             }
         } else {
-            let error = JsonParseErrorKind::KeyMissing(key);
+            let error = KeyMissing::new(key, line!(), file!().to_string());
+            let error = JsonParseErrorKind::from(error);
             let error = JsonParseError::from(error);
             Err(error.into())
         }

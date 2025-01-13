@@ -1,5 +1,5 @@
 use crate::{
-    trace_init, App, BeaErr, BeaResponse, Dataset, EnvError, IoError, Json, ParameterName,
+    trace_init, App, BeaErr, BeaResponse, Dataset, EnvError, IoError, Json, ParameterName, Request,
     ReqwestError,
 };
 use derive_more::FromStr;
@@ -9,52 +9,7 @@ use strum::IntoEnumIterator;
 /// Write the results in JSON format to the BEA_DATA directory.
 #[tracing::instrument]
 pub async fn parameters_to_json() -> Result<(), BeaErr> {
-    let req = super::Request::Parameter;
-    let mut app = req.init()?;
-    let datasets: Vec<Dataset> = Dataset::iter().collect();
-    for dataset in datasets {
-        parameter_to_json(&mut app, dataset).await?;
-    }
-    Ok(())
-}
-
-/// Reads response to json using serde_json.
-/// Prints the output to the terminal.
-/// Saves the result to the `BEA_DATA` directory.
-#[tracing::instrument(skip_all)]
-pub async fn parameter_to_json(app: &mut App, dataset: Dataset) -> Result<(), BeaErr> {
-    let mut opts = app.options().clone();
-    opts.with_dataset(dataset);
-    app.add_options(opts);
-    let data = app.get().await?;
-    match data.json::<serde_json::Value>().await {
-        Ok(json) => {
-            let contents = serde_json::to_vec(&json)?;
-            dotenvy::dotenv().ok();
-            let bea_data = EnvError::from_env("BEA_DATA")?;
-            let path = std::path::PathBuf::from(&format!("{bea_data}/parameters"));
-            if !std::fs::exists(&path)? {
-                std::fs::DirBuilder::new().create(&path)?;
-                tracing::info!("Target directory for Parameters created.");
-            }
-            let path = path.join(format!("{dataset}_parameters.json"));
-            match std::fs::write(&path, contents) {
-                Ok(()) => Ok(()),
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    Err(error.into())
-                }
-            }
-        }
-        Err(source) => {
-            let url = app.url().to_string();
-            let method = "get".to_string();
-            let body = app.params().into_iter().collect::<Vec<(String, String)>>();
-            let mut error = ReqwestError::new(url, method, source, line!(), file!().to_string());
-            error.with_body(body);
-            Err(error.into())
-        }
-    }
+    Dataset::parameters().await
 }
 
 #[tracing::instrument(skip_all)]
@@ -155,7 +110,7 @@ pub fn parameters_json_to_bin() -> Result<(), BeaErr> {
 /// Deserialize directly from response.
 #[tracing::instrument]
 pub async fn deserialize_parameters() -> Result<(), BeaErr> {
-    let req = super::Request::Parameter;
+    let req = Request::Parameter;
     let mut app = req.init()?;
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     for dataset in datasets {

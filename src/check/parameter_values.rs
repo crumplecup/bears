@@ -1,73 +1,12 @@
 use crate::{
-    trace_init, App, BeaErr, BeaResponse, Dataset, EnvError, IoError, ParameterName, ReqwestError,
+    trace_init, BeaErr, BeaResponse, Dataset, EnvError, IoError, ParameterName, Request,
+    ReqwestError,
 };
 use strum::IntoEnumIterator;
 
-/// After a successfull response from an API request, the goal is to parse the response into
-/// internal library data structures.  The JSON responses can include heavily nested data
-/// structures, which makes deserializing directly into Rust types a brittle process.  Instead, we
-/// first we deserialize the JSON into serde_json types, and then migrate the results into our
-/// internal library types using the [`TryFrom`] trait.  While this is a bit heavier on
-/// boilerplate, the errors and logs are easier to consume, providing a clearing path to a correct
-/// implementation result during the development process.
-///
-/// Here we request a parameter values table from the server, parse it into serde_json types, and
-/// write the results to the `BEA_DATA` directory.  Later we can attempt to parse the response
-/// multiple times into our internal library types, succussfully or unsuccessfully, without making
-/// repeated API calls to BEA for the same data.
 #[tracing::instrument]
 pub async fn parameter_values_to_json() -> Result<(), BeaErr> {
-    let req = super::Request::ParameterValue;
-    let mut app = req.init()?;
-    let datasets: Vec<Dataset> = Dataset::iter().collect();
-    for dataset in datasets {
-        let names = dataset.names();
-        for name in names {
-            parameter_value_to_json(&mut app, dataset, name).await?;
-        }
-    }
-    Ok(())
-}
-
-#[tracing::instrument(skip_all)]
-pub async fn parameter_value_to_json(
-    app: &mut App,
-    dataset: Dataset,
-    name: ParameterName,
-) -> Result<(), BeaErr> {
-    let mut opts = app.options().clone();
-    opts.with_dataset(dataset);
-    opts.with_param_name(name);
-    app.add_options(opts);
-    let data = app.get().await?;
-    match data.json::<serde_json::Value>().await {
-        Ok(json) => {
-            let contents = serde_json::to_vec(&json)?;
-            dotenvy::dotenv().ok();
-            let bea_data = EnvError::from_env("BEA_DATA")?;
-            let path = std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
-            if !std::fs::exists(&path)? {
-                std::fs::DirBuilder::new().create(&path)?;
-                tracing::info!("Target directory for Parameter Values created.");
-            }
-            let path = path.join(format!("{dataset}_{name}_parameter_values.json"));
-            match std::fs::write(&path, contents) {
-                Ok(()) => Ok(()),
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    Err(error.into())
-                }
-            }
-        }
-        Err(source) => {
-            let url = app.url().to_string();
-            let method = "get".to_string();
-            let body = app.params().into_iter().collect::<Vec<(String, String)>>();
-            let mut error = ReqwestError::new(url, method, source, line!(), file!().to_string());
-            error.with_body(body);
-            Err(error.into())
-        }
-    }
+    Dataset::parameter_values().await
 }
 
 #[tracing::instrument]
@@ -177,7 +116,7 @@ pub fn parameter_value_from_file() -> Result<(), BeaErr> {
 #[tracing::instrument]
 pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
     trace_init();
-    let req = super::Request::ParameterValueFilter;
+    let req = Request::ParameterValueFilter;
     let mut app = req.init()?;
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     for dataset in &datasets {

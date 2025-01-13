@@ -1,5 +1,5 @@
 use crate::{Dataset, Method, ParameterName, User};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 #[derive(
     Debug,
@@ -12,6 +12,8 @@ use std::collections::HashMap;
     Hash,
     derive_getters::Getters,
     derive_setters::Setters,
+    serde::Serialize,
+    serde::Deserialize,
 )]
 #[setters(prefix = "with_", into, strip_option, borrow_self)]
 pub struct Options {
@@ -34,8 +36,8 @@ impl Options {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn params(&self) -> HashMap<String, String> {
-        let mut params = HashMap::new();
+    pub fn params(&self) -> BTreeMap<String, String> {
+        let mut params = BTreeMap::new();
         if let Some(dataset) = self.dataset {
             params.insert("DatasetName".to_string(), dataset.to_string());
         }
@@ -93,7 +95,7 @@ pub struct NeoConfig {
 
 impl NeoConfig {
     #[tracing::instrument(skip_all)]
-    pub fn params(&self) -> HashMap<String, String> {
+    pub fn params(&self) -> BTreeMap<String, String> {
         let mut params = self.options.params();
         params.insert("USERID".to_string(), self.key.clone());
         params
@@ -155,7 +157,7 @@ impl Config {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn params(&self) -> HashMap<String, String> {
+    pub fn params(&self) -> BTreeMap<String, String> {
         let mut params = self.user.params();
         if let Some(table) = self.table.clone() {
             params.insert("TableName".to_string(), table);

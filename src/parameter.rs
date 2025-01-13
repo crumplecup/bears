@@ -1,6 +1,6 @@
 use crate::{
     json_str, map_to_bool, map_to_string, BeaResponse, FromStrError, JsonParseError,
-    JsonParseErrorKind, NotArray, NotObject, NotParameterName, ReqwestError, User,
+    JsonParseErrorKind, KeyMissing, NotArray, NotObject, NotParameterName, ReqwestError, User,
 };
 use derive_more::FromStr;
 use serde::de::Deserializer;
@@ -198,7 +198,8 @@ impl TryFrom<&serde_json::Value> for Parameters {
                     }
                 } else {
                     tracing::trace!("Parameter missing.");
-                    let error = JsonParseErrorKind::KeyMissing(key);
+                    let error = KeyMissing::new(key, line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
                     Err(error.into())
                 }
             }
@@ -333,7 +334,8 @@ impl ParameterName {
             let name = ParameterName::try_from(value)?;
             Ok(name)
         } else {
-            let error = JsonParseErrorKind::KeyMissing(key.to_string());
+            let error = KeyMissing::new(key.to_string(), line!(), file!().to_string());
+            let error = JsonParseErrorKind::from(error);
             Err(error.into())
         }
     }

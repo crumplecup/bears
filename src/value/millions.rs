@@ -1,5 +1,6 @@
 use crate::{
-    BeaErr, NipaShowMillions, ParameterValueTable, ParameterValueTableVariant, VariantMissing,
+    BeaErr, NipaShowMillions, ParameterName, ParameterValueTable, ParameterValueTableVariant,
+    VariantMissing,
 };
 
 #[derive(
@@ -58,5 +59,39 @@ impl TryFrom<&ParameterValueTable> for Millions {
                 Err(error.into())
             }
         }
+    }
+}
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_more::From,
+)]
+pub enum MillionsOptions {
+    #[default]
+    Yes,
+    No,
+}
+
+impl MillionsOptions {
+    pub fn value(&self) -> String {
+        match self {
+            Self::Yes => "Y".to_string(),
+            Self::No => "N".to_string(),
+        }
+    }
+
+    pub fn params(&self) -> (String, String) {
+        let key = ParameterName::ShowMillions.to_string();
+        let value = self.value();
+        (key, value)
     }
 }

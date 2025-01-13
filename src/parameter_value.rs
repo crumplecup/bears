@@ -1,6 +1,6 @@
 use crate::{
     map_to_string, BeaErr, Dataset, DeriveFromStr, Jiff, JsonParseError, JsonParseErrorKind,
-    NotArray, NotObject,
+    KeyMissing, NotArray, NotObject,
 };
 use derive_more::FromStr;
 use serde::{Deserialize, Serialize};
@@ -254,6 +254,23 @@ impl TryFrom<serde_json::Value> for NipaTableNumber {
     }
 }
 
+/// The `NipaYear` struct contains fields associated with the BEA response for Year parameter
+/// values in the NIPA dataset.  The fields define ranges of years for which table data is
+/// available for a given frequency (annual, monthly or quartelry), using the pattern
+/// `first_{frequency}_year` and `last_{frequency}_year`.
+///
+/// * first_annual_year - First year of annual data available for `table_name`.
+/// * first_monthly_year - First year of monthly data available for `table_name`.
+/// * first_quarterly_year - First year of quarterly data available for `table_name`.
+/// * last_annual_year - Last year of annual data available for `table_name`.
+/// * last_monthly_year - Last year of monthly data available for `table_name`.
+/// * last_quarterly_year - Last year of quarterly data available for `table_name`.
+/// * table_name - The table name parameter value associated with the target data.
+///
+/// This data structure is the "raw" version of [`NipaRange`](crate::NipaRange), where we use the
+/// table name as keys in a HashMap to look up the appropriate range value for a given
+/// frequency.  Zero values indicate no data is available for the specified table at the given
+/// frequency.
 #[derive(
     Clone,
     Debug,
@@ -603,7 +620,12 @@ impl ParameterValueTable {
                 }
             }
         }
-        let error = JsonParseErrorKind::KeyMissing("Not parameter value table.".to_string());
+        let error = KeyMissing::new(
+            "not Parameter Value Table".to_string(),
+            line!(),
+            file!().to_string(),
+        );
+        let error = JsonParseErrorKind::from(error);
         Err(error.into())
     }
 }
@@ -661,7 +683,8 @@ impl TryFrom<&serde_json::Value> for ParameterValues {
                     }
                 } else {
                     tracing::trace!("Parameter Value Table missing.");
-                    let error = JsonParseErrorKind::KeyMissing(key);
+                    let error = KeyMissing::new(key, line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
                     Err(error.into())
                 }
             }

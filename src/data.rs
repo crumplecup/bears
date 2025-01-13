@@ -1,6 +1,6 @@
 use crate::{
-    map_to_float, map_to_int, map_to_string, parse_year, BeaErr, JsonParseError,
-    JsonParseErrorKind, NotArray, NotObject,
+    map_to_float, map_to_int, map_to_string, quarter, BeaErr, JsonParseError, JsonParseErrorKind,
+    KeyMissing, NotArray, NotObject,
 };
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize, derive_more::From,
@@ -36,7 +36,7 @@ impl NipaDatum {
         let series_code = map_to_string("SeriesCode", m)?;
         let table_name = map_to_string("TableName", m)?;
         let time_period = map_to_string("TimePeriod", m)?;
-        let time_period = parse_year(&time_period)?;
+        let time_period = quarter(&time_period)?;
         let unit_mult = map_to_int("UNIT_MULT", m)?;
         let unit_mult = match unit_mult {
             0 => None,
@@ -95,7 +95,7 @@ pub struct NipaData(Vec<NipaDatum>);
 impl TryFrom<&serde_json::Value> for NipaData {
     type Error = BeaErr;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::trace!("Reading NipaData");
+        tracing::info!("Reading NipaData");
         match value {
             serde_json::Value::Object(m) => {
                 let key = "Data".to_string();
@@ -131,7 +131,8 @@ impl TryFrom<&serde_json::Value> for NipaData {
                     }
                 } else {
                     tracing::trace!("Parameter Value Table missing.");
-                    let error = JsonParseErrorKind::KeyMissing(key);
+                    let error = KeyMissing::new(key, line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
                     let error = JsonParseError::from(error);
                     Err(error.into())
                 }

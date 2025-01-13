@@ -1,17 +1,26 @@
-use crate::{Options, ReqwestError};
-use std::collections::HashMap;
+use crate::{Dataset, Options, ReqwestError};
+use std::collections::BTreeMap;
 
 /// The `App` struct contains the application state.
 ///
 /// The [`get`](Self::get) method makes calls to the BEA REST API constructing calls from the
 /// [`Options`] contained in the `options` field.
-#[derive(Debug, Clone, PartialEq, Eq, derive_getters::Getters, derive_setters::Setters)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 #[setters(prefix = "with_", into, borrow_self)]
 pub struct App {
     key: String,
     options: Options,
     url: url::Url,
-    query: HashMap<String, String>,
+    query: BTreeMap<String, String>,
 }
 
 impl App {
@@ -34,7 +43,7 @@ impl App {
     /// Produces the parameters appended to the REST endpoint.  Used by the [`get`](Self::get)
     /// method to construct REST API calls.
     #[tracing::instrument(skip_all)]
-    pub fn params(&self) -> HashMap<String, String> {
+    pub fn params(&self) -> BTreeMap<String, String> {
         let mut params = self.options.params();
         params.insert("USERID".to_string(), self.key.clone());
         params
@@ -42,8 +51,18 @@ impl App {
 
     /// Append parameters to the cached query.
     #[tracing::instrument(skip_all)]
-    pub fn with_params(&mut self, params: HashMap<String, String>) {
+    pub fn with_params(&mut self, params: BTreeMap<String, String>) {
         self.query.extend(params);
+    }
+
+    pub fn options_mut(&mut self) -> &mut Options {
+        &mut self.options
+    }
+
+    pub fn with_dataset(&mut self, dataset: Dataset) {
+        let options = self.options_mut();
+        options.with_dataset(dataset);
+        self.query = self.params();
     }
 
     /// Internal library workhorse function for REST API calls.  Configure the desired parameters

@@ -1,5 +1,6 @@
 use crate::{
-    trace_init, BeaErr, BeaResponse, Dataset, DatasetMissing, EnvError, IoError, ReqwestError,
+    trace_init, BeaErr, BeaResponse, Dataset, DatasetMissing, EnvError, IoError, Request,
+    ReqwestError,
 };
 use strum::IntoEnumIterator;
 
@@ -8,30 +9,7 @@ use strum::IntoEnumIterator;
 /// Pings the BEA API.
 #[tracing::instrument]
 pub async fn datasets_to_json() -> Result<(), BeaErr> {
-    let req = super::Request::Dataset;
-    let app = req.init()?;
-    let data = app.get().await?;
-    match data.json::<serde_json::Value>().await {
-        Ok(json) => {
-            let contents = serde_json::to_vec(&json)?;
-            dotenvy::dotenv().ok();
-            let bea_data = EnvError::from_env("BEA_DATA")?;
-            let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
-            match std::fs::write(&path, contents) {
-                Ok(()) => Ok(()),
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    Err(error.into())
-                }
-            }
-        }
-        Err(source) => {
-            let url = app.url().to_string();
-            let method = "get".to_string();
-            let error = ReqwestError::new(url, method, source, line!(), file!().to_string());
-            Err(error.into())
-        }
-    }
+    Dataset::get().await
 }
 
 /// reads response and native format from file
@@ -78,7 +56,7 @@ pub fn datasets_from_file() -> Result<(), BeaErr> {
 /// Pings the BEA API.
 #[tracing::instrument]
 pub async fn deserialize_datasets() -> Result<(), BeaErr> {
-    let req = super::Request::Dataset;
+    let req = Request::Dataset;
     let app = req.init()?;
     let data = app.get().await?;
     match data.json::<BeaResponse>().await {

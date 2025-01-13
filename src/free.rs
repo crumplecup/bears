@@ -1,6 +1,6 @@
 use crate::{
-    FromStrError, JsonParseError, JsonParseErrorKind, NotFloat, NotInteger, ParseFloat,
-    ParseInteger,
+    App, BeaErr, EnvError, FromStrError, JsonParseError, JsonParseErrorKind, KeyMissing, NotFloat,
+    NotInteger, Options, ParseFloat, ParseInteger, UrlParseError,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -18,6 +18,23 @@ pub fn trace_init() {
         .is_ok()
     {};
     tracing::trace!("Loading Bea...");
+}
+
+/// Helper function
+/// Initiates logging
+/// Reads environmental variables from .env
+/// Creates an instance of App
+#[tracing::instrument]
+pub fn init() -> Result<App, BeaErr> {
+    trace_init();
+    tracing::info!("Test logging initialized.");
+    dotenvy::dotenv().ok();
+    let url = EnvError::from_env("BEA_URL")?;
+    let url = UrlParseError::into_url(&url)?;
+    let key = EnvError::from_env("API_KEY")?;
+    let options = Options::default();
+    let app = App::new(key, options, url);
+    Ok(app)
 }
 
 /// Converts a [`serde_json::Value`] to a String.
@@ -178,7 +195,8 @@ pub fn map_to_bool(
         Ok(flag)
     } else {
         tracing::warn!("Key missing: {key}");
-        let error = JsonParseErrorKind::KeyMissing(key.to_string());
+        let error = KeyMissing::new(key.to_string(), line!(), file!().to_string());
+        let error = JsonParseErrorKind::from(error);
         Err(error.into())
     }
 }
@@ -196,7 +214,8 @@ pub fn map_to_float(
         Ok(float)
     } else {
         tracing::warn!("Key missing: {key}");
-        let error = JsonParseErrorKind::KeyMissing(key.to_string());
+        let error = KeyMissing::new(key.to_string(), line!(), file!().to_string());
+        let error = JsonParseErrorKind::from(error);
         Err(error.into())
     }
 }
@@ -214,7 +233,8 @@ pub fn map_to_int(
         Ok(flag)
     } else {
         tracing::warn!("Key missing: {key}");
-        let error = JsonParseErrorKind::KeyMissing(key.to_string());
+        let error = KeyMissing::new(key.to_string(), line!(), file!().to_string());
+        let error = JsonParseErrorKind::from(error);
         Err(error.into())
     }
 }
@@ -228,7 +248,8 @@ pub fn map_to_string(
     if let Some(value) = m.get(key) {
         json_str(value)
     } else {
-        let error = JsonParseErrorKind::KeyMissing(key.to_string());
+        let error = KeyMissing::new(key.to_string(), line!(), file!().to_string());
+        let error = JsonParseErrorKind::from(error);
         Err(error.into())
     }
 }

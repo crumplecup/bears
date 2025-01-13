@@ -1,6 +1,6 @@
 use crate::{
-    map_to_string, BeaErr, BeaErrorKind, DeriveFromStr, JsonParseError, JsonParseErrorKind, Method,
-    NotObject, ParameterName,
+    init, map_to_string, App, BeaErr, BeaErrorKind, DeriveFromStr, JsonParseError,
+    JsonParseErrorKind, KeyMissing, Method, NotObject, Options, ParameterName,
 };
 use derive_more::FromStr;
 use serde::{Deserialize, Serialize};
@@ -66,7 +66,12 @@ impl RequestParameter {
                 }
             }
         } else {
-            let error = JsonParseErrorKind::KeyMissing(format!("neither {key_1} nor {key_2}"));
+            let error = KeyMissing::new(
+                format!("neither {key_1} nor {key_2}"),
+                line!(),
+                file!().to_string(),
+            );
+            let error = JsonParseErrorKind::from(error);
             let error = JsonParseError::from(error);
             Err(error.into())
         }
@@ -88,7 +93,8 @@ impl RequestParameter {
                 }
             }
         } else {
-            let error = JsonParseErrorKind::KeyMissing(key);
+            let error = KeyMissing::new(key, line!(), file!().to_string());
+            let error = JsonParseErrorKind::from(error);
             let error = JsonParseError::from(error);
             Err(error.into())
         }
@@ -219,7 +225,8 @@ impl TryFrom<&serde_json::Value> for RequestParameters {
                     Ok(parameters)
                 } else {
                     tracing::trace!("Unexpected content: {m:#?}");
-                    let error = JsonParseErrorKind::KeyMissing(key);
+                    let error = KeyMissing::new(key, line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
                     Err(error.into())
                 }
             }
@@ -228,6 +235,87 @@ impl TryFrom<&serde_json::Value> for RequestParameters {
                 let error = NotObject::new(line!(), file!().to_string());
                 let error = JsonParseErrorKind::from(error);
                 Err(error.into())
+            }
+        }
+    }
+}
+
+#[derive(
+    Debug,
+    Default,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumIter,
+)]
+pub enum Request {
+    #[default]
+    Data,
+    Dataset,
+    Parameter,
+    ParameterValue,
+    ParameterValueFilter,
+}
+
+impl Request {
+    #[tracing::instrument(skip_all)]
+    pub fn init(&self) -> Result<App, BeaErr> {
+        match self {
+            Self::Data => {
+                let mut app = init()?;
+                tracing::info!("App initialized.");
+                let mut options = Options::default();
+                let method = Method::GetData;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
+                Ok(app)
+            }
+            Self::Dataset => {
+                let mut app = init()?;
+                tracing::info!("App initialized.");
+                let mut options = Options::default();
+                let method = Method::GetDataSetList;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
+                Ok(app)
+            }
+            Self::Parameter => {
+                let mut app = init()?;
+                tracing::info!("App initialized.");
+                let mut options = Options::default();
+                let method = Method::GetParameterList;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
+                Ok(app)
+            }
+            Self::ParameterValue => {
+                let mut app = init()?;
+                tracing::info!("App initialized.");
+                let mut options = Options::default();
+                let method = Method::GetParameterValues;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
+                Ok(app)
+            }
+            Self::ParameterValueFilter => {
+                let mut app = init()?;
+                tracing::info!("App initialized.");
+                let mut options = Options::default();
+                let method = Method::GetParameterValuesFiltered;
+                options.with_method(method);
+                app.add_options(options);
+                tracing::info!("App configured for {method}.");
+                Ok(app)
             }
         }
     }

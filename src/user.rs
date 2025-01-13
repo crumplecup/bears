@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use url::Url;
 
 /// Deprecated.  Use [`Options`](crate::Options).
@@ -24,8 +24,8 @@ impl User {
 
     #[deprecated]
     #[tracing::instrument(skip_all)]
-    pub fn params(&self) -> HashMap<String, String> {
-        let mut params = HashMap::new();
+    pub fn params(&self) -> BTreeMap<String, String> {
+        let mut params = BTreeMap::new();
         params.insert("UserID".to_string(), self.api.clone());
         params
     }

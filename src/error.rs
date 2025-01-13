@@ -333,7 +333,8 @@ impl std::error::Error for BeaErrorKind {
 pub enum JsonParseErrorKind {
     #[from(FromStrError)]
     FromStr(FromStrError),
-    KeyMissing(String),
+    #[from(KeyMissing)]
+    KeyMissing(KeyMissing),
     #[from(NotArray)]
     NotArray(NotArray),
     NotBool,
@@ -345,6 +346,8 @@ pub enum JsonParseErrorKind {
     NotObject(NotObject),
     #[from(NotParameterName)]
     NotParameterName(NotParameterName),
+    #[from(NotQuarter)]
+    NotQuarter(NotQuarter),
     NotString,
     #[from(ParseFloat)]
     ParseFloat(ParseFloat),
@@ -356,13 +359,14 @@ impl std::fmt::Display for JsonParseErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::FromStr(e) => write!(f, "problem converting str to json: {e}"),
-            Self::KeyMissing(s) => write!(f, "missing key {s}"),
+            Self::KeyMissing(e) => write!(f, "{e}"),
             Self::NotArray(e) => write!(f, "{e}"),
             Self::NotBool => write!(f, "serde_json::Value is not a Number or String variant"),
             Self::NotFloat(e) => write!(f, "{e}"),
             Self::NotInteger(e) => write!(f, "{e}"),
-            Self::NotParameterName(e) => write!(f, "{e}"),
             Self::NotObject(e) => write!(f, "{e}"),
+            Self::NotParameterName(e) => write!(f, "{e}"),
+            Self::NotQuarter(e) => write!(f, "{e}"),
             Self::NotString => write!(f, "serde_json::Value is not a String variant"),
             Self::ParseFloat(e) => write!(f, "{e}"),
             Self::ParseInteger(e) => write!(f, "{e}"),
@@ -922,6 +926,34 @@ pub struct NotArray {
 }
 
 impl std::error::Error for NotArray {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("Key Missing error: {clue} at line {line} in {file}")]
+pub struct KeyMissing {
+    clue: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for KeyMissing {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("Not Quarter error: {clue} at line {line} in {file}")]
+pub struct NotQuarter {
+    clue: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for NotQuarter {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }

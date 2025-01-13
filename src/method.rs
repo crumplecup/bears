@@ -16,6 +16,8 @@ use convert_case::Casing;
     strum::EnumIter,
     derive_more::Display,
     derive_more::FromStr,
+    serde::Serialize,
+    serde::Deserialize,
 )]
 pub enum Method {
     /// Primary data retrieval method.
