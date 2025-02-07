@@ -22,6 +22,13 @@ impl From<BeaErrorKind> for BeaErr {
     }
 }
 
+impl From<AnnotationMissing> for BeaErr {
+    fn from(value: AnnotationMissing) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
 impl From<BincodeError> for BeaErr {
     fn from(value: BincodeError) -> Self {
         let kind = BeaErrorKind::from(value).into();
@@ -38,6 +45,13 @@ impl From<BoolInvalid> for BeaErr {
 
 impl From<Check> for BeaErr {
     fn from(value: Check) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
+impl From<Csv> for BeaErr {
+    fn from(value: Csv) -> Self {
         let kind = BeaErrorKind::from(value).into();
         Self { kind }
     }
@@ -143,6 +157,13 @@ impl From<IoError> for BeaErr {
     }
 }
 
+impl From<Nom> for BeaErr {
+    fn from(value: Nom) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
 impl From<OwnershipInvalid> for BeaErr {
     fn from(value: OwnershipInvalid) -> Self {
         let kind = BeaErrorKind::from(value).into();
@@ -159,6 +180,20 @@ impl From<ParameterValueTableVariant> for BeaErr {
 
 impl From<ParseInt> for BeaErr {
     fn from(value: ParseInt) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
+impl From<RateLimit> for BeaErr {
+    fn from(value: RateLimit) -> Self {
+        let kind = BeaErrorKind::from(value).into();
+        Self { kind }
+    }
+}
+
+impl From<RowCodeMissing> for BeaErr {
+    fn from(value: RowCodeMissing) -> Self {
         let kind = BeaErrorKind::from(value).into();
         Self { kind }
     }
@@ -187,12 +222,16 @@ impl From<YearInvalid> for BeaErr {
 
 #[derive(Debug, derive_more::From)]
 pub enum BeaErrorKind {
+    #[from(AnnotationMissing)]
+    AnnotationMissing(AnnotationMissing),
     #[from(BincodeError)]
     Bincode(BincodeError),
     #[from(BoolInvalid)]
     BoolInvalid(BoolInvalid),
     #[from(Check)]
     Check(Check),
+    #[from(Csv)]
+    Csv(Csv),
     #[from(DatasetMissing)]
     DatasetMissing(DatasetMissing),
     #[from(DeriveFromStr)]
@@ -211,14 +250,20 @@ pub enum BeaErrorKind {
     Jiff(Jiff),
     #[from(JsonParseError)]
     JsonParse(JsonParseError),
+    #[from(Nom)]
+    Nom(Nom),
     #[from(OwnershipInvalid)]
     OwnershipInvalid(OwnershipInvalid),
     #[from(ParameterValueTableVariant)]
     ParameterValueTableVariant(ParameterValueTableVariant),
     #[from(ParseInt)]
     ParseInt(ParseInt),
+    #[from(RateLimit)]
+    RateLimit(RateLimit),
     #[from(ReqwestError)]
     Reqwest(ReqwestError),
+    #[from(RowCodeMissing)]
+    RowCodeMissing(RowCodeMissing),
     #[from(Set)]
     Set(Set),
     #[from(SerdeJson, serde_json::Error)]
@@ -234,6 +279,9 @@ pub enum BeaErrorKind {
 impl std::fmt::Display for BeaErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::AnnotationMissing(e) => {
+                write!(f, "{e}")
+            }
             Self::Bincode(e) => {
                 write!(f, "{e}")
             }
@@ -241,6 +289,9 @@ impl std::fmt::Display for BeaErrorKind {
                 write!(f, "{e}")
             }
             Self::Check(e) => {
+                write!(f, "{e}")
+            }
+            Self::Csv(e) => {
                 write!(f, "{e}")
             }
             Self::DatasetMissing(e) => {
@@ -270,6 +321,9 @@ impl std::fmt::Display for BeaErrorKind {
             Self::JsonParse(e) => {
                 write!(f, "{e}")
             }
+            Self::Nom(e) => {
+                write!(f, "{e}")
+            }
             Self::OwnershipInvalid(e) => {
                 write!(f, "{e}")
             }
@@ -279,7 +333,13 @@ impl std::fmt::Display for BeaErrorKind {
             Self::ParseInt(e) => {
                 write!(f, "{e}")
             }
+            Self::RateLimit(e) => {
+                write!(f, "{e}")
+            }
             Self::Reqwest(e) => {
+                write!(f, "{e}")
+            }
+            Self::RowCodeMissing(e) => {
                 write!(f, "{e}")
             }
             Self::Set(e) => {
@@ -304,9 +364,11 @@ impl std::fmt::Display for BeaErrorKind {
 impl std::error::Error for BeaErrorKind {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
+            Self::AnnotationMissing(e) => e.source(),
             Self::Bincode(e) => Some(e.source()),
             Self::BoolInvalid(e) => e.source(),
             Self::Check(e) => e.source(),
+            Self::Csv(e) => e.source(),
             Self::DatasetMissing(e) => e.source(),
             Self::DeriveFromStr(e) => e.source(),
             Self::Env(e) => Some(e.source()),
@@ -316,10 +378,13 @@ impl std::error::Error for BeaErrorKind {
             Self::IoPass(e) => Some(e.source()),
             Self::Jiff(e) => e.source(),
             Self::JsonParse(e) => e.source(),
+            Self::Nom(e) => e.source(),
             Self::OwnershipInvalid(e) => e.source(),
             Self::ParameterValueTableVariant(e) => e.source(),
             Self::ParseInt(e) => Some(e.source()),
+            Self::RateLimit(e) => e.source(),
             Self::Reqwest(e) => Some(e.source()),
+            Self::RowCodeMissing(e) => e.source(),
             Self::Set(e) => e.source(),
             Self::SerdeJson(e) => Some(e.source()),
             Self::UrlParse(e) => Some(e.source()),
@@ -393,7 +458,7 @@ pub struct JsonParseError {
 
 impl std::fmt::Display for JsonParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "error parsing json")
+        write!(f, "{}", self.kind)
     }
 }
 
@@ -487,6 +552,7 @@ impl std::fmt::Display for ReqwestError {
         if let Some(form) = self.form.clone() {
             msg.push_str(&format!(" with form body {form:?}"));
         }
+        msg.push_str(&format!(" at line {} in file {}", self.line, self.file));
         write!(f, "{msg}")
     }
 }
@@ -632,18 +698,14 @@ impl std::error::Error for SerdeJson {
 }
 
 #[derive(
-    Debug,
-    derive_getters::Getters,
-    derive_setters::Setters,
-    derive_more::Display,
-    derive_new::new,
-    derive_more::From,
+    Debug, derive_getters::Getters, derive_setters::Setters, derive_more::Display, derive_new::new,
 )]
-#[display("variant missing for dataset {}", self.name)]
+#[display("variant missing for dataset {name} at {line} in {file}")]
 #[setters(prefix = "with_", borrow_self)]
-#[from(String, &String, &str)]
 pub struct DatasetMissing {
-    pub name: String,
+    name: String,
+    line: u32,
+    file: String,
 }
 
 impl std::error::Error for DatasetMissing {
@@ -681,7 +743,7 @@ impl std::error::Error for Check {
     derive_new::new,
     derive_more::From,
 )]
-#[display("error from serde_json library")]
+#[display("error parsing input {input} to integer at line {line} in {file}")]
 #[setters(prefix = "with_", borrow_self)]
 pub struct ParseInt {
     input: String,
@@ -954,6 +1016,73 @@ pub struct NotQuarter {
 }
 
 impl std::error::Error for NotQuarter {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("Annotation missing for {input} at line {line} in {file}")]
+pub struct AnnotationMissing {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for AnnotationMissing {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("Nom choked on {input} with message {source} at line {line} in {file}")]
+pub struct Nom {
+    input: String,
+    source: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for Nom {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+/// The `Csv` struct contains error information associated with the `csv` crate.
+#[derive(Debug, derive_more::Display, derive_more::Error, derive_new::new)]
+#[display("csv error at path {path:?} in line {line} of {file}")]
+pub struct Csv {
+    path: std::path::PathBuf,
+    source: csv::Error,
+    line: u32,
+    file: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("MNE RowCode missing for {row} at line {line} in {file}")]
+pub struct RowCodeMissing {
+    row: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for RowCodeMissing {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("rate limit hit: {clue} at line {line} in {file}")]
+pub struct RateLimit {
+    clue: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for RateLimit {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }

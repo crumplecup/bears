@@ -17,7 +17,7 @@ pub async fn datasets_to_json() -> Result<(), BeaErr> {
 /// used to test internal parsing of responses
 #[tracing::instrument]
 pub fn datasets_from_file() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     tracing::info!("BEA_DATA present.");
@@ -92,7 +92,7 @@ pub async fn deserialize_datasets() -> Result<(), BeaErr> {
 /// Returns an error if the datasets do not match.
 #[tracing::instrument]
 pub fn check_datasets() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
@@ -115,7 +115,11 @@ pub fn check_datasets() -> Result<(), BeaErr> {
             let name = dataset.dataset_name().to_lowercase();
             if !sets.contains(&name) {
                 tracing::warn!("{} not in datasets.", dataset.dataset_name());
-                let error = DatasetMissing::from(dataset.dataset_name());
+                let error = DatasetMissing::new(
+                    dataset.dataset_name().to_string(),
+                    line!(),
+                    file!().to_string(),
+                );
                 return Err(error.into());
             } else {
                 tracing::info!("{} in datasets.", dataset.dataset_name());
@@ -127,7 +131,7 @@ pub fn check_datasets() -> Result<(), BeaErr> {
 
 #[tracing::instrument]
 pub fn datasets_json_to_bin() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     // Set path for json file.

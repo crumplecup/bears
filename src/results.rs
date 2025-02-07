@@ -1,5 +1,7 @@
 use crate::{
-    error::ParseInt, map_to_string, BeaErr, BincodeError, Data, Datasets, JsonParseError,
+    data::{FixedAssetData, MneDiData},
+    error::ParseInt,
+    map_to_string, BeaErr, BincodeError, Data, Dataset, DatasetMissing, Datasets, JsonParseError,
     JsonParseErrorKind, KeyMissing, Method, NipaData, NotObject, ParameterValues, Parameters,
     RequestParameters,
 };
@@ -14,10 +16,14 @@ pub enum Results {
     Data(Data),
     #[from(Datasets)]
     Datasets(Datasets),
+    #[from(MneError)]
+    MneError(MneError),
     #[from(Parameters)]
     Parameters(Parameters),
     #[from(ParameterValues)]
     ParameterValues(ParameterValues),
+    #[from(RequestsExceeded)]
+    RequestsExceeded(RequestsExceeded),
 }
 
 impl Results {
@@ -61,10 +67,35 @@ impl Results {
         let method = request.method()?;
         match method {
             Method::GetData => {
-                tracing::info!("Trying Data...");
-                if let Ok(t) = NipaData::try_from(value) {
-                    let data = Data::from(t);
-                    return Ok(Self::from(data));
+                tracing::trace!("Trying Data...");
+                let dataset = request.dataset()?;
+                match dataset {
+                    Dataset::Nipa | Dataset::NIUnderlyingDetail => {
+                        if let Ok(t) = NipaData::try_from(value) {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                    }
+                    Dataset::FixedAssets => {
+                        if let Ok(t) = FixedAssetData::try_from(value) {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                    }
+                    Dataset::Mne => match MneDiData::try_from(value) {
+                        Ok(t) => {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                        Err(source) => {
+                            tracing::trace!("{source}");
+                        }
+                    },
+                    _ => {
+                        let error =
+                            DatasetMissing::new(dataset.to_string(), line!(), file!().to_string());
+                        return Err(error.into());
+                    }
                 }
             }
             Method::GetDataSetList => {
@@ -94,6 +125,17 @@ impl Results {
         }
         tracing::trace!("Trying ApiError...");
         if let Ok(t) = ApiError::try_from(value) {
+            tracing::info!("ApiError found.");
+            return Ok(Self::from(t));
+        }
+        tracing::trace!("Trying MneError...");
+        if let Ok(t) = MneError::try_from(value) {
+            tracing::info!("MneError found.");
+            return Ok(Self::from(t));
+        }
+        tracing::trace!("Trying RequestsExceeded...");
+        if let Ok(t) = RequestsExceeded::try_from(value) {
+            tracing::info!("RequestsExceeded found.");
             return Ok(Self::from(t));
         }
         let error = KeyMissing::new(
@@ -188,6 +230,11 @@ pub struct BeaResponse {
 
 impl BeaResponse {
     #[tracing::instrument(skip_all)]
+    pub fn data(&self) -> Option<Data> {
+        self.beaapi.results.into_data()
+    }
+
+    #[tracing::instrument(skip_all)]
     pub fn datasets(&self) -> Option<Datasets> {
         self.beaapi.results.into_datasets()
     }
@@ -278,9 +325,7 @@ impl TryFrom<&serde_json::Value> for BeaResponse {
 )]
 #[display("API Error - Code: {} - Description: {}", self.code, self.description)]
 pub struct ApiError {
-    #[serde(rename = "APIErrorCode")]
     code: i32,
-    #[serde(rename = "APIErrorDescription")]
     description: String,
 }
 
@@ -325,6 +370,150 @@ impl TryFrom<&serde_json::Value> for ApiError {
         tracing::trace!("Reading ApiError.");
         match value {
             serde_json::Value::Object(m) => ApiError::read_json(m),
+            _ => {
+                tracing::trace!("Invalid Value: {value:#?}");
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
+                let error = JsonParseError::from(error);
+                Err(error.into())
+            }
+        }
+    }
+}
+
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_new::new,
+    derive_more::Display,
+)]
+#[display("MNE API Error - Number: {number} - Error: {error}")]
+pub struct MneError {
+    number: i32,
+    error: String,
+}
+
+impl MneError {
+    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+        let key = "Error".to_string();
+        if let Some(value) = mp.get(&key) {
+            match value {
+                serde_json::Value::Object(m) => {
+                    let error = map_to_string("error", m)?;
+                    let number = map_to_string("number", m)?;
+                    match str::parse::<i32>(&number) {
+                        Ok(number) => Ok(Self::new(number, error)),
+                        Err(source) => {
+                            let line = line!();
+                            let file = file!();
+                            let error = ParseInt::new(number, source, line, file.into());
+                            Err(error.into())
+                        }
+                    }
+                }
+                _ => {
+                    tracing::trace!("Invalid Value: {value:#?}");
+                    let error = NotObject::new(line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
+                    let error = JsonParseError::from(error);
+                    Err(error.into())
+                }
+            }
+        } else {
+            let error = KeyMissing::new(key, line!(), file!().to_string());
+            let error = JsonParseErrorKind::from(error);
+            let error = JsonParseError::from(error);
+            Err(error.into())
+        }
+    }
+}
+
+impl TryFrom<&serde_json::Value> for MneError {
+    type Error = BeaErr;
+    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
+        tracing::trace!("Reading MneError.");
+        match value {
+            serde_json::Value::Object(m) => MneError::read_json(m),
+            _ => {
+                tracing::trace!("Invalid Value: {value:#?}");
+                let error = NotObject::new(line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
+                let error = JsonParseError::from(error);
+                Err(error.into())
+            }
+        }
+    }
+}
+
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_new::new,
+    derive_more::Display,
+)]
+#[display("API Error - Code: {code} - Description: {description}")]
+pub struct RequestsExceeded {
+    code: i32,
+    description: String,
+}
+
+impl RequestsExceeded {
+    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+        let key = "Error".to_string();
+        if let Some(value) = mp.get(&key) {
+            match value {
+                serde_json::Value::Object(m) => {
+                    let description = map_to_string("@APIErrorDescription", m)?;
+                    let code = map_to_string("@APIErrorCode", m)?;
+                    match str::parse::<i32>(&code) {
+                        Ok(code) => Ok(Self::new(code, description)),
+                        Err(source) => {
+                            let line = line!();
+                            let file = file!();
+                            let error = ParseInt::new(code, source, line, file.into());
+                            Err(error.into())
+                        }
+                    }
+                }
+                _ => {
+                    tracing::trace!("Invalid Value: {value:#?}");
+                    let error = NotObject::new(line!(), file!().to_string());
+                    let error = JsonParseErrorKind::from(error);
+                    let error = JsonParseError::from(error);
+                    Err(error.into())
+                }
+            }
+        } else {
+            let error = KeyMissing::new(key, line!(), file!().to_string());
+            let error = JsonParseErrorKind::from(error);
+            let error = JsonParseError::from(error);
+            Err(error.into())
+        }
+    }
+}
+
+impl TryFrom<&serde_json::Value> for RequestsExceeded {
+    type Error = BeaErr;
+    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
+        tracing::trace!("Reading RequestsExceeded.");
+        match value {
+            serde_json::Value::Object(m) => RequestsExceeded::read_json(m),
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
                 let error = NotObject::new(line!(), file!().to_string());

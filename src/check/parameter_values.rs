@@ -11,7 +11,7 @@ pub async fn parameter_values_to_json() -> Result<(), BeaErr> {
 
 #[tracing::instrument]
 pub fn parameter_value_json_to_bin() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     let bea_data = EnvError::from_env("BEA_DATA")?;
@@ -89,7 +89,7 @@ pub fn parameter_value_from_bin(path: std::path::PathBuf) -> Result<(), BeaErr> 
 /// used to test internal parsing of responses
 #[tracing::instrument]
 pub fn parameter_value_from_file() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     let bea_data = EnvError::from_env("BEA_DATA")?;
@@ -115,7 +115,7 @@ pub fn parameter_value_from_file() -> Result<(), BeaErr> {
 
 #[tracing::instrument]
 pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     let req = Request::ParameterValueFilter;
     let mut app = req.init()?;
     let datasets: Vec<Dataset> = Dataset::iter().collect();

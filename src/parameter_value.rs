@@ -408,9 +408,9 @@ pub struct Metadata {
     dataset: Dataset,
     dataset_description: String,
     #[serde(rename = "JSONUpdateDate")]
-    json_update_date: Option<jiff::Timestamp>,
+    json_update_date: Option<jiff::civil::Date>,
     #[serde(rename = "XMLUpdateDate")]
-    xml_update_date: Option<jiff::Timestamp>,
+    xml_update_date: Option<jiff::civil::Date>,
 }
 
 impl Metadata {
@@ -440,16 +440,16 @@ impl Metadata {
         let dataset_description = map_to_string(&pvk::DatasetDescription.to_string(), m)?;
         tracing::trace!("Description: {dataset_description}");
         let mut param = Self::new(dataset, dataset_description);
-        if let Ok(date) = map_to_string(&pvk::JsonUpdateDate.to_string(), m) {
+        if let Ok(date) = map_to_string("JSONUpdateDate", m) {
             let date = date
-                .parse::<jiff::Timestamp>()
+                .parse::<jiff::civil::Date>()
                 .map_err(|e| Jiff::new(date, e))?;
             tracing::trace!("Json Update Date: {date}");
             param.json_update_date = Some(date);
         }
-        if let Ok(date) = map_to_string(&pvk::XmlUpdateDate.to_string(), m) {
+        if let Ok(date) = map_to_string("XMLUpdateDate", m) {
             let date = date
-                .parse::<jiff::Timestamp>()
+                .parse::<jiff::civil::Date>()
                 .map_err(|e| Jiff::new(date, e))?;
             tracing::trace!("Xml Update Date: {date}");
             param.xml_update_date = Some(date);

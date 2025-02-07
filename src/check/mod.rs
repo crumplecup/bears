@@ -5,7 +5,7 @@ mod parameter_values;
 mod parameters;
 mod values;
 
-pub use data::{data_from_json, data_to_json};
+pub use data::{data_from_json, data_to_json, download_history, naics};
 pub use datasets::{
     check_datasets, datasets_from_file, datasets_json_to_bin, datasets_to_json,
     deserialize_datasets,
@@ -20,6 +20,6 @@ pub use parameters::{
     parameters_json_to_bin, parameters_to_json,
 };
 pub use values::{
-    api_error, value_sets, values_filtered, values_filtered_subset, values_gdp_filtered,
-    values_ugdp_filtered,
+    api_error, requests_exceeded, value_sets, values_filtered, values_filtered_subset,
+    values_gdp_filtered, values_ugdp_filtered,
 };

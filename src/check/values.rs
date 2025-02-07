@@ -9,10 +9,32 @@ use strum::IntoEnumIterator;
 /// Writes the JSON representation of the error to the BEA_DATA directory.
 #[tracing::instrument]
 pub fn api_error() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     let path = std::path::PathBuf::from(&format!("{bea_data}/values_api_error.json"));
+    let file = match std::fs::File::open(&path) {
+        Ok(f) => f,
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            return Err(error.into());
+        }
+    };
+    let rdr = std::io::BufReader::new(file);
+    let res: serde_json::Value = serde_json::from_reader(rdr)?;
+    let data = BeaResponse::try_from(&res)?;
+    tracing::info!("Response read.");
+    tracing::info!("Response: {data:#?}");
+
+    Ok(())
+}
+
+#[tracing::instrument]
+pub fn requests_exceeded() -> Result<(), BeaErr> {
+    trace_init()?;
+    dotenvy::dotenv().ok();
+    let bea_data = EnvError::from_env("BEA_DATA")?;
+    let path = std::path::PathBuf::from(&format!("{bea_data}/requests_exceeded.json"));
     let file = match std::fs::File::open(&path) {
         Ok(f) => f,
         Err(source) => {
@@ -73,7 +95,7 @@ pub async fn values_ugdp_filtered() -> Result<(), BeaErr> {
 
 #[tracing::instrument]
 pub fn value_sets() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     let path = std::path::PathBuf::from(bea_data);

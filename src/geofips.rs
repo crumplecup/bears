@@ -1,29 +1,6 @@
-use crate::{error::BincodeError, Config, RequestParameters, ReqwestError};
+use crate::{error::BincodeError, RequestParameters};
 use serde::{Deserialize, Serialize};
 use tracing::info;
-
-pub async fn get_geofips(config: &Config) -> Result<BeaGeoFips, ReqwestError> {
-    let mut body = config.body();
-    body.push_str("&method=GetParameterValuesFiltered");
-    body.push_str("&TargetParameter=GeoFips");
-    let url = body.clone();
-    let client = reqwest::Client::new();
-    info!("Sending request for {}", body);
-    match client.get(body).send().await {
-        Ok(res) => match res.json::<BeaGeoFips>().await {
-            Ok(data) => Ok(data),
-            Err(source) => {
-                let error =
-                    ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
-                Err(error)
-            }
-        },
-        Err(source) => {
-            let error = ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
-            Err(error)
-        }
-    }
-}
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
@@ -85,41 +62,6 @@ pub struct GeoFipsResults {
 pub struct BeaGeoFips(GeoFipsResults);
 
 impl BeaGeoFips {
-    pub async fn get(config: &Config) -> Result<Self, ReqwestError> {
-        let mut params = config.params();
-        params.insert(
-            "method".to_string(),
-            "GetParameterValuesFiltered".to_string(),
-        );
-        params.insert("TargetParameter".to_string(), "GeoFips".to_string());
-        let client = reqwest::Client::new();
-        let url = config.user().url().to_string();
-        let body = params
-            .iter()
-            .map(|(a, b)| (a.clone(), b.clone()))
-            .collect::<Vec<(String, String)>>();
-        let req = client.get(config.user().url().clone()).query(&params);
-        info!("Sending request {:?}", req);
-
-        match req.send().await {
-            Ok(res) => match res.json::<BeaGeoFips>().await {
-                Ok(data) => Ok(data),
-                Err(source) => {
-                    let mut error =
-                        ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
-                    error.with_body(body);
-                    Err(error)
-                }
-            },
-            Err(source) => {
-                let mut error =
-                    ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
-                error.with_body(body);
-                Err(error)
-            }
-        }
-    }
-
     pub fn results(&self) -> GeoFips {
         self.results.clone()
     }

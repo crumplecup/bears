@@ -1,5 +1,5 @@
 use crate::{
-    App, BeaErr, BeaResponse, Dataset, EnvError, Frequencies, Frequency, FrequencyOptions, IoError,
+    BeaErr, BeaResponse, Dataset, EnvError, Frequencies, Frequency, FrequencyOptions, IoError,
     Millions, MillionsOptions, NipaRange, NipaRanges, ParameterName, ParameterValueTable,
     ParameterValueTableVariant, Queue, Request, Set, TableName, YearSelection,
 };
@@ -23,9 +23,7 @@ impl Nipa {
         NipaIterator::new(self)
     }
 
-    /// Pings the BEA API.
-    #[tracing::instrument]
-    pub async fn queue() -> Result<Queue, BeaErr> {
+    pub fn queue() -> Result<Queue, BeaErr> {
         let req = Request::Data;
         let mut app = req.init()?;
         let dataset = Dataset::Nipa;
@@ -272,6 +270,8 @@ impl Iterator for NipaIterator<'_> {
 
     fn next(&mut self) -> Option<Self::Item> {
         // advance state
+        // primary driver year
+        // secondary driver frequency
         if self.year_end {
             // no more year values in self.years
             match self.frequency_options {
@@ -281,6 +281,8 @@ impl Iterator for NipaIterator<'_> {
                         if self.range_index < range.len() - 1 {
                             // increment the range index
                             self.range_index += 1;
+                            self.year_index = 0;
+                            self.year_end = false;
                         } else {
                             // no more ranges, move to next table
                             self.range_end = true;
@@ -293,6 +295,8 @@ impl Iterator for NipaIterator<'_> {
                     if self.frequency_index < self.nipa.frequency.len() - 1 {
                         // increment the frequency index
                         self.frequency_index += 1;
+                        self.year_index = 0;
+                        self.year_end = false;
                     } else {
                         // no more frequencies, move to next table
                         self.frequency_end = true;
@@ -306,6 +310,13 @@ impl Iterator for NipaIterator<'_> {
             if self.table_index < self.nipa.table_name.len() - 1 {
                 // increment the table index
                 self.table_index += 1;
+                // Reset dependent drivers
+                self.frequency_index = 0;
+                self.frequency_end = false;
+                self.range_index = 0;
+                self.range_end = false;
+                self.year_index = 0;
+                self.year_end = false;
             } else {
                 // no more tables, end iteration
                 return None;
@@ -385,9 +396,7 @@ impl NiUnderlyingDetail {
         NiUnderlyingDetailIterator::new(self)
     }
 
-    /// Pings the BEA API.
-    #[tracing::instrument]
-    pub async fn queue() -> Result<Queue, BeaErr> {
+    pub fn queue() -> Result<Queue, BeaErr> {
         let req = Request::Data;
         let mut app = req.init()?;
         let dataset = Dataset::NIUnderlyingDetail;

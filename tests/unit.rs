@@ -88,6 +88,7 @@ async fn values_gdp_filtered() -> anyhow::Result<()> {
 #[tokio::test]
 async fn api_error() -> anyhow::Result<()> {
     check::api_error()?;
+    check::requests_exceeded()?;
     Ok(())
 }
 
@@ -101,6 +102,18 @@ fn value_sets() -> anyhow::Result<()> {
 async fn data_to_json() -> anyhow::Result<()> {
     #[cfg(feature = "api")]
     check::data_to_json().await?;
-    check::data_from_json()?;
+    check::data_from_json().await?;
+    Ok(())
+}
+
+#[test]
+fn naics() -> anyhow::Result<()> {
+    check::naics()?;
+    Ok(())
+}
+
+#[test]
+fn download_history() -> anyhow::Result<()> {
+    check::download_history()?;
     Ok(())
 }

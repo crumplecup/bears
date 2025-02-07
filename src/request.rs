@@ -1,5 +1,5 @@
 use crate::{
-    init, map_to_string, App, BeaErr, BeaErrorKind, DeriveFromStr, JsonParseError,
+    init, map_to_string, App, BeaErr, BeaErrorKind, Dataset, DeriveFromStr, JsonParseError,
     JsonParseErrorKind, KeyMissing, Method, NotObject, Options, ParameterName,
 };
 use derive_more::FromStr;
@@ -99,6 +99,29 @@ impl RequestParameter {
             Err(error.into())
         }
     }
+
+    pub fn dataset(&self) -> Result<Dataset, BeaErr> {
+        let key = "DATASETNAME".to_string();
+        if self.parameter_name == key {
+            match Dataset::from_str(&self.parameter_value) {
+                Ok(dataset) => Ok(dataset),
+                Err(source) => {
+                    let error = DeriveFromStr::new(
+                        self.parameter_value.clone(),
+                        source,
+                        line!(),
+                        file!().to_string(),
+                    );
+                    Err(error.into())
+                }
+            }
+        } else {
+            let error = KeyMissing::new(key, line!(), file!().to_string());
+            let error = JsonParseErrorKind::from(error);
+            let error = JsonParseError::from(error);
+            Err(error.into())
+        }
+    }
 }
 
 impl TryFrom<serde_json::Value> for RequestParameter {
@@ -108,8 +131,14 @@ impl TryFrom<serde_json::Value> for RequestParameter {
         tracing::trace!("Reading RequestParameter");
         match value {
             serde_json::Value::Object(m) => {
-                let parameter_name = map_to_string("ParameterName", &m)?;
-                let parameter_value = map_to_string("ParameterValue", &m)?;
+                let parameter_name = match map_to_string("@ParameterName", &m) {
+                    Ok(name) => name,
+                    Err(_) => map_to_string("ParameterName", &m)?,
+                };
+                let parameter_value = match map_to_string("@ParameterValue", &m) {
+                    Ok(value) => value,
+                    Err(_) => map_to_string("ParameterValue", &m)?,
+                };
                 Ok(Self::new(parameter_name, parameter_value))
             }
             _ => {
@@ -168,6 +197,28 @@ impl RequestParameters {
                 },
                 _ => unreachable!(),
             }
+        }
+    }
+
+    pub fn dataset(&self) -> Result<Dataset, BeaErr> {
+        let mut errs = Vec::new();
+        for req in self.iter() {
+            match req.dataset() {
+                Ok(dataset) => return Ok(dataset),
+                Err(source) => errs.push(source),
+            }
+        }
+        match &**errs[0] {
+            BeaErrorKind::DeriveFromStr(x) => Err(BeaErr::from(x.clone())),
+            BeaErrorKind::JsonParse(kind) => match &**kind {
+                JsonParseErrorKind::KeyMissing(key) => {
+                    let error = JsonParseErrorKind::KeyMissing(key.clone());
+                    let error = JsonParseError::from(error);
+                    Err(error.into())
+                }
+                _ => unreachable!(),
+            },
+            _ => unreachable!(),
         }
     }
 

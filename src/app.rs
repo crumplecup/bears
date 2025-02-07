@@ -1,4 +1,9 @@
-use crate::{Dataset, Options, ReqwestError};
+use crate::{
+    BeaErr, BeaResponse, Dataset, DeriveFromStr, EnvError, IoError, JsonParseError,
+    JsonParseErrorKind, KeyMissing, Method, Options, ParameterName, RateLimit, ReqwestError,
+    Results, VariantMissing,
+};
+use derive_more::FromStr;
 use std::collections::BTreeMap;
 
 /// The `App` struct contains the application state.
@@ -10,6 +15,7 @@ use std::collections::BTreeMap;
     Clone,
     PartialEq,
     Eq,
+    Hash,
     derive_getters::Getters,
     derive_setters::Setters,
     serde::Serialize,
@@ -69,6 +75,7 @@ impl App {
     /// of the call using the [`Options`].
     #[tracing::instrument(skip_all)]
     pub async fn get(&self) -> Result<reqwest::Response, ReqwestError> {
+        tracing::trace!("Calling get for App.");
         let body = self
             .query
             .clone()
@@ -91,5 +98,271 @@ impl App {
                 Err(error)
             }
         }
+    }
+
+    pub fn method(&self) -> Result<Method, DeriveFromStr> {
+        let query = self.query();
+        let method = query["METHOD"].clone();
+        match Method::from_str(&method) {
+            Ok(value) => Ok(value),
+            Err(source) => {
+                let error = DeriveFromStr::new(method, source, line!(), file!().to_string());
+                Err(error)
+            }
+        }
+    }
+
+    pub fn destination(&self, create: bool) -> Result<std::path::PathBuf, BeaErr> {
+        let query = self.query();
+        tracing::trace!("Params are {:#?}", query);
+        let method = self.method()?;
+        let dataset = query["DatasetName"].clone();
+        let datakind = match Dataset::from_str(&dataset) {
+            Ok(kind) => kind,
+            Err(source) => {
+                let error = DeriveFromStr::new(dataset, source, line!(), file!().to_string());
+                return Err(error.into());
+            }
+        };
+        dotenvy::dotenv().ok();
+        let bea_data = EnvError::from_env("BEA_DATA")?;
+        let path = std::path::PathBuf::from(&bea_data);
+        match method {
+            Method::GetData => {
+                let path = path.join("data");
+                if !path.exists() && create {
+                    std::fs::DirBuilder::new().create(&path)?;
+                    tracing::info!("Target directory for Data created.");
+                }
+                let path = path.join(&dataset);
+                if !path.exists() && create {
+                    std::fs::DirBuilder::new().create(&path)?;
+                    tracing::info!("Target directory for {dataset} created.");
+                }
+                match datakind {
+                    Dataset::Nipa | Dataset::NIUnderlyingDetail | Dataset::FixedAssets => {
+                        let name = query["TableName"].clone();
+                        Ok(path.join(format!("{dataset}_{name}.json")))
+                    }
+                    Dataset::Mne => {
+                        let country = query["Country"].clone();
+                        let doi = query["DirectionOfInvestment"].clone();
+                        let class = query["Classification"].clone();
+                        if let Some(nonbank) =
+                            query.get(ParameterName::NonbankAffiliatesOnly.to_string().as_str())
+                        {
+                            let path = path.join("AMNE");
+                            if !path.exists() && create {
+                                std::fs::DirBuilder::new().create(&path)?;
+                                tracing::info!("Target directory for AMNE created.");
+                            }
+                            let path = path.join(country);
+                            if !path.exists() && create {
+                                std::fs::DirBuilder::new().create(&path)?;
+                                tracing::info!("Target directory for {dataset} created.");
+                            }
+                            let ownership = query["OwnershipLevel"].clone();
+                            let path = match (ownership.as_str(), nonbank.as_str()) {
+                                ("0", "0") => path.join(format!("{class}_{doi}.json")),
+                                ("0", "1") => path.join(format!("{class}_{doi}_nonbank.json")),
+                                ("1", "0") => {
+                                    path.join(format!("{class}_{doi}_ownership_nonbank.json"))
+                                }
+                                ("1", "1") => {
+                                    path.join(format!("{class}_{doi}_ownership_nonbank.json"))
+                                }
+                                _ => {
+                                    let error = KeyMissing::new(
+                                        "0 or 1".to_string(),
+                                        line!(),
+                                        file!().to_string(),
+                                    );
+                                    let error = JsonParseErrorKind::from(error);
+                                    let error = JsonParseError::from(error);
+                                    return Err(error.into());
+                                }
+                            };
+                            Ok(path)
+                        } else {
+                            let path = path.join("DirectInvestment");
+                            if !path.exists() && create {
+                                std::fs::DirBuilder::new().create(&path)?;
+                                tracing::info!("Target directory for DirectInvestment created.");
+                            }
+                            let path = path.join(country);
+                            if !path.exists() && create {
+                                std::fs::DirBuilder::new().create(&path)?;
+                                tracing::info!("Target directory for {dataset} created.");
+                            }
+                            Ok(path.join(format!("{class}_{doi}.json")))
+                        }
+                    }
+                    _ => {
+                        tracing::info!("{datakind} not yet implemented.");
+                        Ok(path)
+                    }
+                }
+            }
+            _ => {
+                tracing::info!("Not implemented for {method}.");
+                Ok(path)
+            }
+        }
+    }
+    #[tracing::instrument(skip_all)]
+
+    pub async fn download(&self, id: uuid::Uuid) -> Result<ResultStatus, BeaErr> {
+        tracing::trace!("Calling download.");
+        let query = self.query();
+        tracing::trace!("Params are {:#?}", query);
+        let method = self.method()?;
+        match method {
+            Method::GetData => {
+                let data = self.get().await?;
+                let length = data.content_length().unwrap();
+                match data.json::<serde_json::Value>().await {
+                    Ok(json) => match BeaResponse::try_from(&json) {
+                        Ok(response) => match response.results() {
+                            Results::ApiError(error) => {
+                                tracing::error!("{error}");
+                                return Ok(ResultStatus::Error(id));
+                            }
+                            Results::MneError(error) => {
+                                tracing::trace!("{error}");
+                                return Ok(ResultStatus::Error(id));
+                            }
+                            Results::RequestsExceeded(error) => {
+                                let error =
+                                    RateLimit::new(error.to_string(), line!(), file!().to_string());
+                                tracing::error!("{error}");
+                                // return Err(error.into());
+                                return Ok(ResultStatus::Abort);
+                            }
+                            _ => {
+                                self.save(json).await?;
+                                return Ok(ResultStatus::Success(id, length));
+                            }
+                        },
+                        Err(_) => {
+                            tracing::warn!("Unrecognized response.");
+                            self.save(json).await?;
+                            return Ok(ResultStatus::Success(id, length));
+                        }
+                    },
+                    Err(source) => {
+                        let url = self.url().to_string();
+                        let method = "get".to_string();
+                        let error =
+                            ReqwestError::new(url, method, source, line!(), file!().to_string());
+                        tracing::warn!("{error}");
+                        // return Err(error.into());
+                        return Ok(ResultStatus::Error(id));
+                    }
+                }
+            }
+            _ => {
+                tracing::info!("{method} not implemented.");
+                Ok(ResultStatus::Error(id))
+            }
+        }
+    }
+
+    pub async fn save(&self, json: serde_json::Value) -> Result<(), BeaErr> {
+        tracing::trace!("Calling save.");
+        let method = self.method()?;
+        match method {
+            Method::GetData => {
+                let contents = serde_json::to_vec(&json)?;
+                let path = self.destination(true)?;
+                match std::fs::write(&path, contents) {
+                    Ok(()) => {
+                        tracing::info!("JSON saved to {path:#?}");
+                    }
+                    Err(source) => {
+                        let error = IoError::new(path, source, line!(), file!().to_string());
+                        return Err(error.into());
+                    }
+                }
+            }
+            _ => {
+                tracing::info!("Not implemented for {method}.");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn load(&self) -> Result<BeaResponse, BeaErr> {
+        tracing::trace!("Calling load.");
+        let query = self.query();
+        tracing::trace!("Params are {:#?}", query);
+        let method = self.method()?;
+        match method {
+            Method::GetData => {
+                let path = self.destination(false)?;
+                tracing::info!("Opening {path:?}.");
+                // Create reader from path.
+                let file = match std::fs::File::open(&path) {
+                    Ok(f) => f,
+                    Err(source) => {
+                        let error = IoError::new(path, source, line!(), file!().to_string());
+                        return Err(error.into());
+                    }
+                };
+                let rdr = std::io::BufReader::new(file);
+                // Deserialize to serde_json::Value.
+                let json: serde_json::Value = serde_json::from_reader(rdr)?;
+                BeaResponse::try_from(&json)
+            }
+            _ => {
+                let msg = format!("load not implemented for {method}");
+                tracing::info!(msg);
+                let error =
+                    VariantMissing::new(msg, method.to_string(), line!(), file!().to_string());
+                Err(error.into())
+            }
+        }
+    }
+}
+
+#[derive(
+    Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+)]
+pub enum ResultStatus {
+    Success(uuid::Uuid, u64),
+    Error(uuid::Uuid),
+    Pass(uuid::Uuid),
+    Pending,
+    Abort,
+}
+
+impl std::fmt::Display for ResultStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Success(_, _) => write!(f, "Success"),
+            Self::Error(_) => write!(f, "Error"),
+            Self::Pass(_) => write!(f, "Pass"),
+            Self::Pending => write!(f, "Pending"),
+            Self::Abort => write!(f, "Abort"),
+        }
+    }
+}
+
+impl FromStr for ResultStatus {
+    type Err = BeaErr;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let status = match s {
+            "Success" => Self::Success(uuid::Uuid::new_v4(), 0),
+            "Error" => Self::Error(uuid::Uuid::new_v4()),
+            "Pass" => Self::Pass(uuid::Uuid::new_v4()),
+            "Pending" => Self::Pending,
+            "Abort" => Self::Abort,
+            _ => {
+                let error = KeyMissing::new(s.to_string(), line!(), file!().to_string());
+                let error = JsonParseErrorKind::from(error);
+                let error = JsonParseError::from(error);
+                return Err(error.into());
+            }
+        };
+        Ok(status)
     }
 }

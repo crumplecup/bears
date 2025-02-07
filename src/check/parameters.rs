@@ -50,7 +50,7 @@ pub fn parameter_from_bin(path: std::path::PathBuf) -> Result<(), BeaErr> {
 /// used to test internal parsing of responses
 #[tracing::instrument]
 pub fn parameters_from_file() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     let bea_data = EnvError::from_env("BEA_DATA")?;
@@ -71,7 +71,7 @@ pub fn parameters_from_file() -> Result<(), BeaErr> {
 
 #[tracing::instrument]
 pub fn parameters_json_to_bin() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     let bea_data = EnvError::from_env("BEA_DATA")?;
@@ -158,7 +158,7 @@ pub async fn deserialize_parameter(app: &mut App, dataset: Dataset) -> Result<()
 
 #[tracing::instrument]
 pub fn diff_parameters() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     for dataset in datasets {
         Json::diff_parameters(dataset)?;
@@ -168,7 +168,7 @@ pub fn diff_parameters() -> Result<(), BeaErr> {
 
 #[tracing::instrument]
 pub fn parameter_names() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     let names = ParameterName::iter()
         .map(|p| p.to_string())
         .collect::<Vec<String>>();

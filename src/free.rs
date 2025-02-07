@@ -1,23 +1,52 @@
 use crate::{
-    App, BeaErr, EnvError, FromStrError, JsonParseError, JsonParseErrorKind, KeyMissing, NotFloat,
-    NotInteger, Options, ParseFloat, ParseInteger, UrlParseError,
+    App, BeaErr, Csv, EnvError, FromStrError, IoError, JsonParseError, JsonParseErrorKind,
+    KeyMissing, NotFloat, NotInteger, Options, ParseFloat, ParseInteger, UrlParseError,
 };
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
 /// Initiates a subscriber for the tracing library. Used to instrument internal library functions
 /// for debugging and diagnostics.
 #[tracing::instrument]
-pub fn trace_init() {
+pub fn trace_init() -> Result<(), BeaErr> {
+    dotenvy::dotenv().ok();
+    let bea_data = EnvError::from_env("BEA_DATA")?;
+    let path = std::path::PathBuf::from(bea_data);
+    let path = path.join("history.log");
+    let history = match std::fs::OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(&path)
+    {
+        Ok(value) => value,
+        Err(source) => {
+            let error = IoError::new(path, source, line!(), file!().to_string());
+            return Err(error.into());
+        }
+    };
+    let history = tracing_subscriber::fmt::layer()
+        .json()
+        .with_writer(std::sync::Arc::new(history))
+        .with_filter(tracing_subscriber::filter::filter_fn(|metadata| {
+            metadata.target() == "download_history" || metadata.target() == "load_history"
+        }));
     if tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_| "bea=info".into()),
         )
-        .with(tracing_subscriber::fmt::layer())
+        .with(
+            tracing_subscriber::fmt::layer().with_filter(tracing_subscriber::filter::filter_fn(
+                |metadata| {
+                    metadata.target() != "download_history" && metadata.target() != "load_history"
+                },
+            )),
+        )
+        .with(history)
         .try_init()
         .is_ok()
     {};
     tracing::trace!("Loading Bea...");
+    Ok(())
 }
 
 /// Helper function
@@ -26,7 +55,7 @@ pub fn trace_init() {
 /// Creates an instance of App
 #[tracing::instrument]
 pub fn init() -> Result<App, BeaErr> {
-    trace_init();
+    trace_init()?;
     tracing::info!("Test logging initialized.");
     dotenvy::dotenv().ok();
     let url = EnvError::from_env("BEA_URL")?;
@@ -100,7 +129,7 @@ pub fn json_bool(json: &serde_json::Value) -> Result<bool, JsonParseError> {
 pub fn json_float(json: &serde_json::Value) -> Result<f64, JsonParseError> {
     match json {
         serde_json::Value::Number(n) => {
-            tracing::info!("Number detected: {n}");
+            tracing::trace!("Number detected: {n}");
             if let Some(num) = n.as_f64() {
                 Ok(num)
             } else {
@@ -115,7 +144,7 @@ pub fn json_float(json: &serde_json::Value) -> Result<f64, JsonParseError> {
             }
         }
         serde_json::Value::String(s) => {
-            tracing::info!("String detected: {s}");
+            tracing::trace!("String detected: {s}");
             match s.parse::<f64>() {
                 Ok(num) => Ok(num),
                 Err(source) => {
@@ -144,7 +173,7 @@ pub fn json_float(json: &serde_json::Value) -> Result<f64, JsonParseError> {
 pub fn json_int(json: &serde_json::Value) -> Result<i64, JsonParseError> {
     match json {
         serde_json::Value::Number(n) => {
-            tracing::info!("Number detected: {n}");
+            tracing::trace!("Number detected: {n}");
             if let Some(num) = n.as_i64() {
                 Ok(num)
             } else {
@@ -159,7 +188,7 @@ pub fn json_int(json: &serde_json::Value) -> Result<i64, JsonParseError> {
             }
         }
         serde_json::Value::String(s) => {
-            tracing::info!("String detected: {s}");
+            tracing::trace!("String detected: {s}");
             match s.parse::<i64>() {
                 Ok(num) => Ok(num),
                 Err(source) => {
@@ -251,5 +280,91 @@ pub fn map_to_string(
         let error = KeyMissing::new(key.to_string(), line!(), file!().to_string());
         let error = JsonParseErrorKind::from(error);
         Err(error.into())
+    }
+}
+
+/// Generic function to serialize data types into a CSV file.  Called by methods to avoid code
+/// duplication.
+pub fn to_csv<T: serde::Serialize + Clone, P: AsRef<std::path::Path>>(
+    item: &mut [T],
+    path: P,
+) -> Result<(), BeaErr> {
+    match csv::Writer::from_path(path.as_ref()) {
+        Ok(mut wtr) => {
+            for i in item {
+                match wtr.serialize(i) {
+                    Ok(_) => {}
+                    Err(source) => {
+                        let path = std::path::PathBuf::from(path.as_ref());
+                        return Err(Csv::new(path, source, line!(), file!().to_string()).into());
+                    }
+                }
+            }
+            match wtr.flush() {
+                Ok(_) => {}
+                Err(source) => {
+                    let path = std::path::PathBuf::from(path.as_ref());
+                    return Err(IoError::new(path, source, line!(), file!().to_string()).into());
+                }
+            }
+            Ok(())
+        }
+        Err(source) => Err(Csv::new(
+            std::path::PathBuf::from(path.as_ref()),
+            source,
+            line!(),
+            file!().to_string(),
+        )
+        .into()),
+    }
+}
+
+/// Generic function to deserialize data types from a CSV file.  Called by methods to avoid code
+/// duplication.
+pub fn from_csv<T: serde::de::DeserializeOwned + Clone, P: AsRef<std::path::Path>>(
+    path: P,
+) -> Result<Vec<T>, IoError> {
+    let mut records = Vec::new();
+    match std::fs::File::open(&path) {
+        Ok(file) => {
+            let mut rdr = csv::Reader::from_reader(file);
+
+            let mut dropped = 0;
+            for result in rdr.deserialize() {
+                match result {
+                    Ok(record) => records.push(record),
+                    Err(e) => {
+                        tracing::trace!("Dropping: {}", e.to_string());
+                        dropped += 1;
+                    }
+                }
+            }
+            tracing::trace!("{} records dropped.", dropped);
+
+            Ok(records)
+        }
+        Err(source) => {
+            let path = std::path::PathBuf::from(path.as_ref());
+            Err(IoError::new(path, source, line!(), file!().to_string()))
+        }
+    }
+}
+
+pub fn file_size<P: AsRef<std::path::Path>>(path: P) -> Option<u64> {
+    let path = path.as_ref();
+    if path.exists() {
+        let file = match std::fs::File::open(path) {
+            Ok(f) => f,
+            Err(_) => {
+                return None;
+            }
+        };
+        let metadata = match file.metadata() {
+            Ok(data) => data,
+            Err(_) => return None,
+        };
+        Some(metadata.len())
+    } else {
+        None
     }
 }

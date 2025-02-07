@@ -114,7 +114,7 @@ impl Json {
             Ok(f) => f,
             Err(source) => {
                 let error = IoError::new(path, source, line!(), file!().to_string());
-                return Err(error.into());
+                return Err(error);
             }
         };
         Ok(std::io::BufReader::new(file).lines())

@@ -2,7 +2,7 @@ use crate::{trace_init, BeaErr, Check, EnvError};
 
 #[tracing::instrument]
 pub fn env() -> Result<(), BeaErr> {
-    trace_init();
+    trace_init()?;
     match EnvError::from_env("NOT_THERE") {
         Ok(e) => {
             tracing::warn!("Unexpected success: {e:#?}");

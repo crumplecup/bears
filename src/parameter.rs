@@ -1,6 +1,6 @@
 use crate::{
-    json_str, map_to_bool, map_to_string, BeaResponse, FromStrError, JsonParseError,
-    JsonParseErrorKind, KeyMissing, NotArray, NotObject, NotParameterName, ReqwestError, User,
+    json_str, map_to_bool, map_to_string, FromStrError, JsonParseError, JsonParseErrorKind,
+    KeyMissing, NotArray, NotObject, NotParameterName,
 };
 use derive_more::FromStr;
 use serde::de::Deserializer;
@@ -29,66 +29,6 @@ pub struct Parameter {
 }
 
 impl Parameter {
-    #[deprecated]
-    #[tracing::instrument(skip_all)]
-    pub async fn values(&self, user: &User, dataset: &str) -> Result<BeaResponse, ReqwestError> {
-        let mut body = user.body();
-        body.push_str("&method=GETPARAMETERVALUES");
-        body.push_str(&format!("&datasetname={}", dataset));
-        body.push_str(&format!("&ParameterName={}", self.parameter_name));
-        let url = body.clone();
-        let client = reqwest::Client::new();
-        match client.get(body.clone()).send().await {
-            Ok(res) => match res.text().await {
-                Ok(text) => tracing::trace!("Response: {text}"),
-                Err(source) => {
-                    let error = ReqwestError::new(
-                        url,
-                        "get".to_string(),
-                        source,
-                        line!(),
-                        file!().to_string(),
-                    );
-                    return Err(error);
-                }
-            },
-            Err(source) => {
-                let error =
-                    ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
-                return Err(error);
-            }
-        }
-        match client.get(body).send().await {
-            Ok(res) => {
-                tracing::trace!("Response code: {}.", res.status());
-                match res.json::<BeaResponse>().await {
-                    Ok(data) => Ok(data),
-                    Err(source) => {
-                        let error = ReqwestError::new(
-                            url,
-                            "get".to_string(),
-                            source,
-                            line!(),
-                            file!().to_string(),
-                        );
-                        return Err(error);
-                    }
-                }
-            }
-            Err(source) => {
-                let error =
-                    ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
-                return Err(error);
-            }
-        }
-    }
-
-    #[deprecated]
-    #[tracing::instrument(skip_all)]
-    pub fn name(&self) -> String {
-        self.parameter_name.to_string()
-    }
-
     /// Given a [`serde_json::Map`] object, attempts to parse `Self` from anticipated keys.  Can
     /// fail if the expected key is missing or if coercion to expected type (such as bool) fails.
     #[tracing::instrument(skip_all)]

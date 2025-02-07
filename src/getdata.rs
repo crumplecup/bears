@@ -1,29 +1,6 @@
-use crate::{deserialize_bool, Config, RequestParameters, ReqwestError};
+use crate::{deserialize_bool, RequestParameters};
 use serde::{Deserialize, Serialize};
 use tracing::info;
-
-#[tracing::instrument(skip_all)]
-pub async fn get_data(config: &Config) -> Result<BeaDataResponse, ReqwestError> {
-    let mut body = config.body();
-    body.push_str("&method=GetData");
-    let url = body.clone();
-    let client = reqwest::Client::new();
-    match client.get(body).send().await {
-        Ok(res) => match res.json::<BeaDataResponse>().await {
-            Ok(data) => Ok(data),
-            Err(source) => {
-                let error =
-                    ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
-                Err(error)
-            }
-        },
-        Err(source) => {
-            let error =
-                ReqwestError::new(url, "get".to_string(), source, line!(), file!().to_string());
-            Err(error)
-        }
-    }
-}
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
@@ -173,44 +150,5 @@ impl BeaDataResponse {
     #[tracing::instrument(skip_all)]
     pub fn results(&self) -> Vec<Datum> {
         self.0.results.data.clone()
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub async fn get(config: &Config) -> Result<BeaDataResponse, ReqwestError> {
-        let mut params = config.user().params();
-        params.insert("method".to_string(), "GetData".to_string());
-        let form = params
-            .clone()
-            .into_iter()
-            .collect::<Vec<(String, String)>>();
-        let url = config.user().url().clone();
-        let client = reqwest::Client::new();
-        match client.get(url.clone()).form(&params).send().await {
-            Ok(res) => match res.json::<BeaDataResponse>().await {
-                Ok(data) => Ok(data),
-                Err(source) => {
-                    let mut error = ReqwestError::new(
-                        url.to_string(),
-                        "get".to_string(),
-                        source,
-                        line!(),
-                        file!().to_string(),
-                    );
-                    error.with_form(form);
-                    Err(error)
-                }
-            },
-            Err(source) => {
-                let mut error = ReqwestError::new(
-                    url.to_string(),
-                    "get".to_string(),
-                    source,
-                    line!(),
-                    file!().to_string(),
-                );
-                error.with_form(form);
-                Err(error)
-            }
-        }
     }
 }

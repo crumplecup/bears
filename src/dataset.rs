@@ -1,8 +1,8 @@
 use crate::{
-    map_to_string, ApiMetadata, App, BeaErr, BeaResponse, EnvError, FixedAssets, GdpByIndustry,
-    Iip, InputOutput, IntlServSta, IntlServTrade, IoError, Ita, JsonParseError, JsonParseErrorKind,
-    KeyMissing, Mne, NiUnderlyingDetail, Nipa, NotObject, ParameterName, Regional, Request,
-    ReqwestError, Results, UnderlyingGdpByIndustry, User, VariantMissing,
+    map_to_string, ApiMetadata, App, BeaErr, BeaResponse, DatasetMissing, EnvError, FixedAssets,
+    GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, IoError, Ita, JsonParseError,
+    JsonParseErrorKind, KeyMissing, Mne, NiUnderlyingDetail, Nipa, NotObject, ParameterName, Queue,
+    Regional, Request, ReqwestError, Results, UnderlyingGdpByIndustry, VariantMissing,
 };
 use convert_case::Casing;
 use serde::{Deserialize, Serialize};
@@ -608,6 +608,23 @@ impl Dataset {
         Ok(())
     }
 
+    pub fn queue(&self) -> Result<Queue, BeaErr> {
+        match self {
+            Self::Nipa => Nipa::queue(),
+            Self::NIUnderlyingDetail => NiUnderlyingDetail::queue(),
+            Self::FixedAssets => FixedAssets::queue(),
+            Self::Mne => Mne::queue(),
+            _ => {
+                let error = DatasetMissing::new(
+                    "Nipa, NIUnderlyingDetail, FixedAssets or Mne variants required".to_string(),
+                    line!(),
+                    file!().to_string(),
+                );
+                Err(error.into())
+            }
+        }
+    }
+
     #[tracing::instrument]
     pub fn value_set<P: AsRef<std::path::Path> + std::fmt::Debug>(
         self,
@@ -794,46 +811,6 @@ impl Dataset {
 pub struct DatasetDetails {
     dataset_description: String,
     dataset_name: String,
-}
-
-impl DatasetDetails {
-    #[deprecated]
-    #[tracing::instrument(skip_all)]
-    pub async fn parameters(&self, user: &User) -> Result<BeaResponse, ReqwestError> {
-        let mut body = user.body();
-        body.push_str("&method=GETPARAMETERLIST");
-        body.push_str(&format!("&datasetname={}", self.dataset_name));
-        let url = body.clone();
-        let client = reqwest::Client::new();
-        match client.get(body).send().await {
-            Ok(res) => {
-                tracing::trace!("Response code: {}.", res.status());
-                match res.json::<BeaResponse>().await {
-                    Ok(r) => Ok(r),
-                    Err(source) => {
-                        let error = ReqwestError::new(
-                            url,
-                            "get".into(),
-                            source,
-                            line!(),
-                            file!().to_string(),
-                        );
-                        return Err(error);
-                    }
-                }
-            }
-            Err(source) => {
-                let error =
-                    ReqwestError::new(url, "get".into(), source, line!(), file!().to_string());
-                return Err(error);
-            }
-        }
-    }
-
-    #[deprecated]
-    pub fn name(&self) -> String {
-        self.dataset_name.to_owned()
-    }
 }
 
 impl TryFrom<serde_json::Value> for DatasetDetails {

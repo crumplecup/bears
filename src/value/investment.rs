@@ -4,6 +4,7 @@ use crate::{
 use convert_case::Casing;
 use derive_more::FromStr;
 
+/// DI can be `Inward` or `Outward` variants, while AMNE can take all values.
 #[derive(
     Debug,
     Default,
