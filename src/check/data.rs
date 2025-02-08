@@ -1,4 +1,4 @@
-use crate::{trace_init, BeaErr, Dataset, History, Naics, ParameterName};
+use crate::{trace_init, BeaErr, Dataset, History, Naics};
 
 /// Pings the BEA API.
 #[tracing::instrument]

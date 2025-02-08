@@ -54,7 +54,7 @@ _Requires a BEA issued API key._
 
 The `bears` library reads the user API key from the `API_KEY` environmental variable set in the project `.env` file:
 
-```
+```{bash}
 API_KEY = "your_BEA_issued_key"
 BEA_DATA = "path_to_download_dir"
 ```

@@ -1,0 +1,10 @@
+{
+  "MD033": {
+    "allowed_elements": [
+      "aside"
+    ]
+  },
+  "MD013": {
+    "line_length": 1000
+  }
+}
