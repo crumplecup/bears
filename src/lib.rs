@@ -4,7 +4,6 @@ pub mod command;
 mod config;
 mod data;
 mod dataset;
-#[macro_use]
 mod error;
 mod free;
 mod history;
