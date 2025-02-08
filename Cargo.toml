@@ -1,6 +1,6 @@
 [package]
 name = "bears"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Erik Rose <erik.w.rose@gmail.com>"]
 description = "A Rust wrapper for the Bureau of Economic Analysis (BEA) REST API."
