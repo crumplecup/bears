@@ -7,7 +7,7 @@ description = "A Rust wrapper for the Bureau of Economic Analysis (BEA) REST API
 readme = "README.md"
 repository = "https://github.com/crumplecup/bears"
 license = "Apache-2.0"
-keywords = ["economics", "econ", "bea", "finance", "rest", "rest-api"]
+keywords = ["economics", "finance", "rest"]
 categories = ["asynchronous", "finance"]
 
 [lib]
