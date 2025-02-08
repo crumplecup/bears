@@ -4,13 +4,11 @@ pub mod command;
 mod config;
 mod data;
 mod dataset;
+#[macro_use]
 mod error;
 mod free;
-mod geofips;
-pub mod getdata;
 mod history;
 mod json;
-pub mod linecode;
 mod method;
 mod naics;
 mod parameter;
@@ -30,14 +28,13 @@ pub use error::{
     DeriveFromStr, EnvError, FromStrError, IntegerInvalid, InvestmentInvalid, IoError, Jiff,
     JsonParseError, JsonParseErrorKind, KeyMissing, Nom, NotArray, NotFloat, NotInteger, NotObject,
     NotParameterName, NotQuarter, OwnershipInvalid, ParameterValueTableVariant, ParseFloat,
-    ParseInt, ParseInteger, RateLimit, ReqwestError, RowCodeMissing, Set, UrlParseError,
+    ParseInt, ParseInteger, RateLimit, ReqwestError, RowCodeMissing, SerdeJson, Set, UrlParseError,
     VariantMissing, YearInvalid,
 };
 pub use free::{
     file_size, from_csv, init, json_bool, json_str, map_to_bool, map_to_float, map_to_int,
     map_to_string, to_csv, trace_init,
 };
-pub use geofips::{BeaGeoFips, GeoFipsTask, GeoFipsTasks};
 pub use history::History;
 pub use json::Json;
 pub use method::Method;
