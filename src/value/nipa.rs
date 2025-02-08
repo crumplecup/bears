@@ -1,7 +1,8 @@
 use crate::{
     BeaErr, BeaResponse, Dataset, EnvError, Frequencies, Frequency, FrequencyOptions, IoError,
     Millions, MillionsOptions, NipaRange, NipaRanges, ParameterName, ParameterValueTable,
-    ParameterValueTableVariant, Queue, Request, SerdeJson, Set, TableName, YearSelection,
+    ParameterValueTableVariant, Queue, Request, SelectionKind, SerdeJson, Set, TableName,
+    YearSelection,
 };
 
 #[derive(
@@ -141,9 +142,9 @@ impl TryFrom<&std::path::PathBuf> for Nipa {
 pub struct NipaIterator<'a> {
     #[setters(skip)]
     nipa: &'a Nipa,
-    frequency_options: FrequencyOptions,
+    frequency_options: SelectionKind,
     millions: MillionsOptions,
-    year_selection: YearSelection,
+    year_selection: SelectionKind,
     // index into nipa.table_name
     #[setters(skip)]
     table_index: usize,
@@ -170,15 +171,15 @@ pub struct NipaIterator<'a> {
 
 impl<'a> NipaIterator<'a> {
     pub fn new(nipa: &'a Nipa) -> Self {
-        let frequency_options = FrequencyOptions::default();
+        let frequency_options = SelectionKind::default();
         let millions = MillionsOptions::default();
-        let year_selection = YearSelection::default();
+        let year_selection = SelectionKind::default();
         let table_index = 0;
         let frequency_index = 0;
         let first_table = nipa.table_name[table_index].name();
         // Create the range values by iteratoring over the NipaRange for the table name
         let range = match frequency_options {
-            FrequencyOptions::All => {
+            SelectionKind::All => {
                 if let Some(rng) = nipa.year.get(first_table) {
                     let vec = rng.iter().collect::<Vec<Vec<String>>>();
                     Some(vec)
@@ -186,18 +187,22 @@ impl<'a> NipaIterator<'a> {
                     None
                 }
             }
-            FrequencyOptions::Individual => None,
+            // Unimplemented
+            SelectionKind::Multiple => None,
+            SelectionKind::Individual => None,
         };
         let range_index = 0;
         // set years if needed
         let years = match year_selection {
             // only needed for individual
-            YearSelection::All => None,
+            SelectionKind::All => None,
+            // Unimplemented
+            SelectionKind::Multiple => None,
             // years depend on frequencies selected
-            YearSelection::Yearly => {
+            SelectionKind::Individual => {
                 match frequency_options {
                     // pull from current range
-                    FrequencyOptions::All => {
+                    SelectionKind::All => {
                         if let Some(rng) = &range {
                             Some(rng[range_index].clone())
                         } else {
@@ -206,7 +211,7 @@ impl<'a> NipaIterator<'a> {
                         }
                     }
                     // only pull the current frequency range
-                    FrequencyOptions::Individual => {
+                    SelectionKind::Individual => {
                         if let Some(rng) = nipa.year.get(first_table) {
                             // get the range for the current table
                             match nipa.frequency[frequency_index] {
@@ -219,7 +224,7 @@ impl<'a> NipaIterator<'a> {
                                     }
                                 }
                                 Frequency::Monthly => {
-                                    if let Some(monthly) = rng.annual() {
+                                    if let Some(monthly) = rng.monthly() {
                                         Some(monthly.keys())
                                     } else {
                                         tracing::error!("Values for monthly years not found.");
@@ -227,7 +232,7 @@ impl<'a> NipaIterator<'a> {
                                     }
                                 }
                                 Frequency::Quarterly => {
-                                    if let Some(quarterly) = rng.annual() {
+                                    if let Some(quarterly) = rng.quarterly() {
                                         Some(quarterly.keys())
                                     } else {
                                         tracing::error!("Values for quarterly years not found.");
@@ -240,6 +245,8 @@ impl<'a> NipaIterator<'a> {
                             None
                         }
                     }
+                    // Unimplemented
+                    SelectionKind::Multiple => None,
                 }
             }
         };
@@ -272,7 +279,7 @@ impl Iterator for NipaIterator<'_> {
             // no more year values in self.years
             match self.frequency_options {
                 // get all ranges
-                FrequencyOptions::All => {
+                SelectionKind::All => {
                     if let Some(range) = &self.range {
                         if self.range_index < range.len() - 1 {
                             // increment the range index
@@ -286,7 +293,7 @@ impl Iterator for NipaIterator<'_> {
                     }
                 }
                 // get all frequencies for a given table
-                FrequencyOptions::Individual => {
+                SelectionKind::Individual => {
                     // more frequencies remain
                     if self.frequency_index < self.nipa.frequency.len() - 1 {
                         // increment the frequency index
@@ -298,6 +305,7 @@ impl Iterator for NipaIterator<'_> {
                         self.frequency_end = true;
                     }
                 }
+                SelectionKind::Multiple => {}
             }
         }
 
@@ -309,10 +317,24 @@ impl Iterator for NipaIterator<'_> {
                 // Reset dependent drivers
                 self.frequency_index = 0;
                 self.frequency_end = false;
-                self.range_index = 0;
-                self.range_end = false;
-                self.year_index = 0;
-                self.year_end = false;
+                // range has been invalidated and must be rebuilt
+                let table_name = self.nipa.table_name[self.table_index].name();
+                self.range = match self.frequency_options {
+                    SelectionKind::All => {
+                        if let Some(rng) = self.nipa.year.get(table_name) {
+                            self.range_index = 0;
+                            self.range_end = false;
+                            let vec = rng.iter().collect::<Vec<Vec<String>>>();
+                            Some(vec)
+                        } else {
+                            // When do we hit this condition?
+                            None
+                        }
+                    }
+                    // Unimplemented
+                    SelectionKind::Multiple => None,
+                    SelectionKind::Individual => None,
+                };
             } else {
                 // no more tables, end iteration
                 return None;
@@ -331,27 +353,28 @@ impl Iterator for NipaIterator<'_> {
         // set frequency
         match self.frequency_options {
             // only a single key value pair needed
-            FrequencyOptions::All => {
+            SelectionKind::All => {
                 let (key, value) = self.nipa.frequencies();
                 params.insert(key, value);
                 self.frequency_end = true;
             }
             // step through the available frequencies
-            FrequencyOptions::Individual => {
+            SelectionKind::Individual => {
                 let (key, value) = self.nipa.frequency[self.frequency_index].params();
                 params.insert(key, value);
             }
+            SelectionKind::Multiple => {}
         }
         // set year values
         let key = ParameterName::Year.to_string();
         match self.year_selection {
             // single key value pair is sufficient
-            YearSelection::All => {
+            SelectionKind::All => {
                 let value = "ALL".to_string();
                 params.insert(key, value);
             }
             // pull next year from years
-            YearSelection::Yearly => {
+            SelectionKind::Individual => {
                 if let Some(years) = &self.years {
                     let value = years[self.year_index].clone();
                     params.insert(key, value);
@@ -369,6 +392,7 @@ impl Iterator for NipaIterator<'_> {
                     self.year_end = true;
                 }
             }
+            SelectionKind::Multiple => {}
         }
         Some(params)
     }
