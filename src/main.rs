@@ -1,5 +1,4 @@
-use bea::trace_init;
-use bea::BeaErr;
+use bears::{trace_init, BeaErr};
 use clap::Parser;
 // use indicatif::ProgressBar;
 use tracing::{info, trace};

@@ -1,7 +1,7 @@
 use crate::{
     BeaErr, BeaResponse, Dataset, FixedAssets, Frequencies, Frequency, Integer, IoError, Metadata,
     Mne, NiUnderlyingDetail, Nipa, ParameterFields, ParameterName, ParameterValueTable,
-    ParameterValueTableVariant, Set, TableName, Year,
+    ParameterValueTableVariant, SerdeJson, Set, TableName, Year,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, derive_more::From)]
@@ -262,16 +262,12 @@ impl TryFrom<&std::path::PathBuf> for ApiMetadata {
             let path = value.join(format!(
                 "parameter_values/{dataset}_{name}_parameter_values.json"
             ));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -354,16 +350,12 @@ impl GdpByIndustry {
                 "{dataset}_{name}_byTableId_{}_values.json",
                 id.value()
             ));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -399,16 +391,12 @@ impl GdpByIndustry {
         let path = path.join(format!(
             "parameter_values/{dataset}_{name}_parameter_values.json"
         ));
-        let file = match std::fs::File::open(&path) {
-            Ok(f) => f,
-            Err(source) => {
-                let error = IoError::new(path, source, line!(), file!().to_string());
-                return Err(error.into());
-            }
-        };
+        let file = std::fs::File::open(&path)
+            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
         // read the file to json
         let rdr = std::io::BufReader::new(file);
-        let res: serde_json::Value = serde_json::from_reader(rdr)?;
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         // parse to internal bea response format
         let data = BeaResponse::try_from(&res)?;
         let results = data.results();
@@ -444,16 +432,12 @@ impl GdpByIndustry {
                 "{dataset}_{name}_byTableId_{}_values.json",
                 id.value()
             ));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -507,16 +491,12 @@ impl TryFrom<&std::path::PathBuf> for Iip {
         for name in names {
             // open the file at the expected storage location, error if missing
             let path = value.join(format!("parameter_values/{dataset}_{name}_values.json"));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -620,16 +600,12 @@ impl TryFrom<&std::path::PathBuf> for InputOutput {
         for name in names {
             // open the file at the expected storage location, error if missing
             let path = value.join(format!("parameter_values/{dataset}_{name}_values.json"));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -697,16 +673,12 @@ impl TryFrom<&std::path::PathBuf> for Ita {
         for name in names {
             // open the file at the expected storage location, error if missing
             let path = value.join(format!("parameter_values/{dataset}_{name}_values.json"));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -816,16 +788,12 @@ impl TryFrom<&std::path::PathBuf> for IntlServSta {
         for name in names {
             // open the file at the expected storage location, error if missing
             let path = value.join(format!("parameter_values/{dataset}_{name}_values.json"));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -949,16 +917,12 @@ impl TryFrom<&std::path::PathBuf> for IntlServTrade {
         for name in names {
             // open the file at the expected storage location, error if missing
             let path = value.join(format!("parameter_values/{dataset}_{name}_values.json"));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -1080,16 +1044,12 @@ impl TryFrom<&std::path::PathBuf> for Regional {
         for name in names {
             // open the file at the expected storage location, error if missing
             let path = value.join(format!("parameter_values/{dataset}_{name}_values.json"));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -1186,16 +1146,12 @@ impl UnderlyingGdpByIndustry {
                 "{dataset}_{name}_byTableId_{}_values.json",
                 id.value()
             ));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -1230,16 +1186,12 @@ impl UnderlyingGdpByIndustry {
         let path = path.join(format!(
             "parameter_values/{dataset}_{name}_parameter_values.json"
         ));
-        let file = match std::fs::File::open(&path) {
-            Ok(f) => f,
-            Err(source) => {
-                let error = IoError::new(path, source, line!(), file!().to_string());
-                return Err(error.into());
-            }
-        };
+        let file = std::fs::File::open(&path)
+            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
         // read the file to json
         let rdr = std::io::BufReader::new(file);
-        let res: serde_json::Value = serde_json::from_reader(rdr)?;
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         // parse to internal bea response format
         let data = BeaResponse::try_from(&res)?;
         let results = data.results();
@@ -1275,16 +1227,12 @@ impl UnderlyingGdpByIndustry {
                 "{dataset}_{name}_byTableId_{}_values.json",
                 id.value()
             ));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();

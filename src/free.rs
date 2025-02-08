@@ -12,17 +12,11 @@ pub fn trace_init() -> Result<(), BeaErr> {
     let bea_data = EnvError::from_env("BEA_DATA")?;
     let path = std::path::PathBuf::from(bea_data);
     let path = path.join("history.log");
-    let history = match std::fs::OpenOptions::new()
+    let history = std::fs::OpenOptions::new()
         .append(true)
         .create(true)
         .open(&path)
-    {
-        Ok(value) => value,
-        Err(source) => {
-            let error = IoError::new(path, source, line!(), file!().to_string());
-            return Err(error.into());
-        }
-    };
+        .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
     let history = tracing_subscriber::fmt::layer()
         .json()
         .with_writer(std::sync::Arc::new(history))

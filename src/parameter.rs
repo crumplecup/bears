@@ -2,9 +2,9 @@ use crate::{
     json_str, map_to_bool, map_to_string, FromStrError, JsonParseError, JsonParseErrorKind,
     KeyMissing, NotArray, NotObject, NotParameterName,
 };
-use derive_more::FromStr;
 use serde::de::Deserializer;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]

@@ -1,7 +1,7 @@
 use crate::{
     map_to_float, map_to_int, map_to_string, parse_year, quarter, AnnotatedInteger, BeaErr,
     BeaResponse, DatasetMissing, IoError, JsonParseError, JsonParseErrorKind, KeyMissing, Naics,
-    NotArray, NotObject, RowCode, VariantMissing,
+    NotArray, NotObject, RowCode, SerdeJson, VariantMissing,
 };
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize, derive_more::From,
@@ -101,15 +101,11 @@ impl TryFrom<&std::path::PathBuf> for NipaData {
     type Error = BeaErr;
 
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
-        let file = match std::fs::File::open(value) {
-            Ok(f) => f,
-            Err(source) => {
-                let error = IoError::new(value.clone(), source, line!(), file!().to_string());
-                return Err(error.into());
-            }
-        };
+        let file = std::fs::File::open(value)
+            .map_err(|e| IoError::new(value.into(), e, line!(), file!().into()))?;
         let rdr = std::io::BufReader::new(file);
-        let res: serde_json::Value = serde_json::from_reader(rdr)?;
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         let data = BeaResponse::try_from(&res)?;
         tracing::info!("Response read.");
         tracing::trace!("Response: {data:#?}");
@@ -281,15 +277,11 @@ impl TryFrom<&std::path::PathBuf> for FixedAssetData {
     type Error = BeaErr;
 
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
-        let file = match std::fs::File::open(value) {
-            Ok(f) => f,
-            Err(source) => {
-                let error = IoError::new(value.clone(), source, line!(), file!().to_string());
-                return Err(error.into());
-            }
-        };
+        let file = std::fs::File::open(value)
+            .map_err(|e| IoError::new(value.into(), e, line!(), file!().into()))?;
         let rdr = std::io::BufReader::new(file);
-        let res: serde_json::Value = serde_json::from_reader(rdr)?;
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         let data = BeaResponse::try_from(&res)?;
         tracing::info!("Response read.");
         tracing::trace!("Response: {data:#?}");
@@ -473,15 +465,11 @@ impl TryFrom<&std::path::PathBuf> for MneDiData {
     type Error = BeaErr;
 
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
-        let file = match std::fs::File::open(value) {
-            Ok(f) => f,
-            Err(source) => {
-                let error = IoError::new(value.clone(), source, line!(), file!().to_string());
-                return Err(error.into());
-            }
-        };
+        let file = std::fs::File::open(value)
+            .map_err(|e| IoError::new(value.into(), e, line!(), file!().into()))?;
         let rdr = std::io::BufReader::new(file);
-        let res: serde_json::Value = serde_json::from_reader(rdr)?;
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         let data = BeaResponse::try_from(&res)?;
         tracing::info!("Response read.");
         tracing::trace!("Response: {data:#?}");

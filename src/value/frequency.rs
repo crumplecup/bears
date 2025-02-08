@@ -2,7 +2,7 @@ use crate::{
     BeaErr, DeriveFromStr, NipaFrequency, ParameterName, ParameterValueTable,
     ParameterValueTableVariant,
 };
-use derive_more::FromStr;
+use std::str::FromStr;
 
 #[derive(
     Debug,

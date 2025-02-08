@@ -1,4 +1,4 @@
-use bea::check;
+use bears::check;
 
 #[test]
 fn parameter_names() -> anyhow::Result<()> {

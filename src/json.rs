@@ -14,12 +14,26 @@ impl Json {
         let response = Json::read_lines(response)?;
         let mut response_lines = Vec::new();
         for line in response {
-            response_lines.push(line?);
+            let line = match line {
+                Ok(result) => result,
+                Err(source) => {
+                    let error = IoError::new(path.into(), source, line!(), file!().into());
+                    return Err(error.into());
+                }
+            };
+            response_lines.push(line);
         }
         let native = Json::read_lines(native)?;
         let mut native_lines = Vec::new();
         for line in native {
-            native_lines.push(line?);
+            let line = match line {
+                Ok(result) => result,
+                Err(source) => {
+                    let error = IoError::new(path.into(), source, line!(), file!().into());
+                    return Err(error.into());
+                }
+            };
+            native_lines.push(line);
         }
 
         let fused = response_lines
@@ -72,13 +86,27 @@ impl Json {
         let response = Json::read_lines(response)?;
         let mut response_lines = Vec::new();
         for line in response {
-            response_lines.push(line?);
+            let line = match line {
+                Ok(result) => result,
+                Err(source) => {
+                    let error = IoError::new(path.into(), source, line!(), file!().into());
+                    return Err(error.into());
+                }
+            };
+            response_lines.push(line);
         }
         tracing::info!("Response json read.");
         let native = Json::read_lines(native)?;
         let mut native_lines = Vec::new();
         for line in native {
-            native_lines.push(line?);
+            let line = match line {
+                Ok(result) => result,
+                Err(source) => {
+                    let error = IoError::new(path.into(), source, line!(), file!().into());
+                    return Err(error.into());
+                }
+            };
+            native_lines.push(line);
         }
         tracing::info!("Native json read.");
 
@@ -110,13 +138,8 @@ impl Json {
         P: AsRef<std::path::Path>,
     {
         let path = std::path::PathBuf::from(path.as_ref());
-        let file = match std::fs::File::open(&path) {
-            Ok(f) => f,
-            Err(source) => {
-                let error = IoError::new(path, source, line!(), file!().to_string());
-                return Err(error);
-            }
-        };
+        let file = std::fs::File::open(&path)
+            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
         Ok(std::io::BufReader::new(file).lines())
     }
 }

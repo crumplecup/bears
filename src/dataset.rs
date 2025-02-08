@@ -2,7 +2,7 @@ use crate::{
     map_to_string, ApiMetadata, App, BeaErr, BeaResponse, DatasetMissing, EnvError, FixedAssets,
     GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, IoError, Ita, JsonParseError,
     JsonParseErrorKind, KeyMissing, Mne, NiUnderlyingDetail, Nipa, NotObject, ParameterName, Queue,
-    Regional, Request, ReqwestError, Results, UnderlyingGdpByIndustry, VariantMissing,
+    Regional, Request, ReqwestError, Results, SerdeJson, UnderlyingGdpByIndustry, VariantMissing,
 };
 use convert_case::Casing;
 use serde::{Deserialize, Serialize};
@@ -181,17 +181,13 @@ impl Dataset {
         let data = app.get().await?;
         match data.json::<serde_json::Value>().await {
             Ok(json) => {
-                let contents = serde_json::to_vec(&json)?;
+                let contents = serde_json::to_vec(&json)
+                    .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                 dotenvy::dotenv().ok();
                 let bea_data = EnvError::from_env("BEA_DATA")?;
                 let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
-                match std::fs::write(&path, contents) {
-                    Ok(()) => Ok(()),
-                    Err(source) => {
-                        let error = IoError::new(path, source, line!(), file!().to_string());
-                        Err(error.into())
-                    }
-                }
+                std::fs::write(&path, contents)
+                    .map_err(|e| IoError::new(path, e, line!(), file!().into()).into())
             }
             Err(source) => {
                 let url = app.url().to_string();
@@ -211,16 +207,12 @@ impl Dataset {
         let bea_data = EnvError::from_env("BEA_DATA")?;
         tracing::info!("BEA_DATA present.");
         let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
-        let file = match std::fs::File::open(&path) {
-            Ok(f) => f,
-            Err(source) => {
-                let error = IoError::new(path, source, line!(), file!().to_string());
-                return Err(error.into());
-            }
-        };
+        let file = std::fs::File::open(&path)
+            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
         tracing::info!("File opened.");
         let rdr = std::io::BufReader::new(file);
-        let json: serde_json::Value = serde_json::from_reader(rdr)?;
+        let json: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         let bea = BeaResponse::try_from(&json)?;
         tracing::info!("Response: {bea:#?}");
         Ok(bea)
@@ -235,22 +227,20 @@ impl Dataset {
         let data = app.get().await?;
         match data.json::<serde_json::Value>().await {
             Ok(json) => {
-                let contents = serde_json::to_vec(&json)?;
+                let contents = serde_json::to_vec(&json)
+                    .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                 dotenvy::dotenv().ok();
                 let bea_data = EnvError::from_env("BEA_DATA")?;
                 let path = std::path::PathBuf::from(&format!("{bea_data}/parameters"));
-                if !std::fs::exists(&path)? {
-                    std::fs::DirBuilder::new().create(&path)?;
+                if !path.exists() {
+                    std::fs::DirBuilder::new()
+                        .create(&path)
+                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
                     tracing::info!("Target directory for Parameters created.");
                 }
                 let path = path.join(format!("{self}_parameters.json"));
-                match std::fs::write(&path, contents) {
-                    Ok(()) => Ok(()),
-                    Err(source) => {
-                        let error = IoError::new(path, source, line!(), file!().to_string());
-                        Err(error.into())
-                    }
-                }
+                std::fs::write(&path, contents)
+                    .map_err(|e| IoError::new(path, e, line!(), file!().into()).into())
             }
             Err(source) => {
                 let url = app.url().to_string();
@@ -286,22 +276,20 @@ impl Dataset {
         let data = app.get().await?;
         match data.json::<serde_json::Value>().await {
             Ok(json) => {
-                let contents = serde_json::to_vec(&json)?;
+                let contents = serde_json::to_vec(&json)
+                    .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                 dotenvy::dotenv().ok();
                 let bea_data = EnvError::from_env("BEA_DATA")?;
                 let path = std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
-                if !std::fs::exists(&path)? {
-                    std::fs::DirBuilder::new().create(&path)?;
+                if !path.exists() {
+                    std::fs::DirBuilder::new()
+                        .create(&path)
+                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
                     tracing::info!("Target directory for Parameter Values created.");
                 }
                 let path = path.join(format!("{self}_{name}_parameter_values.json"));
-                match std::fs::write(&path, contents) {
-                    Ok(()) => Ok(()),
-                    Err(source) => {
-                        let error = IoError::new(path, source, line!(), file!().to_string());
-                        Err(error.into())
-                    }
-                }
+                std::fs::write(&path, contents)
+                    .map_err(|e| IoError::new(path, e, line!(), file!().into()).into())
             }
             Err(source) => {
                 let url = app.url().to_string();
@@ -358,24 +346,21 @@ impl Dataset {
                         tracing::info!("{e}");
                     }
                     Results::ParameterValues(_) => {
-                        let contents = serde_json::to_vec(&json)?;
+                        let contents = serde_json::to_vec(&json)
+                            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                         dotenvy::dotenv().ok();
                         let bea_data = EnvError::from_env("BEA_DATA")?;
                         let path =
                             std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
-                        if !std::fs::exists(&path)? {
-                            std::fs::DirBuilder::new().create(&path)?;
+                        if !path.exists() {
+                            std::fs::DirBuilder::new().create(&path).map_err(|e| {
+                                IoError::new(path.clone(), e, line!(), file!().into())
+                            })?;
                             tracing::info!("Target directory for Parameter Values created.");
                         }
                         let path = path.join(format!("{self}_{name}_values.json"));
-                        match std::fs::write(&path, contents) {
-                            Ok(()) => {}
-                            Err(source) => {
-                                let error =
-                                    IoError::new(path, source, line!(), file!().to_string());
-                                return Err(error.into());
-                            }
-                        }
+                        std::fs::write(&path, contents)
+                            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
                     }
                     unexpected => {
                         tracing::warn!("Unexpected type {unexpected:#?}");
@@ -462,13 +447,17 @@ impl Dataset {
         match name {
             ParameterName::Industry => {
                 let path = std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
-                if !std::fs::exists(&path)? {
-                    std::fs::DirBuilder::new().create(&path)?;
+                if !path.exists() {
+                    std::fs::DirBuilder::new()
+                        .create(&path)
+                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
                     tracing::info!("Target directory for Parameter Values created.");
                 }
                 let path = path.join(format!("{self}_{name}"));
-                if !std::fs::exists(&path)? {
-                    std::fs::DirBuilder::new().create(&path)?;
+                if !path.exists() {
+                    std::fs::DirBuilder::new()
+                        .create(&path)
+                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
                     tracing::info!("Target directory for Parameter Values created.");
                 }
                 for id in table_id {
@@ -478,20 +467,15 @@ impl Dataset {
                     tracing::info!("{data:#?}");
                     match data.json::<serde_json::Value>().await {
                         Ok(json) => {
-                            let contents = serde_json::to_vec(&json)?;
+                            let contents = serde_json::to_vec(&json)
+                                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                             let path = path.join(format!(
                                 "{self}_{name}_byTableId_{}_values.json",
                                 id.value()
                             ));
                             tracing::info!("Current target path: {path:?}");
-                            match std::fs::write(&path, contents) {
-                                Ok(()) => {}
-                                Err(source) => {
-                                    let error =
-                                        IoError::new(path, source, line!(), file!().to_string());
-                                    return Err(error.into());
-                                }
-                            }
+                            std::fs::write(&path, contents)
+                                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
                         }
                         Err(source) => {
                             let url = app.url().to_string();
@@ -512,13 +496,17 @@ impl Dataset {
             }
             ParameterName::Year => {
                 let path = std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
-                if !std::fs::exists(&path)? {
-                    std::fs::DirBuilder::new().create(&path)?;
+                if !path.exists() {
+                    std::fs::DirBuilder::new()
+                        .create(&path)
+                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
                     tracing::info!("Target directory for Parameter Values created.");
                 }
                 let path = path.join(format!("{self}_{name}"));
-                if !std::fs::exists(&path)? {
-                    std::fs::DirBuilder::new().create(&path)?;
+                if !path.exists() {
+                    std::fs::DirBuilder::new()
+                        .create(&path)
+                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
                     tracing::info!("Target directory for Parameter Values created.");
                 }
                 for id in table_id {
@@ -529,20 +517,15 @@ impl Dataset {
                     match data.json::<serde_json::Value>().await {
                         Ok(json) => {
                             // tracing::info!("{json:#?}");
-                            let contents = serde_json::to_vec(&json)?;
+                            let contents = serde_json::to_vec(&json)
+                                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                             let path = path.join(format!(
                                 "{self}_{name}_byTableId_{}_values.json",
                                 id.value()
                             ));
                             tracing::info!("Current target path: {path:?}");
-                            match std::fs::write(&path, contents) {
-                                Ok(()) => {}
-                                Err(source) => {
-                                    let error =
-                                        IoError::new(path, source, line!(), file!().to_string());
-                                    return Err(error.into());
-                                }
-                            }
+                            std::fs::write(&path, contents)
+                                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
                         }
                         Err(source) => {
                             let url = app.url().to_string();

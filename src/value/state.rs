@@ -2,7 +2,7 @@ use crate::{
     BeaErr, DeriveFromStr, MneDoi, ParameterFields, ParameterValueTable, ParameterValueTableVariant,
 };
 use convert_case::Casing;
-use derive_more::FromStr;
+use std::str::FromStr;
 
 #[derive(
     Debug,

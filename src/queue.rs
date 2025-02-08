@@ -2,8 +2,8 @@ use crate::{
     file_size, map_to_string, App, BeaErr, Data, History, Jiff, JsonParseError, JsonParseErrorKind,
     KeyMissing, NotObject, ParseInt, ResultStatus,
 };
-use derive_more::FromStr;
 use jiff::ToSpan;
+use std::str::FromStr;
 
 #[derive(
     Debug,

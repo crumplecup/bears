@@ -1,10 +1,10 @@
 use crate::{
     BeaErr, BeaResponse, Dataset, DeriveFromStr, EnvError, IoError, JsonParseError,
     JsonParseErrorKind, KeyMissing, Method, Options, ParameterName, RateLimit, ReqwestError,
-    Results, VariantMissing,
+    Results, SerdeJson, VariantMissing,
 };
-use derive_more::FromStr;
 use std::collections::BTreeMap;
+use std::str::FromStr;
 
 /// The `App` struct contains the application state.
 ///
@@ -131,12 +131,16 @@ impl App {
             Method::GetData => {
                 let path = path.join("data");
                 if !path.exists() && create {
-                    std::fs::DirBuilder::new().create(&path)?;
+                    std::fs::DirBuilder::new()
+                        .create(&path)
+                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
                     tracing::info!("Target directory for Data created.");
                 }
                 let path = path.join(&dataset);
                 if !path.exists() && create {
-                    std::fs::DirBuilder::new().create(&path)?;
+                    std::fs::DirBuilder::new()
+                        .create(&path)
+                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
                     tracing::info!("Target directory for {dataset} created.");
                 }
                 match datakind {
@@ -153,12 +157,16 @@ impl App {
                         {
                             let path = path.join("AMNE");
                             if !path.exists() && create {
-                                std::fs::DirBuilder::new().create(&path)?;
+                                std::fs::DirBuilder::new().create(&path).map_err(|e| {
+                                    IoError::new(path.clone(), e, line!(), file!().into())
+                                })?;
                                 tracing::info!("Target directory for AMNE created.");
                             }
                             let path = path.join(country);
                             if !path.exists() && create {
-                                std::fs::DirBuilder::new().create(&path)?;
+                                std::fs::DirBuilder::new().create(&path).map_err(|e| {
+                                    IoError::new(path.clone(), e, line!(), file!().into())
+                                })?;
                                 tracing::info!("Target directory for {dataset} created.");
                             }
                             let ownership = query["OwnershipLevel"].clone();
@@ -186,12 +194,16 @@ impl App {
                         } else {
                             let path = path.join("DirectInvestment");
                             if !path.exists() && create {
-                                std::fs::DirBuilder::new().create(&path)?;
+                                std::fs::DirBuilder::new().create(&path).map_err(|e| {
+                                    IoError::new(path.clone(), e, line!(), file!().into())
+                                })?;
                                 tracing::info!("Target directory for DirectInvestment created.");
                             }
                             let path = path.join(country);
                             if !path.exists() && create {
-                                std::fs::DirBuilder::new().create(&path)?;
+                                std::fs::DirBuilder::new().create(&path).map_err(|e| {
+                                    IoError::new(path.clone(), e, line!(), file!().into())
+                                })?;
                                 tracing::info!("Target directory for {dataset} created.");
                             }
                             Ok(path.join(format!("{class}_{doi}.json")))
@@ -272,17 +284,12 @@ impl App {
         let method = self.method()?;
         match method {
             Method::GetData => {
-                let contents = serde_json::to_vec(&json)?;
+                let contents = serde_json::to_vec(&json)
+                    .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
+
                 let path = self.destination(true)?;
-                match std::fs::write(&path, contents) {
-                    Ok(()) => {
-                        tracing::info!("JSON saved to {path:#?}");
-                    }
-                    Err(source) => {
-                        let error = IoError::new(path, source, line!(), file!().to_string());
-                        return Err(error.into());
-                    }
-                }
+                std::fs::write(&path, contents)
+                    .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             }
             _ => {
                 tracing::info!("Not implemented for {method}.");
@@ -301,16 +308,12 @@ impl App {
                 let path = self.destination(false)?;
                 tracing::info!("Opening {path:?}.");
                 // Create reader from path.
-                let file = match std::fs::File::open(&path) {
-                    Ok(f) => f,
-                    Err(source) => {
-                        let error = IoError::new(path, source, line!(), file!().to_string());
-                        return Err(error.into());
-                    }
-                };
+                let file = std::fs::File::open(&path)
+                    .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
                 let rdr = std::io::BufReader::new(file);
                 // Deserialize to serde_json::Value.
-                let json: serde_json::Value = serde_json::from_reader(rdr)?;
+                let json: serde_json::Value = serde_json::from_reader(rdr)
+                    .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                 BeaResponse::try_from(&json)
             }
             _ => {

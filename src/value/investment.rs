@@ -2,7 +2,7 @@ use crate::{
     parameter_value::MneDoi, BeaErr, DeriveFromStr, ParameterValueTable, ParameterValueTableVariant,
 };
 use convert_case::Casing;
-use derive_more::FromStr;
+use std::str::FromStr;
 
 /// DI can be `Inward` or `Outward` variants, while AMNE can take all values.
 #[derive(

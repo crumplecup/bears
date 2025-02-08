@@ -2,8 +2,8 @@ use crate::{
     init, map_to_string, App, BeaErr, BeaErrorKind, Dataset, DeriveFromStr, JsonParseError,
     JsonParseErrorKind, KeyMissing, Method, NotObject, Options, ParameterName,
 };
-use derive_more::FromStr;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 #[derive(
     Clone,

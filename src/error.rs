@@ -22,203 +22,56 @@ impl From<BeaErrorKind> for BeaErr {
     }
 }
 
-impl From<AnnotationMissing> for BeaErr {
-    fn from(value: AnnotationMissing) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
+#[macro_export]
+macro_rules! error_info {
+    () => {
+        (line!(), file!().to_string())
+    };
 }
 
-impl From<BincodeError> for BeaErr {
-    fn from(value: BincodeError) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
+macro_rules! impl_bea_err {
+    ( $( $name:ident),* ) => {
+        $(
+            impl From<$name> for BeaErr {
+                fn from(value: $name) -> Self {
+                    let kind = BeaErrorKind::from(value).into();
+                    Self { kind }
+                }
+            }
+        )*
+    };
+    ( $( $name:ident),+ ,) => {
+       impl_bea_err![ $( $name ),* ];
+    };
 }
 
-impl From<BoolInvalid> for BeaErr {
-    fn from(value: BoolInvalid) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<Check> for BeaErr {
-    fn from(value: Check) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<Csv> for BeaErr {
-    fn from(value: Csv) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<DatasetMissing> for BeaErr {
-    fn from(value: DatasetMissing) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<DeriveFromStr> for BeaErr {
-    fn from(value: DeriveFromStr) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<EnvError> for BeaErr {
-    fn from(value: EnvError) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<Jiff> for BeaErr {
-    fn from(value: Jiff) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<JsonParseError> for BeaErr {
-    fn from(value: JsonParseError) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<ReqwestError> for BeaErr {
-    fn from(value: ReqwestError) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<serde_json::Error> for BeaErr {
-    fn from(value: serde_json::Error) -> Self {
-        let kind = SerdeJson::from(value);
-        let kind = BeaErrorKind::from(kind).into();
-        Self { kind }
-    }
-}
-
-impl From<SerdeJson> for BeaErr {
-    fn from(value: SerdeJson) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<Set> for BeaErr {
-    fn from(value: Set) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<std::io::Error> for BeaErr {
-    fn from(value: std::io::Error) -> Self {
-        let kind = Io::from(value);
-        let kind = BeaErrorKind::from(kind).into();
-        Self { kind }
-    }
-}
-
-impl From<IntegerInvalid> for BeaErr {
-    fn from(value: IntegerInvalid) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<InvestmentInvalid> for BeaErr {
-    fn from(value: InvestmentInvalid) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<Io> for BeaErr {
-    fn from(value: Io) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<IoError> for BeaErr {
-    fn from(value: IoError) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<Nom> for BeaErr {
-    fn from(value: Nom) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<OwnershipInvalid> for BeaErr {
-    fn from(value: OwnershipInvalid) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<ParameterValueTableVariant> for BeaErr {
-    fn from(value: ParameterValueTableVariant) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<ParseInt> for BeaErr {
-    fn from(value: ParseInt) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<RateLimit> for BeaErr {
-    fn from(value: RateLimit) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<RowCodeMissing> for BeaErr {
-    fn from(value: RowCodeMissing) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<UrlParseError> for BeaErr {
-    fn from(value: UrlParseError) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<VariantMissing> for BeaErr {
-    fn from(value: VariantMissing) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
-
-impl From<YearInvalid> for BeaErr {
-    fn from(value: YearInvalid) -> Self {
-        let kind = BeaErrorKind::from(value).into();
-        Self { kind }
-    }
-}
+impl_bea_err!(
+    AnnotationMissing,
+    BincodeError,
+    BoolInvalid,
+    Check,
+    Csv,
+    DatasetMissing,
+    DeriveFromStr,
+    EnvError,
+    IntegerInvalid,
+    InvestmentInvalid,
+    IoError,
+    Jiff,
+    JsonParseError,
+    Nom,
+    OwnershipInvalid,
+    ParameterValueTableVariant,
+    ParseInt,
+    RateLimit,
+    ReqwestError,
+    RowCodeMissing,
+    SerdeJson,
+    Set,
+    UrlParseError,
+    VariantMissing,
+    YearInvalid,
+);
 
 #[derive(Debug, derive_more::From)]
 pub enum BeaErrorKind {
@@ -244,8 +97,6 @@ pub enum BeaErrorKind {
     InvestmentInvalid(InvestmentInvalid),
     #[from(IoError)]
     Io(IoError),
-    #[from(Io, std::io::Error)]
-    IoPass(Io),
     #[from(Jiff)]
     Jiff(Jiff),
     #[from(JsonParseError)]
@@ -266,7 +117,7 @@ pub enum BeaErrorKind {
     RowCodeMissing(RowCodeMissing),
     #[from(Set)]
     Set(Set),
-    #[from(SerdeJson, serde_json::Error)]
+    #[from(SerdeJson)]
     SerdeJson(SerdeJson),
     #[from(UrlParseError)]
     UrlParse(UrlParseError),
@@ -310,9 +161,6 @@ impl std::fmt::Display for BeaErrorKind {
                 write!(f, "{e}")
             }
             Self::Io(e) => {
-                write!(f, "{e}")
-            }
-            Self::IoPass(e) => {
                 write!(f, "{e}")
             }
             Self::Jiff(e) => {
@@ -375,7 +223,6 @@ impl std::error::Error for BeaErrorKind {
             Self::IntegerInvalid(e) => e.source(),
             Self::InvestmentInvalid(e) => e.source(),
             Self::Io(e) => Some(e.source()),
-            Self::IoPass(e) => Some(e.source()),
             Self::Jiff(e) => e.source(),
             Self::JsonParse(e) => e.source(),
             Self::Nom(e) => e.source(),
@@ -638,27 +485,6 @@ impl std::error::Error for BincodeError {
 }
 
 #[derive(
-    Debug,
-    derive_getters::Getters,
-    derive_setters::Setters,
-    derive_more::Display,
-    derive_more::From,
-    derive_new::new,
-)]
-#[display("io error")]
-#[setters(prefix = "with_", borrow_self)]
-#[from(std::io::Error)]
-pub struct Io {
-    pub source: std::io::Error,
-}
-
-impl std::error::Error for Io {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(&self.source)
-    }
-}
-
-#[derive(
     Debug, derive_getters::Getters, derive_setters::Setters, derive_more::Display, derive_new::new,
 )]
 #[display("io error at path {path:?} in line {line} of {file}")]
@@ -684,11 +510,12 @@ impl std::error::Error for IoError {
     derive_new::new,
     derive_more::From,
 )]
-#[display("error from serde_json library")]
+#[display("serde_json error: {source} at line {line} in {file}")]
 #[setters(prefix = "with_", borrow_self)]
-#[from(serde_json::Error)]
 pub struct SerdeJson {
-    pub source: serde_json::Error,
+    source: serde_json::Error,
+    line: u32,
+    file: String,
 }
 
 impl std::error::Error for SerdeJson {

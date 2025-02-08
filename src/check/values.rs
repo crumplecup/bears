@@ -1,7 +1,7 @@
 use crate::{
     trace_init, ApiMetadata, BeaErr, BeaResponse, Dataset, EnvError, FixedAssets, GdpByIndustry,
     Iip, InputOutput, IntlServSta, IntlServTrade, IoError, Ita, Mne, NiUnderlyingDetail, Nipa,
-    Regional, UnderlyingGdpByIndustry,
+    Regional, SerdeJson, UnderlyingGdpByIndustry,
 };
 use strum::IntoEnumIterator;
 
@@ -13,15 +13,11 @@ pub fn api_error() -> Result<(), BeaErr> {
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     let path = std::path::PathBuf::from(&format!("{bea_data}/values_api_error.json"));
-    let file = match std::fs::File::open(&path) {
-        Ok(f) => f,
-        Err(source) => {
-            let error = IoError::new(path, source, line!(), file!().to_string());
-            return Err(error.into());
-        }
-    };
+    let file =
+        std::fs::File::open(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
     let rdr = std::io::BufReader::new(file);
-    let res: serde_json::Value = serde_json::from_reader(rdr)?;
+    let res: serde_json::Value = serde_json::from_reader(rdr)
+        .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
     let data = BeaResponse::try_from(&res)?;
     tracing::info!("Response read.");
     tracing::info!("Response: {data:#?}");
@@ -35,15 +31,11 @@ pub fn requests_exceeded() -> Result<(), BeaErr> {
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     let path = std::path::PathBuf::from(&format!("{bea_data}/requests_exceeded.json"));
-    let file = match std::fs::File::open(&path) {
-        Ok(f) => f,
-        Err(source) => {
-            let error = IoError::new(path, source, line!(), file!().to_string());
-            return Err(error.into());
-        }
-    };
+    let file =
+        std::fs::File::open(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
     let rdr = std::io::BufReader::new(file);
-    let res: serde_json::Value = serde_json::from_reader(rdr)?;
+    let res: serde_json::Value = serde_json::from_reader(rdr)
+        .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
     let data = BeaResponse::try_from(&res)?;
     tracing::info!("Response read.");
     tracing::info!("Response: {data:#?}");

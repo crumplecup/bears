@@ -1,7 +1,7 @@
 use crate::{
     BeaErr, BeaResponse, Dataset, EnvError, Frequencies, Frequency, FrequencyOptions, IoError,
     Millions, MillionsOptions, NipaRange, NipaRanges, ParameterName, ParameterValueTable,
-    ParameterValueTableVariant, Queue, Request, Set, TableName, YearSelection,
+    ParameterValueTableVariant, Queue, Request, SerdeJson, Set, TableName, YearSelection,
 };
 
 #[derive(
@@ -58,16 +58,12 @@ impl TryFrom<&std::path::PathBuf> for Nipa {
             let path = value.join(format!(
                 "parameter_values/{dataset}_{name}_parameter_values.json"
             ));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();
@@ -430,16 +426,12 @@ impl TryFrom<&std::path::PathBuf> for NiUnderlyingDetail {
             let path = value.join(format!(
                 "parameter_values/{dataset}_{name}_parameter_values.json"
             ));
-            let file = match std::fs::File::open(&path) {
-                Ok(f) => f,
-                Err(source) => {
-                    let error = IoError::new(path, source, line!(), file!().to_string());
-                    return Err(error.into());
-                }
-            };
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
             // read the file to json
             let rdr = std::io::BufReader::new(file);
-            let res: serde_json::Value = serde_json::from_reader(rdr)?;
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             // parse to internal bea response format
             let data = BeaResponse::try_from(&res)?;
             let results = data.results();

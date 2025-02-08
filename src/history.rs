@@ -69,22 +69,12 @@ impl TryFrom<&std::path::PathBuf> for History {
     fn try_from(path: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let mut events = std::collections::HashMap::new();
         let path = path.join("history.log");
-        let file = match std::fs::read_to_string(&path) {
-            Ok(file) => file,
-            Err(source) => {
-                let error = IoError::new(path.to_owned(), source, line!(), file!().to_string());
-                return Err(error.into());
-            }
-        };
+        let file = std::fs::read_to_string(&path)
+            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
         for line in file.lines() {
             tracing::trace!("String: {line}");
-            let json: serde_json::Value = match serde_json::from_str(line) {
-                Ok(json) => json,
-                Err(source) => {
-                    let error = SerdeJson::new(source);
-                    return Err(error.into());
-                }
-            };
+            let json: serde_json::Value = serde_json::from_str(line)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
             tracing::trace!("Json: {json}");
             let event = Event::try_from(&json)?;
             events.insert(event.path().clone(), event);
