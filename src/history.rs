@@ -17,6 +17,7 @@ impl History {
         dotenvy::dotenv().ok();
         let path = EnvError::from_env("BEA_DATA")?;
         let path = std::path::PathBuf::from(path);
+        let path = path.join("history");
         Self::try_from(&path)
     }
 
