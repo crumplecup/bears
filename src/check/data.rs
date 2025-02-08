@@ -1,10 +1,10 @@
-use crate::{trace_init, BeaErr, Dataset, History, Naics};
+use crate::{trace_init, BeaErr, Dataset, History, Mode, Naics};
 
 /// Pings the BEA API.
 #[tracing::instrument]
 pub async fn data_to_json() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::Mne];
+    let datasets = vec![Dataset::Nipa];
     for dataset in datasets {
         // let queue = dataset.queue()?;
         let mut queue = dataset.queue()?;
@@ -33,7 +33,9 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
         // counter.active_subset(true)?;
         // tracing::info!("Counter is length {}", counter.len());
 
-        queue.active_subset(false)?;
+        // queue.active_subset(false)?;
+        let history = History::try_from((dataset, Mode::Download))?;
+        queue.errors(&history, false)?;
         tracing::info!("Queue is length {}", queue.len());
         // tracing::info!("{queue:#?}");
         queue.download(false).await?;
@@ -45,18 +47,18 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 pub async fn data_from_json() -> Result<(), BeaErr> {
     trace_init()?;
-    let history = History::from_file()?;
-    let datasets = vec![Dataset::Mne];
+    let datasets = vec![Dataset::Nipa];
     for dataset in datasets {
         // let queue = dataset.queue()?;
         let mut queue = dataset.queue()?;
         // queue.retain(|app| &app.query()["Country"] == "000");
         // queue.retain(|app| &app.query()["DirectionOfInvestment"] == "outward");
         // queue.retain(|app| &app.query()["Classification"] == "Country");
+        // tracing::info!("Queue length: {}", queue.len());
+        // queue.dedup();
         tracing::info!("Queue length: {}", queue.len());
-        queue.dedup();
-        tracing::info!("Queue length: {}", queue.len());
-        queue.exclude(&history)?;
+        let history = History::try_from((dataset, Mode::Download))?;
+        queue.errors(&history, true)?;
         tracing::info!("Queue length: {}", queue.len());
         // queue.successes(false)?;
         // tracing::info!("Queue length: {}", queue.len());
@@ -93,7 +95,7 @@ pub fn naics() -> Result<(), BeaErr> {
 #[tracing::instrument]
 pub fn download_history() -> Result<(), BeaErr> {
     trace_init()?;
-    let history = History::from_file()?;
+    let history = History::from_env()?;
     tracing::info!("History: {history:#?}");
     Ok(())
 }

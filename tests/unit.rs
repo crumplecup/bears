@@ -102,6 +102,11 @@ fn value_sets() -> anyhow::Result<()> {
 async fn data_to_json() -> anyhow::Result<()> {
     #[cfg(feature = "api")]
     check::data_to_json().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn data_from_json() -> anyhow::Result<()> {
     check::data_from_json().await?;
     Ok(())
 }
