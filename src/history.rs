@@ -1,4 +1,4 @@
-use crate::{error::SerdeJson, App, BeaErr, EnvError, Event, IoError, ResultStatus};
+use crate::{error::SerdeJson, App, BeaErr, Dataset, EnvError, Event, IoError, Mode, ResultStatus};
 
 #[derive(
     Debug,
@@ -13,7 +13,7 @@ use crate::{error::SerdeJson, App, BeaErr, EnvError, Event, IoError, ResultStatu
 pub struct History(std::collections::HashMap<std::path::PathBuf, Event>);
 
 impl History {
-    pub fn from_file() -> Result<Self, BeaErr> {
+    pub fn from_env() -> Result<Self, BeaErr> {
         dotenvy::dotenv().ok();
         let path = EnvError::from_env("BEA_DATA")?;
         let path = std::path::PathBuf::from(path);
@@ -80,5 +80,20 @@ impl TryFrom<&std::path::PathBuf> for History {
             events.insert(event.path().clone(), event);
         }
         Ok(Self(events))
+    }
+}
+
+impl TryFrom<(Dataset, Mode)> for History {
+    type Error = BeaErr;
+
+    fn try_from(ctx: (Dataset, Mode)) -> Result<Self, Self::Error> {
+        dotenvy::dotenv().ok();
+        let (dataset, mode) = ctx;
+        let key = "BEA_DATA".to_string();
+        let bea_data = std::env::var(&key).map_err(|e| EnvError::new(key, e))?;
+        let path = std::path::PathBuf::from(&bea_data);
+        let path = path.join("history");
+        let path = path.join(format!("history_{dataset}_{mode}.log"));
+        Self::try_from(&path)
     }
 }
