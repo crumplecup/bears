@@ -22,13 +22,6 @@ impl From<BeaErrorKind> for BeaErr {
     }
 }
 
-#[macro_export]
-macro_rules! error_info {
-    () => {
-        (line!(), file!().to_string())
-    };
-}
-
 macro_rules! impl_bea_err {
     ( $( $name:ident),* ) => {
         $(
