@@ -2,7 +2,7 @@
 
 A Rust wrapper around the Bureau of Economic Analysis (BEA) REST API.
 
-![Bears Logo](./data/bears.jpg)
+![Bears Logo](./data/bears_logo.jpg)
 
 ## Project Goals
 
