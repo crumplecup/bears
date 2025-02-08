@@ -11,6 +11,13 @@ pub fn trace_init() -> Result<(), BeaErr> {
     dotenvy::dotenv().ok();
     let bea_data = EnvError::from_env("BEA_DATA")?;
     let path = std::path::PathBuf::from(bea_data);
+    let path = path.join("history");
+    if !path.exists() {
+        std::fs::DirBuilder::new()
+            .create(&path)
+            .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
+        tracing::info!("History directory created.");
+    }
     let path = path.join("history.log");
     let history = std::fs::OpenOptions::new()
         .append(true)
