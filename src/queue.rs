@@ -28,26 +28,24 @@ impl Queue {
     }
 
     #[tracing::instrument(skip_all)]
-    // Subset of queue that contains a success status.
+    /// Subset of queue that contains a success status.
     pub fn successes(&mut self, strict: bool) -> Result<(), BeaErr> {
-        let history = History::from_file()?;
+        let history = History::from_env()?;
         history.summary();
         self.retain(|app| history.is_success(app).unwrap_or(None).unwrap_or(!strict));
         Ok(())
     }
 
     #[tracing::instrument(skip_all)]
-    // Subset of queue that contains an error status.
-    pub fn errors(&mut self, strict: bool) -> Result<(), BeaErr> {
-        let history = History::from_file()?;
-        history.summary();
+    /// Subset of queue that contains an error status.
+    pub fn errors(&mut self, history: &History, strict: bool) -> Result<(), BeaErr> {
         self.retain(|app| history.is_error(app).unwrap_or(None).unwrap_or(!strict));
         Ok(())
     }
 
     #[tracing::instrument(skip_all)]
     pub fn active_subset(&mut self, strict: bool) -> Result<(), BeaErr> {
-        let history = History::from_file()?;
+        let history = History::from_env()?;
         history.summary();
         self.retain(|app| match history.is_error(app) {
             Ok(opt) => match opt {
@@ -255,7 +253,17 @@ impl Queue {
 }
 
 #[derive(
-    Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    derive_more::Display,
 )]
 pub enum Mode {
     Download,
