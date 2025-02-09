@@ -1,6 +1,6 @@
 use crate::{
-    file_size, map_to_string, App, BeaErr, Data, History, Jiff, JsonParseError, JsonParseErrorKind,
-    KeyMissing, NotObject, ParseInt, ResultStatus,
+    file_size, map_to_string, App, BeaErr, Data, DeriveFromStr, History, Jiff, JsonParseError,
+    JsonParseErrorKind, KeyMissing, NotObject, ParseInt, ResultStatus,
 };
 use jiff::ToSpan;
 use std::str::FromStr;
@@ -20,7 +20,7 @@ pub struct Queue(Vec<App>);
 
 impl Queue {
     #[tracing::instrument(skip_all)]
-    // Subset of queue that contains a success status.
+    /// Subset of queue that contains a success status.
     pub fn exclude(&mut self, history: &History) -> Result<(), BeaErr> {
         history.summary();
         self.retain(|app| !history.contains(&app.destination(false).unwrap()));
@@ -58,6 +58,14 @@ impl Queue {
             }
         });
         Ok(())
+    }
+
+    /// Filters the `Queue` for members with a destination path matching the [`Event`] path in
+    /// 'event'.
+    pub fn with_event(&mut self, event: &Event) {
+        // Since we are not creating new directories, constructing the destination path should
+        // never panic.
+        self.retain(|app| app.destination(false).unwrap() == *event.path());
     }
 
     #[tracing::instrument(skip_all)]
@@ -127,7 +135,7 @@ impl Queue {
             let path_check = path.exists();
             // tracing::info!("Exists: {path_check} - {path:?}");
             if !path_check || overwrite {
-                let event = Event::new(&path);
+                let event = Event::new(&path, Mode::Download);
                 let id = event.id;
                 let mut slack;
                 {
@@ -185,7 +193,7 @@ impl Queue {
         for app in self.iter() {
             let path = app.destination(false)?;
             if path.exists() {
-                let event = Event::new(&path);
+                let event = Event::new(&path, Mode::Load);
                 let id = *event.id();
                 {
                     // Log load event
@@ -264,6 +272,7 @@ impl Queue {
     serde::Serialize,
     serde::Deserialize,
     derive_more::Display,
+    derive_more::FromStr,
 )]
 pub enum Mode {
     Download,
@@ -449,6 +458,7 @@ impl Tracker {
 pub struct Event {
     id: uuid::Uuid,
     length: Option<u64>,
+    mode: Mode,
     path: std::path::PathBuf,
     status: ResultStatus,
     time: jiff::Timestamp,
@@ -458,9 +468,10 @@ impl std::fmt::Display for Event {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "id: {}, length: {}, path: {:?}, status: {}, time: {}",
+            "id: {}, length: {}, mode: {}, path: {:?}, status: {}, time: {}",
             self.id,
             self.len_as_str(),
+            self.mode,
             self.path,
             self.status,
             self.time
@@ -469,7 +480,7 @@ impl std::fmt::Display for Event {
 }
 
 impl Event {
-    pub fn new<P: AsRef<std::path::Path>>(path: P) -> Self {
+    pub fn new<P: AsRef<std::path::Path>>(path: P, mode: Mode) -> Self {
         let id = uuid::Uuid::new_v4();
         let path = std::path::PathBuf::from(path.as_ref());
         let status = ResultStatus::Pending;
@@ -477,6 +488,7 @@ impl Event {
         Self {
             id,
             length: None,
+            mode,
             path,
             status,
             time,
@@ -515,20 +527,23 @@ impl Event {
             .collect::<Vec<&str>>();
         tracing::trace!("Raw Event: {result:#?}");
         let id = uuid::Uuid::new_v4();
-        if result.len() < 6 {
+        if result.len() < 7 {
             let error = KeyMissing::new("invalid Event".to_string(), line!(), file!().to_string());
             let error = JsonParseErrorKind::from(error);
             let error = JsonParseError::from(error);
             Err(error.into())
         } else {
             let length = Self::len_from_str(result[0].trim())?;
-            let path = result[1].trim().trim_matches('"');
+            let mode = result[1].trim().to_string();
+            let mode = Mode::from_str(&mode)
+                .map_err(|e| DeriveFromStr::new(mode, e, line!(), file!().to_string()))?;
+            let path = result[2].trim().trim_matches('"');
             tracing::trace!("Path is {path}");
             let path = std::path::PathBuf::from(path);
-            let status = result[2].trim().to_string();
+            let status = result[3].trim().to_string();
             let status = ResultStatus::from_str(&status)?;
-            let time = result[3].trim().to_string();
-            let time = format!("{time}:{}:{}", result[4], result[5]);
+            let time = result[4].trim().to_string();
+            let time = format!("{time}:{}:{}", result[5], result[6]);
             let time = match jiff::Timestamp::from_str(&time) {
                 Ok(stamp) => stamp,
                 Err(source) => {
@@ -539,6 +554,7 @@ impl Event {
             Ok(Self {
                 id,
                 length,
+                mode,
                 path,
                 status,
                 time,

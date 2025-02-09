@@ -35,10 +35,11 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
 
         // queue.active_subset(false)?;
         let history = History::try_from((dataset, Mode::Download))?;
-        queue.errors(&history, false)?;
+        queue.exclude(&history)?;
+        // queue.errors(&history, false)?;
         tracing::info!("Queue is length {}", queue.len());
         // tracing::info!("{queue:#?}");
-        queue.download(false).await?;
+        queue.download(true).await?;
         // counter.download(false).await?;
     }
     Ok(())
@@ -49,33 +50,27 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
     trace_init()?;
     let datasets = vec![Dataset::Nipa];
     for dataset in datasets {
-        // let queue = dataset.queue()?;
-        let mut queue = dataset.queue()?;
+        let queue = dataset.queue()?;
+        // let mut queue = dataset.queue()?;
         // queue.retain(|app| &app.query()["Country"] == "000");
         // queue.retain(|app| &app.query()["DirectionOfInvestment"] == "outward");
         // queue.retain(|app| &app.query()["Classification"] == "Country");
         // tracing::info!("Queue length: {}", queue.len());
         // queue.dedup();
         tracing::info!("Queue length: {}", queue.len());
-        let history = History::try_from((dataset, Mode::Download))?;
-        queue.errors(&history, true)?;
-        tracing::info!("Queue length: {}", queue.len());
+        // let history = History::try_from((dataset, Mode::Download))?;
+        // queue.errors(&history, true)?;
+        // tracing::info!("Queue length: {}", queue.len());
+        //
+        // let queues = history.iter().with_queue(&queue);
+        // for q in queues {
+        //     let data = q.load().await?;
+        //     let data = data.lock().await;
+        //     tracing::info!("{} datasets loaded.", data.len());
+        // }
+        // tracing::info!("Full queue downloaded.");
         // queue.successes(false)?;
         // tracing::info!("Queue length: {}", queue.len());
-        // let mut set = std::collections::HashSet::new();
-        // let mut dupes = Vec::new();
-        // for app in queue.iter() {
-        //     if !set.contains(&app) {
-        //         set.insert(app);
-        //     } else {
-        //         dupes.push(app);
-        //     }
-        // }
-        //
-        // tracing::info!("Set length: {}", set.len());
-        // tracing::info!("Dupes length: {}", dupes.len());
-        // tracing::info!("{dupes:#?}");
-        // tracing::info!("{queue:#?}");
         let data = queue.load().await?;
         let data = data.lock().await;
         tracing::info!("{} datasets loaded.", data.len());

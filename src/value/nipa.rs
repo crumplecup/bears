@@ -35,7 +35,7 @@ impl Nipa {
         let data = Nipa::try_from(&path)?;
         let mut queue = Vec::new();
         for params in data.iter() {
-            tracing::info!("{params:#?}");
+            tracing::trace!("{params:#?}");
             app.with_params(params.clone());
             queue.push(app.clone());
         }
@@ -427,7 +427,7 @@ impl NiUnderlyingDetail {
         let data = NiUnderlyingDetail::try_from(&path)?;
         let mut queue = Vec::new();
         for params in data.iter() {
-            tracing::info!("{params:#?}");
+            tracing::trace!("{params:#?}");
             app.with_params(params.clone());
             queue.push(app.clone());
         }
