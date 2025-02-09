@@ -39,8 +39,8 @@ reqwest = { version = "0.12.12", features = ["json"] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
 similar = { version = "2.7.0", features = ["serde"] }
-strum = { version = "0.26.3", features = ["derive", "strum_macros"] }
-strum_macros = "0.26.4"
+strum = { version = "0.27.0", features = ["derive", "strum_macros"] }
+strum_macros = "0.27.0"
 tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.41"
 tracing-log = "0.2.0"
