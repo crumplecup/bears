@@ -27,6 +27,8 @@ pub struct App {
     options: Options,
     url: url::Url,
     query: BTreeMap<String, String>,
+    // File size from History
+    size_hint: Option<u64>,
 }
 
 impl App {
@@ -38,6 +40,7 @@ impl App {
             options,
             url,
             query,
+            size_hint: None,
         }
     }
 
@@ -112,6 +115,7 @@ impl App {
         }
     }
 
+    // TODO: reroute NIPA by ShowMillions and year or year range.
     pub fn destination(&self, create: bool) -> Result<std::path::PathBuf, BeaErr> {
         let query = self.query();
         tracing::trace!("Params are {:#?}", query);

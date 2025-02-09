@@ -5,6 +5,16 @@ use crate::{
 use jiff::ToSpan;
 use std::str::FromStr;
 
+// Cannot exceed 30 errors per minute.
+// Theory: calls may get ahead of tracker
+// 14 ahead of 14 = 28
+// hitting API rate limit at 14, try 10
+// probably hitting the data upload limit of 100MB per minute
+pub const ERROR_CAP: usize = 10;
+// Cannot exceed 100 calls per minute.
+// 14 ahead of 85 = 99
+pub const CALL_CAP: usize = 10;
+
 #[derive(
     Debug,
     Clone,
@@ -66,6 +76,10 @@ impl Queue {
         // Since we are not creating new directories, constructing the destination path should
         // never panic.
         self.retain(|app| app.destination(false).unwrap() == *event.path());
+        // Update the `size_hint` field of the app to the event length.
+        self.iter_mut()
+            .map(|app| app.with_size_hint(*event.length()))
+            .for_each(drop);
     }
 
     #[tracing::instrument(skip_all)]
@@ -138,12 +152,15 @@ impl Queue {
                 let event = Event::new(&path, Mode::Download);
                 let id = event.id;
                 let mut slack;
+                let next_size = app.size_hint().unwrap_or(0);
+                let mut size_available;
                 {
                     // Scoped to release lock before entering while loop
                     let mut tracker = tracker.lock().await;
                     slack = tracker.check_slack();
+                    size_available = tracker.size_available();
                 }
-                while slack == 0 {
+                while slack == 0 || size_available <= next_size {
                     tracing::trace!("Limiting call rate.");
                     {
                         // Scoped to release lock before checking for slack
@@ -154,10 +171,15 @@ impl Queue {
                         // Scoped to release lock before leaving the loop
                         let mut tracker = tracker.lock().await;
                         slack = tracker.check_slack();
+                        size_available = tracker.size_available();
                     }
                 }
                 {
                     let mut tracker = tracker.lock().await;
+                    // If the size is known, add it the size events
+                    if let Some(size) = app.size_hint() {
+                        tracker.size.push(SizeEvent::new(*size));
+                    }
                     tracker.calls.push(event);
                 }
 
@@ -271,12 +293,48 @@ impl Queue {
     Hash,
     serde::Serialize,
     serde::Deserialize,
+    strum::EnumIter,
     derive_more::Display,
     derive_more::FromStr,
 )]
 pub enum Mode {
     Download,
     Load,
+}
+
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    derive_getters::Getters,
+    derive_setters::Setters,
+)]
+#[setters(prefix = "with_")]
+pub struct SizeEvent {
+    size: u64,
+    time: jiff::Timestamp,
+}
+
+impl SizeEvent {
+    pub fn new(size: u64) -> Self {
+        Self {
+            size,
+            time: jiff::Timestamp::now(),
+        }
+    }
+}
+
+impl From<u64> for SizeEvent {
+    fn from(value: u64) -> Self {
+        Self::new(value)
+    }
 }
 
 #[derive(
@@ -291,10 +349,14 @@ pub enum Mode {
     serde::Serialize,
     serde::Deserialize,
 )]
+// Tighten up the api for tracker so everything goes through methods, and no raw field access need
+// occur, such as tracker.calls.push(event).
 pub struct Tracker {
     calls: Vec<Event>,
     errors: Vec<Event>,
     cache: Vec<Event>,
+    // Total size field to track cumulative dowload size over the last minute.
+    size: Vec<SizeEvent>,
 }
 
 impl Tracker {
@@ -340,18 +402,16 @@ impl Tracker {
         }
     }
 
+    /// Remaining download capacity within the 100MB per minute rate limit set by the BEA server.
+    #[tracing::instrument(skip_all)]
+    pub fn size_available(&self) -> u64 {
+        // Download rate limit of 100MB.
+        100_000_000_u64.saturating_sub(self.total_size())
+    }
+
     #[tracing::instrument(skip_all)]
     pub fn check_slack(&mut self) -> usize {
         tracing::trace!("Checking slack.");
-        // Cannot exceed 30 errors per minute.
-        // Theory: calls may get ahead of tracker
-        // 14 ahead of 14 = 28
-        // hitting API rate limit at 14, try 10
-        // probably hitting the data upload limit of 100MB per minute
-        let error_cap: usize = 10;
-        // Cannot exceed 100 calls per minute.
-        // 14 ahead of 85 = 99
-        let call_cap: usize = 70;
         self.update_count();
         let pending = self
             .calls
@@ -359,9 +419,9 @@ impl Tracker {
             .filter(|c| c.status == ResultStatus::Pending)
             .collect::<Vec<&Event>>()
             .len();
-        let pending_slack = error_cap.saturating_sub(pending);
-        let error_slack = error_cap.saturating_sub(self.errors.len());
-        let call_slack = call_cap.saturating_sub(self.calls.len());
+        let pending_slack = ERROR_CAP.saturating_sub(pending);
+        let error_slack = ERROR_CAP.saturating_sub(self.errors.len());
+        let call_slack = CALL_CAP.saturating_sub(self.calls.len());
         let slack = error_slack.min(call_slack);
         let slack = slack.min(pending_slack);
         tracing::trace!("Pending slack {pending_slack}.");
@@ -371,32 +431,51 @@ impl Tracker {
         slack
     }
 
+    /// Returns the cumulative size of events in the `size` field.  Used to determine if the next
+    /// call will exceed the data download rate limit for the BEA server.
+    #[tracing::instrument(skip_all)]
+    pub fn total_size(&self) -> u64 {
+        self.size.iter().map(|value| value.size).sum::<u64>()
+    }
+
     #[tracing::instrument(skip_all)]
     pub fn update_count(&mut self) {
         tracing::trace!("Updating count.");
         let now = jiff::Timestamp::now();
+        // Calls made over the last minute.
         if !self.calls.is_empty() {
             let mut old = self.calls.clone();
             old.retain(|call| {
                 (now - call.time).total(jiff::Unit::Minute).unwrap()
                     >= 1.minutes().total(jiff::Unit::Minute).unwrap()
             });
+            // Move older calls to the `cache` field so they can still receive status updates from
+            // the listener.
             self.cache.extend(old);
             self.calls.retain(|call| {
                 (now - call.time).total(jiff::Unit::Minute).unwrap()
                     < 1.minutes().total(jiff::Unit::Minute).unwrap()
             });
         }
+        // Errors received over the last minute.
         if !self.errors.is_empty() {
             self.errors.retain(|error| {
                 (now - error.time).total(jiff::Unit::Minute).unwrap()
                     < 1.minutes().total(jiff::Unit::Minute).unwrap()
             });
         }
+        // Cumulative size requested over the last minute
+        if !self.size.is_empty() {
+            self.size.retain(|size| {
+                (now - size.time).total(jiff::Unit::Minute).unwrap()
+                    < 1.minutes().total(jiff::Unit::Minute).unwrap()
+            });
+        }
         tracing::info!(
-            "Calls: {}, Errors: {}.",
+            "Calls: {}, Errors: {}, Sizes: {}.",
             self.calls.len(),
-            self.errors.len()
+            self.errors.len(),
+            self.size.len()
         );
     }
 
