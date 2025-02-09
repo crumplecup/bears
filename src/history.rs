@@ -1,5 +1,5 @@
 use crate::{
-    error::SerdeJson, App, BeaErr, Dataset, EnvError, Event, IoError, Mode, Queue, ResultStatus,
+    App, BeaErr, Data, Dataset, EnvError, Event, IoError, Mode, Queue, ResultStatus, SerdeJson,
 };
 
 #[derive(
@@ -243,10 +243,37 @@ impl Chunk {
 pub struct Chunks(Vec<Chunk>);
 
 impl Chunks {
+    /// Constructs a request queue from a download history.
+    /// Includes apps in queue where the destination matches the event path.
     pub fn with_queue(&self, queue: &Queue) -> Vec<Queue> {
         self.iter()
             .map(|chunk| chunk.with_queue(queue))
             .collect::<Vec<Queue>>()
+    }
+
+    /// Batches requests into bins of max requests per minute (100), averaged over expected file size.
+    /// Calls download on each batch in sequence.
+    pub async fn download(&self, queue: &Queue, overwrite: bool) -> Result<(), BeaErr> {
+        for queue in self.with_queue(queue) {
+            queue.download(overwrite).await?;
+        }
+        Ok(())
+    }
+
+    /// Constructs a request queue from a download history.
+    /// Batches requests into bins of max requests per minute (100), averaged over expected file size.
+    /// Here the batching is unnecessary, but we still want the queue to build from the event
+    /// history.
+    /// Calls load on each batch in sequence.
+    /// Gathers the results into a vector to return to the user.
+    pub async fn load(&self, queue: &Queue) -> Result<Vec<Data>, BeaErr> {
+        let mut data = Vec::new();
+        for queue in self.with_queue(queue) {
+            let dataset = queue.load().await?;
+            let dataset = dataset.lock().await;
+            data.extend(dataset.clone())
+        }
+        Ok(data)
     }
 }
 
