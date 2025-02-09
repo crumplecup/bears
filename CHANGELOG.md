@@ -4,12 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.0] - 2025-02-08
 
-### ⚙️ Miscellaneous Tasks
-
-- Incremented version to 0.1.1.
-
-## [0.1.1] - 2025-02-08
-
 ### 🚀 Features
 
 - Download queue
@@ -33,7 +27,6 @@ All notable changes to this project will be documented in this file.
 - Crate metadata added to Cargo.toml.
 - Category slugs adjusted in Cargo.toml.
 - Keywords adjusted in Cargo.toml.
-- Bears logo art added to README.
 
 ### ⚙️ Miscellaneous Tasks
 
