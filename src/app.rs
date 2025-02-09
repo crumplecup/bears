@@ -1,7 +1,7 @@
 use crate::{
     BeaErr, BeaResponse, Dataset, DeriveFromStr, EnvError, IoError, JsonParseError,
-    JsonParseErrorKind, KeyMissing, Method, Options, ParameterName, RateLimit, ReqwestError,
-    Results, SerdeJson, VariantMissing,
+    JsonParseErrorKind, KeyMissing, Method, MillionsOptions, Options, ParameterName, RateLimit,
+    ReqwestError, Results, SerdeJson, VariantMissing,
 };
 use std::collections::BTreeMap;
 use std::str::FromStr;
@@ -148,7 +148,18 @@ impl App {
                     tracing::info!("Target directory for {dataset} created.");
                 }
                 match datakind {
-                    Dataset::Nipa | Dataset::NIUnderlyingDetail | Dataset::FixedAssets => {
+                    Dataset::Nipa => {
+                        let name = query["TableName"].clone();
+                        let millions = query["ShowMillions"].clone();
+                        let millions = MillionsOptions::from_value(&millions)?;
+                        match millions {
+                            MillionsOptions::Yes => {
+                                Ok(path.join(format!("{dataset}_{name}_millions.json")))
+                            }
+                            MillionsOptions::No => Ok(path.join(format!("{dataset}_{name}.json"))),
+                        }
+                    }
+                    Dataset::NIUnderlyingDetail | Dataset::FixedAssets => {
                         let name = query["TableName"].clone();
                         Ok(path.join(format!("{dataset}_{name}.json")))
                     }

@@ -1,6 +1,6 @@
 use crate::{
-    BeaErr, NipaShowMillions, ParameterName, ParameterValueTable, ParameterValueTableVariant,
-    VariantMissing,
+    BeaErr, JsonParseError, JsonParseErrorKind, KeyMissing, NipaShowMillions, ParameterName,
+    ParameterValueTable, ParameterValueTableVariant, VariantMissing,
 };
 
 #[derive(
@@ -86,6 +86,18 @@ impl MillionsOptions {
         match self {
             Self::Yes => "Y".to_string(),
             Self::No => "N".to_string(),
+        }
+    }
+
+    pub fn from_value(value: &str) -> Result<Self, JsonParseError> {
+        match value {
+            "Y" => Ok(Self::Yes),
+            "N" => Ok(Self::No),
+            _ => {
+                let error = KeyMissing::new(value.into(), line!(), file!().into());
+                let error = JsonParseErrorKind::from(error);
+                Err(error.into())
+            }
         }
     }
 
