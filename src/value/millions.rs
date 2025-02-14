@@ -73,11 +73,12 @@ impl TryFrom<&ParameterValueTable> for Millions {
     Hash,
     serde::Deserialize,
     serde::Serialize,
+    strum::EnumIter,
     derive_more::From,
 )]
 pub enum MillionsOptions {
-    #[default]
     Yes,
+    #[default]
     No,
 }
 

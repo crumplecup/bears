@@ -4,7 +4,7 @@ use crate::{trace_init, BeaErr, Dataset, History, Mode, Naics};
 #[tracing::instrument]
 pub async fn data_to_json() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::Nipa];
+    let datasets = vec![Dataset::NIUnderlyingDetail];
     for dataset in datasets {
         // let queue = dataset.queue()?;
         let mut queue = dataset.queue()?;
@@ -39,7 +39,7 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
         // queue.errors(&history, false)?;
         tracing::info!("Queue is length {}", queue.len());
         // tracing::info!("{queue:#?}");
-        queue.download(true).await?;
+        // queue.download(false).await?;
         // counter.download(false).await?;
     }
     Ok(())
@@ -50,17 +50,19 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
     trace_init()?;
     let datasets = vec![Dataset::Nipa];
     for dataset in datasets {
-        let queue = dataset.queue()?;
-        // let mut queue = dataset.queue()?;
+        // let queue = dataset.queue()?;
+        let mut queue = dataset.queue()?;
         // queue.retain(|app| &app.query()["Country"] == "000");
         // queue.retain(|app| &app.query()["DirectionOfInvestment"] == "outward");
         // queue.retain(|app| &app.query()["Classification"] == "Country");
+        queue.retain(|app| &app.query()["ShowMillions"] == "N");
         // tracing::info!("Queue length: {}", queue.len());
         // queue.dedup();
         tracing::info!("Queue length: {}", queue.len());
-        // let history = History::try_from((dataset, Mode::Download))?;
-        // queue.errors(&history, true)?;
-        // tracing::info!("Queue length: {}", queue.len());
+        let history = History::try_from((dataset, Mode::Load))?;
+        // strict is true means only download errors included in the event history
+        queue.errors(&history, true)?;
+        tracing::info!("Queue length: {}", queue.len());
         //
         // let queues = history.iter().with_queue(&queue);
         // for q in queues {

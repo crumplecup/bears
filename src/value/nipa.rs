@@ -1,9 +1,9 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, EnvError, Frequencies, Frequency, FrequencyOptions, IoError,
-    Millions, MillionsOptions, NipaRange, NipaRanges, ParameterName, ParameterValueTable,
+    BeaErr, BeaResponse, Dataset, EnvError, Frequencies, Frequency, IoError, Millions,
+    MillionsOptions, NipaRange, NipaRanges, ParameterName, ParameterValueTable,
     ParameterValueTableVariant, Queue, Request, SelectionKind, SerdeJson, Set, TableName,
-    YearSelection,
 };
+use strum::IntoEnumIterator;
 
 #[derive(
     Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, derive_getters::Getters,
@@ -143,24 +143,20 @@ pub struct NipaIterator<'a> {
     #[setters(skip)]
     nipa: &'a Nipa,
     frequency_options: SelectionKind,
-    millions: MillionsOptions,
+    show_millions: Option<MillionsOptions>,
     year_selection: SelectionKind,
     // index into nipa.table_name
     #[setters(skip)]
     table_index: usize,
+    table_end: bool,
     // index into nipa.frequency
     #[setters(skip)]
     frequency_index: usize,
     #[setters(skip)]
     frequency_end: bool,
-    // explicit ranges for individual frequencies
-    #[setters(skip)]
-    range: Option<Vec<Vec<String>>>,
-    // index into range
-    #[setters(skip)]
-    range_index: usize,
-    #[setters(skip)]
-    range_end: bool,
+    millions: Vec<MillionsOptions>,
+    millions_index: usize,
+    millions_end: bool,
     #[setters(skip)]
     years: Option<Vec<String>>,
     #[setters(skip)]
@@ -172,98 +168,62 @@ pub struct NipaIterator<'a> {
 impl<'a> NipaIterator<'a> {
     pub fn new(nipa: &'a Nipa) -> Self {
         let frequency_options = SelectionKind::default();
-        let millions = MillionsOptions::default();
+        let show_millions = None;
         let year_selection = SelectionKind::default();
         let table_index = 0;
         let frequency_index = 0;
-        let first_table = nipa.table_name[table_index].name();
-        // Create the range values by iteratoring over the NipaRange for the table name
-        let range = match frequency_options {
-            SelectionKind::All => {
-                if let Some(rng) = nipa.year.get(first_table) {
-                    let vec = rng.iter().collect::<Vec<Vec<String>>>();
-                    Some(vec)
-                } else {
-                    None
-                }
-            }
-            // Unimplemented
-            SelectionKind::Multiple => None,
-            SelectionKind::Individual => None,
-        };
-        let range_index = 0;
-        // set years if needed
-        let years = match year_selection {
-            // only needed for individual
-            SelectionKind::All => None,
-            // Unimplemented
-            SelectionKind::Multiple => None,
-            // years depend on frequencies selected
-            SelectionKind::Individual => {
-                match frequency_options {
-                    // pull from current range
-                    SelectionKind::All => {
-                        if let Some(rng) = &range {
-                            Some(rng[range_index].clone())
-                        } else {
-                            tracing::error!("Range should be set if frequency is all.");
-                            None
-                        }
-                    }
-                    // only pull the current frequency range
-                    SelectionKind::Individual => {
-                        if let Some(rng) = nipa.year.get(first_table) {
-                            // get the range for the current table
-                            match nipa.frequency[frequency_index] {
-                                Frequency::Annual => {
-                                    if let Some(annual) = rng.annual() {
-                                        Some(annual.keys())
-                                    } else {
-                                        tracing::error!("Values for annual years not found.");
-                                        None
-                                    }
-                                }
-                                Frequency::Monthly => {
-                                    if let Some(monthly) = rng.monthly() {
-                                        Some(monthly.keys())
-                                    } else {
-                                        tracing::error!("Values for monthly years not found.");
-                                        None
-                                    }
-                                }
-                                Frequency::Quarterly => {
-                                    if let Some(quarterly) = rng.quarterly() {
-                                        Some(quarterly.keys())
-                                    } else {
-                                        tracing::error!("Values for quarterly years not found.");
-                                        None
-                                    }
-                                }
-                            }
-                        } else {
-                            tracing::error!("Range for {first_table} not found.");
-                            None
-                        }
-                    }
-                    // Unimplemented
-                    SelectionKind::Multiple => None,
-                }
-            }
-        };
-        Self {
+        let millions = MillionsOptions::iter().collect::<Vec<MillionsOptions>>();
+        let millions_index = 0;
+        let millions_end = false;
+        let mut nipa_iter = Self {
             nipa,
             frequency_options,
-            millions,
+            show_millions,
             year_selection,
             table_index,
+            table_end: false,
             frequency_index,
             frequency_end: false,
-            range,
-            range_index,
-            range_end: false,
-            years,
+            millions,
+            millions_index,
+            millions_end,
+            years: None,
             year_index: 0,
             year_end: false,
+        };
+        nipa_iter.set_years_by_frequency();
+        nipa_iter
+    }
+
+    pub fn set_years_by_frequency(&mut self) {
+        let table = self.nipa.table_name[self.table_index].to_string();
+        if let Some(rng) = self.nipa.year.get(&table) {
+            match self.nipa.frequency[self.frequency_index] {
+                Frequency::Annual => {
+                    if let Some(annual) = rng.annual() {
+                        self.years = Some(annual.keys());
+                    } else {
+                        tracing::error!("Values for annual years not found.");
+                        self.years = None;
+                    }
+                }
+                Frequency::Monthly => {
+                    if let Some(monthly) = rng.monthly() {
+                        self.years = Some(monthly.keys());
+                    } else {
+                        tracing::error!("Values for monthly years not found.");
+                        self.years = None;
+                    }
+                }
+                Frequency::Quarterly => {
+                    if let Some(quarterly) = rng.quarterly() {
+                        self.years = Some(quarterly.keys());
+                    } else {
+                        tracing::error!("Values for quarterly years not found.");
+                        self.years = None;
+                    }
+                }
+            }
         }
     }
 }
@@ -277,74 +237,75 @@ impl Iterator for NipaIterator<'_> {
         // secondary driver frequency
         if self.year_end {
             // no more year values in self.years
+            // only needs to reset for individual, but doesn't hurt to just reset
+            self.year_index = 0;
+            self.year_end = false;
             match self.frequency_options {
-                // get all ranges
-                SelectionKind::All => {
-                    if let Some(range) = &self.range {
-                        if self.range_index < range.len() - 1 {
-                            // increment the range index
-                            self.range_index += 1;
-                            self.year_index = 0;
-                            self.year_end = false;
-                        } else {
-                            // no more ranges, move to next table
-                            self.range_end = true;
-                        }
-                    }
-                }
-                // get all frequencies for a given table
+                SelectionKind::All => self.frequency_end = true,
                 SelectionKind::Individual => {
                     // more frequencies remain
                     if self.frequency_index < self.nipa.frequency.len() - 1 {
                         // increment the frequency index
                         self.frequency_index += 1;
-                        self.year_index = 0;
-                        self.year_end = false;
                     } else {
                         // no more frequencies, move to next table
                         self.frequency_end = true;
                     }
                 }
+                // TODO: unimplemented
                 SelectionKind::Multiple => {}
             }
         }
 
+        // if years is single and frequency is all, update the years field
+        // by incrementing the range index and pulling the next range into years
+        // this ensures the values in years match the available years for the frequency
+
         // no more years for this table, move to next table
-        if self.frequency_end || self.range_end {
+        if self.frequency_end {
+            self.frequency_index = 0;
+            self.frequency_end = false;
             if self.table_index < self.nipa.table_name.len() - 1 {
                 // increment the table index
                 self.table_index += 1;
-                // Reset dependent drivers
-                self.frequency_index = 0;
-                self.frequency_end = false;
-                // range has been invalidated and must be rebuilt
-                let table_name = self.nipa.table_name[self.table_index].name();
-                self.range = match self.frequency_options {
-                    SelectionKind::All => {
-                        if let Some(rng) = self.nipa.year.get(table_name) {
-                            self.range_index = 0;
-                            self.range_end = false;
-                            let vec = rng.iter().collect::<Vec<Vec<String>>>();
-                            Some(vec)
-                        } else {
-                            // When do we hit this condition?
-                            None
-                        }
-                    }
-                    // Unimplemented
-                    SelectionKind::Multiple => None,
-                    SelectionKind::Individual => None,
-                };
             } else {
-                // no more tables, end iteration
-                return None;
+                self.table_end = true;
             }
+        }
+
+        // if the table has changed, the years may have changed
+        // if frequency is individual, the index may have changes, so rebuild the years field
+        // if the index has not changed, it is zero, and we want years to default to annual, so
+        // this is the desired behavior when frequency is all.
+        // update the years field based on the current frequency
+        self.set_years_by_frequency();
+
+        // no more tables for this ShowMillions option, move to next option
+        if self.table_end {
+            self.table_index = 0;
+            self.table_end = false;
+            if self.millions_index < self.nipa.show_millions.len() - 1 {
+                self.millions_index += 1;
+            } else {
+                self.millions_end = true;
+            }
+        }
+
+        // no more ShowMillions options, iteration is complete
+        if self.millions_end {
+            return None;
         }
 
         // empty parameters dictionary
         let mut params = std::collections::BTreeMap::new();
         // set show millions
-        let (key, value) = self.millions.params();
+        let (key, value) = if let Some(preference) = &self.show_millions {
+            // user specified a value
+            preference.params()
+        } else {
+            // iterate through available values
+            self.millions[self.millions_index].params()
+        };
         params.insert(key, value);
         // set table name
         let key = ParameterName::TableName.to_string();
@@ -354,15 +315,16 @@ impl Iterator for NipaIterator<'_> {
         match self.frequency_options {
             // only a single key value pair needed
             SelectionKind::All => {
+                // sets the value to all frequency options in a string vector
                 let (key, value) = self.nipa.frequencies();
                 params.insert(key, value);
-                self.frequency_end = true;
             }
             // step through the available frequencies
             SelectionKind::Individual => {
                 let (key, value) = self.nipa.frequency[self.frequency_index].params();
                 params.insert(key, value);
             }
+            // TODO: unimplemented
             SelectionKind::Multiple => {}
         }
         // set year values
@@ -372,6 +334,8 @@ impl Iterator for NipaIterator<'_> {
             SelectionKind::All => {
                 let value = "ALL".to_string();
                 params.insert(key, value);
+                // advance to next table
+                self.year_end = true;
             }
             // pull next year from years
             SelectionKind::Individual => {
@@ -392,6 +356,7 @@ impl Iterator for NipaIterator<'_> {
                     self.year_end = true;
                 }
             }
+            // TODO: unimplemented
             SelectionKind::Multiple => {}
         }
         Some(params)
@@ -523,8 +488,8 @@ impl TryFrom<&std::path::PathBuf> for NiUnderlyingDetail {
 pub struct NiUnderlyingDetailIterator<'a> {
     #[setters(skip)]
     data: &'a NiUnderlyingDetail,
-    frequency_options: FrequencyOptions,
-    year_selection: YearSelection,
+    frequency_options: SelectionKind,
+    year_selection: SelectionKind,
     // index into data.table_name
     #[setters(skip)]
     table_index: usize,
@@ -533,14 +498,6 @@ pub struct NiUnderlyingDetailIterator<'a> {
     frequency_index: usize,
     #[setters(skip)]
     frequency_end: bool,
-    // explicit ranges for individual frequencies
-    #[setters(skip)]
-    range: Option<Vec<Vec<String>>>,
-    // index into range
-    #[setters(skip)]
-    range_index: usize,
-    #[setters(skip)]
-    range_end: bool,
     #[setters(skip)]
     years: Option<Vec<String>>,
     #[setters(skip)]
@@ -551,91 +508,54 @@ pub struct NiUnderlyingDetailIterator<'a> {
 
 impl<'a> NiUnderlyingDetailIterator<'a> {
     pub fn new(data: &'a NiUnderlyingDetail) -> Self {
-        let frequency_options = FrequencyOptions::default();
-        let year_selection = YearSelection::default();
+        let frequency_options = SelectionKind::default();
+        let year_selection = SelectionKind::default();
         let table_index = 0;
         let frequency_index = 0;
-        let first_table = data.table_name[table_index].name();
-        // Create the range values by iteratoring over the NipaRange for the table name
-        let range = match frequency_options {
-            FrequencyOptions::All => {
-                if let Some(rng) = data.year.get(first_table) {
-                    let vec = rng.iter().collect::<Vec<Vec<String>>>();
-                    Some(vec)
-                } else {
-                    None
-                }
-            }
-            FrequencyOptions::Individual => None,
-        };
-        let range_index = 0;
-        // set years if needed
-        let years = match year_selection {
-            // only needed for individual
-            YearSelection::All => None,
-            // years depend on frequencies selected
-            YearSelection::Yearly => {
-                match frequency_options {
-                    // pull from current range
-                    FrequencyOptions::All => {
-                        if let Some(rng) = &range {
-                            Some(rng[range_index].clone())
-                        } else {
-                            tracing::error!("Range should be set if frequency is all.");
-                            None
-                        }
-                    }
-                    // only pull the current frequency range
-                    FrequencyOptions::Individual => {
-                        if let Some(rng) = data.year.get(first_table) {
-                            // get the range for the current table
-                            match data.frequency[frequency_index] {
-                                Frequency::Annual => {
-                                    if let Some(annual) = rng.annual() {
-                                        Some(annual.keys())
-                                    } else {
-                                        tracing::error!("Values for annual years not found.");
-                                        None
-                                    }
-                                }
-                                Frequency::Monthly => {
-                                    if let Some(monthly) = rng.annual() {
-                                        Some(monthly.keys())
-                                    } else {
-                                        tracing::error!("Values for monthly years not found.");
-                                        None
-                                    }
-                                }
-                                Frequency::Quarterly => {
-                                    if let Some(quarterly) = rng.annual() {
-                                        Some(quarterly.keys())
-                                    } else {
-                                        tracing::error!("Values for quarterly years not found.");
-                                        None
-                                    }
-                                }
-                            }
-                        } else {
-                            tracing::error!("Range for {first_table} not found.");
-                            None
-                        }
-                    }
-                }
-            }
-        };
-        Self {
+        let mut data_iter = Self {
             data,
             frequency_options,
             year_selection,
             table_index,
             frequency_index,
             frequency_end: false,
-            range,
-            range_index,
-            range_end: false,
-            years,
+            years: None,
             year_index: 0,
             year_end: false,
+        };
+        data_iter.set_years_by_frequency();
+        data_iter
+    }
+
+    pub fn set_years_by_frequency(&mut self) {
+        let table = self.data.table_name[self.table_index].to_string();
+        if let Some(rng) = self.data.year.get(&table) {
+            match self.data.frequency[self.frequency_index] {
+                Frequency::Annual => {
+                    if let Some(annual) = rng.annual() {
+                        self.years = Some(annual.keys());
+                    } else {
+                        tracing::error!("Values for annual years not found.");
+                        self.years = None;
+                    }
+                }
+                Frequency::Monthly => {
+                    if let Some(monthly) = rng.monthly() {
+                        self.years = Some(monthly.keys());
+                    } else {
+                        tracing::error!("Values for monthly years not found.");
+                        self.years = None;
+                    }
+                }
+                Frequency::Quarterly => {
+                    if let Some(quarterly) = rng.quarterly() {
+                        self.years = Some(quarterly.keys());
+                    } else {
+                        tracing::error!("Values for quarterly years not found.");
+                        self.years = None;
+                    }
+                }
+            }
         }
     }
 }
@@ -647,21 +567,12 @@ impl Iterator for NiUnderlyingDetailIterator<'_> {
         // advance state
         if self.year_end {
             // no more year values in self.years
+            // only needs to reset for individual, but doesn't hurt to just reset
+            self.year_index = 0;
+            self.year_end = false;
             match self.frequency_options {
-                // get all ranges
-                FrequencyOptions::All => {
-                    if let Some(range) = &self.range {
-                        if self.range_index < range.len() - 1 {
-                            // increment the range index
-                            self.range_index += 1;
-                        } else {
-                            // no more ranges, move to next table
-                            self.range_end = true;
-                        }
-                    }
-                }
-                // get all frequencies for a given table
-                FrequencyOptions::Individual => {
+                SelectionKind::All => self.frequency_end = true,
+                SelectionKind::Individual => {
                     // more frequencies remain
                     if self.frequency_index < self.data.frequency.len() - 1 {
                         // increment the frequency index
@@ -671,16 +582,19 @@ impl Iterator for NiUnderlyingDetailIterator<'_> {
                         self.frequency_end = true;
                     }
                 }
+                // TODO: unimplemented
+                SelectionKind::Multiple => {}
             }
         }
 
         // no more years for this table, move to next table
-        if self.frequency_end || self.range_end {
+        if self.frequency_end {
+            self.frequency_index = 0;
+            self.frequency_end = false;
             if self.table_index < self.data.table_name.len() - 1 {
                 // increment the table index
                 self.table_index += 1;
             } else {
-                // no more tables, end iteration
                 return None;
             }
         }
@@ -694,27 +608,30 @@ impl Iterator for NiUnderlyingDetailIterator<'_> {
         // set frequency
         match self.frequency_options {
             // only a single key value pair needed
-            FrequencyOptions::All => {
+            SelectionKind::All => {
                 let (key, value) = self.data.frequencies();
                 params.insert(key, value);
-                self.frequency_end = true;
             }
             // step through the available frequencies
-            FrequencyOptions::Individual => {
+            SelectionKind::Individual => {
                 let (key, value) = self.data.frequency[self.frequency_index].params();
                 params.insert(key, value);
             }
+            // TODO: unimplemented
+            SelectionKind::Multiple => {}
         }
         // set year values
         let key = ParameterName::Year.to_string();
         match self.year_selection {
             // single key value pair is sufficient
-            YearSelection::All => {
+            SelectionKind::All => {
                 let value = "ALL".to_string();
                 params.insert(key, value);
+                // move to next year range or table
+                self.year_end = true;
             }
             // pull next year from years
-            YearSelection::Yearly => {
+            SelectionKind::Individual => {
                 if let Some(years) = &self.years {
                     let value = years[self.year_index].clone();
                     params.insert(key, value);
@@ -732,6 +649,8 @@ impl Iterator for NiUnderlyingDetailIterator<'_> {
                     self.year_end = true;
                 }
             }
+            // TODO: unimplemented
+            SelectionKind::Multiple => {}
         }
         Some(params)
     }
