@@ -146,10 +146,11 @@ pub fn json_float(json: &serde_json::Value) -> Result<f64, JsonParseError> {
         }
         serde_json::Value::String(s) => {
             tracing::trace!("String detected: {s}");
+            let s = s.replace(",", "");
             match s.parse::<f64>() {
                 Ok(num) => Ok(num),
                 Err(source) => {
-                    let error = ParseFloat::new(s.into(), source, line!(), file!().to_string());
+                    let error = ParseFloat::new(s, source, line!(), file!().to_string());
                     let error = JsonParseErrorKind::from(error);
                     Err(error.into())
                 }
