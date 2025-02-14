@@ -33,20 +33,30 @@ pub struct NipaDatum {
 impl NipaDatum {
     pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         let cl_unit = map_to_string("CL_UNIT", m)?;
+        tracing::trace!("cl_unit is {cl_unit}.");
         let data_value = map_to_float("DataValue", m)?;
+        tracing::trace!("data_value is {data_value}.");
         let line_description = map_to_string("LineDescription", m)?;
+        tracing::trace!("line_description is {line_description}.");
         let line_number = map_to_int("LineNumber", m)?;
+        tracing::trace!("line_number is {line_number}.");
         let metric_name = map_to_string("METRIC_NAME", m)?;
+        tracing::trace!("metric_name is {metric_name}.");
         let note_ref = map_to_string("NoteRef", m)?;
+        tracing::trace!("note_ref is {note_ref}.");
         let series_code = map_to_string("SeriesCode", m)?;
+        tracing::trace!("series_code is {series_code}.");
         let table_name = map_to_string("TableName", m)?;
+        tracing::trace!("table_name is {table_name}.");
         let time_period = map_to_string("TimePeriod", m)?;
         let time_period = quarter(&time_period)?;
+        tracing::trace!("time_period is {time_period}.");
         let unit_mult = map_to_int("UNIT_MULT", m)?;
         let unit_mult = match unit_mult {
             0 => None,
             num => Some(num),
         };
+        tracing::trace!("unit_mult is {unit_mult:?}.");
         Ok(Self {
             cl_unit,
             data_value,
