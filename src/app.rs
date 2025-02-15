@@ -346,6 +346,7 @@ impl App {
     Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
 )]
 pub enum ResultStatus {
+    /// Contains an event id and size.
     Success(uuid::Uuid, u64),
     Error(uuid::Uuid),
     Pass(uuid::Uuid),

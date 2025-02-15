@@ -48,6 +48,25 @@ _This project is currently under active development._ Initial goals are to provi
 | UnderlyingGDPbyIndustry | ☐        | ☐    | ☐      |
 | APIDatasetMetadata      | ☐        | ☐    | ☐      |
 
+### Dataset Summary Information
+
+| Dataset                 | Count | Size     | Description                     |
+| ----------------------- | ----- | -------- | ------------------------------- |
+| NIPA                    | 626   | 1.1 GB   | Year and Frequency set to "ALL" |
+| NIUnderlyingDetail      | 60    | 527.7 MB | Year set to "ALL"               |
+| FixedAssets             | 109   | 148.1 MB | Year set to "ALL"               |
+| MNE                     | ☐     | ☐        | ☐                               |
+| Ita                     | ☐     | ☐        | ☐                               |
+| Iip                     | ☐     | ☐        | ☐                               |
+| Iip                     | ☐     | ☐        | ☐                               |
+| InputOutput             | ☐     | ☐        | ☐                               |
+| IntlServTrade           | ☐     | ☐        | ☐                               |
+| IntlServSTA             | ☐     | ☐        | ☐                               |
+| GDPbyIndustry           | ☐     | ☐        | ☐                               |
+| Regional                | ☐     | ☐        | ☐                               |
+| UnderlyingGDPbyIndustry | ☐     | ☐        | ☐                               |
+| APIDatasetMetadata      | ☐     | ☐        | ☐                               |
+
 ## Usage
 
 _Requires a BEA issued API key._

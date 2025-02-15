@@ -34,10 +34,10 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
         // tracing::info!("Counter is length {}", counter.len());
 
         // queue.active_subset(false)?;
-        // let history = History::try_from((dataset, Mode::Download))?;
-        // queue.exclude(&history)?;
+        let history = History::try_from((dataset, Mode::Download))?;
+        queue.exclude(&history)?;
         // queue.errors(&history, false)?;
-        // tracing::info!("Queue is length {}", queue.len());
+        tracing::info!("Queue is length {}", queue.len());
         // tracing::info!("{queue:#?}");
         queue.download(false).await?;
         // counter.download(false).await?;

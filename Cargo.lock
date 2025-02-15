@@ -131,6 +131,7 @@ dependencies = [
  "anyhow",
  "assert-json-diff",
  "bincode",
+ "bytesize",
  "clap",
  "console",
  "convert_case",
@@ -183,6 +184,15 @@ name = "bytes"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "325918d6fe32f23b19878fe4b34794ae41fc19ddbe53b10571a4874d44ffd39b"
+
+[[package]]
+name = "bytesize"
+version = "1.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d2c12f985c78475a6b8d629afd0c360260ef34cfef52efccdcfd31972f81c2e"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "cc"

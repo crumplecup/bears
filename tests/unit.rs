@@ -122,3 +122,9 @@ fn download_history() -> anyhow::Result<()> {
     check::download_history()?;
     Ok(())
 }
+
+#[tokio::test]
+async fn download_summary() -> anyhow::Result<()> {
+    check::download_summary().await?;
+    Ok(())
+}

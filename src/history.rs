@@ -62,15 +62,22 @@ impl History {
     pub fn summary(&self) {
         let mut success = 0;
         let mut error = 0;
+        let mut total_size = 0;
         for value in self.values() {
             match value.status() {
-                ResultStatus::Success(_, _) => success += 1,
+                ResultStatus::Success(_, _) => {
+                    success += 1;
+                    if let Some(size) = value.length() {
+                        total_size += size;
+                    }
+                }
                 ResultStatus::Error(_) => error += 1,
                 _ => {}
             }
         }
         tracing::info!("Successes: {success}");
         tracing::info!("Errors: {error}");
+        tracing::info!("Total Size: {}", bytesize::ByteSize::b(total_size));
     }
 
     /// Returns the number of buckets required to sort the `Queue` into sets of 100 requests, the
