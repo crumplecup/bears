@@ -59,15 +59,15 @@ pub fn parse_year(input: &str) -> Result<jiff::civil::Date, ParseInt> {
     }
 }
 
-pub fn quarter(input: &str) -> Result<jiff::civil::Date, BeaErr> {
+pub fn date_by_quarter(input: &str) -> Option<jiff::civil::Date> {
     if let Some((q, _)) = input.match_indices("Q").next() {
         let (year, quarter) = input.split_at(q);
         match year.parse::<i16>() {
             Ok(num) => match quarter {
-                "Q1" => Ok(jiff::civil::date(num, 1, 1)),
-                "Q2" => Ok(jiff::civil::date(num, 4, 1)),
-                "Q3" => Ok(jiff::civil::date(num, 7, 1)),
-                "Q4" => Ok(jiff::civil::date(num, 10, 1)),
+                "Q1" => Some(jiff::civil::date(num, 1, 1)),
+                "Q2" => Some(jiff::civil::date(num, 4, 1)),
+                "Q3" => Some(jiff::civil::date(num, 7, 1)),
+                "Q4" => Some(jiff::civil::date(num, 10, 1)),
                 other => {
                     let error = NotQuarter::new(
                         format!("Q* pattern expected, found {other}"),
@@ -76,14 +76,59 @@ pub fn quarter(input: &str) -> Result<jiff::civil::Date, BeaErr> {
                     );
                     let error = JsonParseErrorKind::from(error);
                     let error = JsonParseError::from(error);
-                    Err(error.into())
+                    tracing::error!("{error}");
+                    None
                 }
             },
             Err(source) => {
                 let error = ParseInt::new(input.into(), source, line!(), file!().into());
-                Err(error.into())
+                tracing::error!("{error}");
+                None
             }
         }
+    } else {
+        None
+    }
+}
+
+pub fn date_by_month(input: &str) -> Option<jiff::civil::Date> {
+    if let Some((m, _)) = input.match_indices("M").next() {
+        let (year, quarter) = input.split_at(m);
+        match year.parse::<i16>() {
+            Ok(num) => match quarter {
+                "M01" => Some(jiff::civil::date(num, 1, 1)),
+                "M02" => Some(jiff::civil::date(num, 2, 1)),
+                "M03" => Some(jiff::civil::date(num, 3, 1)),
+                "M04" => Some(jiff::civil::date(num, 4, 1)),
+                "M05" => Some(jiff::civil::date(num, 5, 1)),
+                "M06" => Some(jiff::civil::date(num, 6, 1)),
+                "M07" => Some(jiff::civil::date(num, 7, 1)),
+                "M08" => Some(jiff::civil::date(num, 8, 1)),
+                "M09" => Some(jiff::civil::date(num, 9, 1)),
+                "M10" => Some(jiff::civil::date(num, 10, 1)),
+                "M11" => Some(jiff::civil::date(num, 11, 1)),
+                "M12" => Some(jiff::civil::date(num, 12, 1)),
+                other => {
+                    tracing::error!("Unexpected month value: {other}");
+                    None
+                }
+            },
+            Err(source) => {
+                let error = ParseInt::new(input.into(), source, line!(), file!().into());
+                tracing::error!("{error}");
+                None
+            }
+        }
+    } else {
+        None
+    }
+}
+
+pub fn date_by_period(input: &str) -> Result<jiff::civil::Date, BeaErr> {
+    if let Some(date) = date_by_quarter(input) {
+        Ok(date)
+    } else if let Some(date) = date_by_month(input) {
+        Ok(date)
     } else {
         Ok(parse_year(input)?)
     }

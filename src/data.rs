@@ -1,5 +1,5 @@
 use crate::{
-    map_to_float, map_to_int, map_to_string, parse_year, quarter, AnnotatedInteger, BeaErr,
+    date_by_period, map_to_float, map_to_int, map_to_string, parse_year, AnnotatedInteger, BeaErr,
     BeaResponse, DatasetMissing, IoError, JsonParseError, JsonParseErrorKind, KeyMissing, Naics,
     NotArray, NotObject, RowCode, SerdeJson, VariantMissing,
 };
@@ -49,7 +49,7 @@ impl NipaDatum {
         let table_name = map_to_string("TableName", m)?;
         tracing::trace!("table_name is {table_name}.");
         let time_period = map_to_string("TimePeriod", m)?;
-        let time_period = quarter(&time_period)?;
+        let time_period = date_by_period(&time_period)?;
         tracing::trace!("time_period is {time_period}.");
         let unit_mult = map_to_int("UNIT_MULT", m)?;
         let unit_mult = match unit_mult {
@@ -228,7 +228,7 @@ impl FixedAssetDatum {
         let series_code = map_to_string("SeriesCode", m)?;
         let table_name = map_to_string("TableName", m)?;
         let time_period = map_to_string("TimePeriod", m)?;
-        let time_period = quarter(&time_period)?;
+        let time_period = date_by_period(&time_period)?;
         let unit_mult = map_to_int("UNIT_MULT", m)?;
         let unit_mult = match unit_mult {
             0 => None,

@@ -1,7 +1,7 @@
 use crate::{
     BeaErr, BeaResponse, Dataset, EnvError, IoError, NipaRange, NipaRanges, ParameterName,
-    ParameterValueTable, ParameterValueTableVariant, Queue, Request, SerdeJson, Set, TableName,
-    YearSelection,
+    ParameterValueTable, ParameterValueTableVariant, Queue, Request, SelectionKind, SerdeJson, Set,
+    TableName,
 };
 
 #[derive(
@@ -28,7 +28,7 @@ impl FixedAssets {
         let data = FixedAssets::try_from(&path)?;
         let mut queue = Vec::new();
         for params in data.iter() {
-            tracing::info!("{params:#?}");
+            tracing::trace!("{params:#?}");
             app.with_params(params.clone());
             queue.push(app.clone());
         }
@@ -110,7 +110,7 @@ impl TryFrom<&std::path::PathBuf> for FixedAssets {
 pub struct FixedAssetsIterator<'a> {
     #[setters(skip)]
     data: &'a FixedAssets,
-    year_selection: YearSelection,
+    year_selection: SelectionKind,
     // index into data.table_name
     #[setters(skip)]
     table_index: usize,
@@ -124,14 +124,14 @@ pub struct FixedAssetsIterator<'a> {
 
 impl<'a> FixedAssetsIterator<'a> {
     pub fn new(data: &'a FixedAssets) -> Self {
-        let year_selection = YearSelection::default();
+        let year_selection = SelectionKind::default();
         let table_index = 0;
         let first_table = data.table_name[table_index].name();
         // set years if needed
         let years = match year_selection {
             // only needed for individual
-            YearSelection::All => None,
-            YearSelection::Yearly => {
+            SelectionKind::All => None,
+            SelectionKind::Individual => {
                 if let Some(rng) = data.year.get(first_table) {
                     // get the range for the current table
                     if let Some(annual) = rng.annual() {
@@ -145,6 +145,8 @@ impl<'a> FixedAssetsIterator<'a> {
                     None
                 }
             }
+            // TODO: unimplemented
+            SelectionKind::Multiple => None,
         };
         Self {
             data,
@@ -183,14 +185,14 @@ impl Iterator for FixedAssetsIterator<'_> {
         let key = ParameterName::Year.to_string();
         match self.year_selection {
             // single key value pair is sufficient
-            YearSelection::All => {
+            SelectionKind::All => {
                 let value = "ALL".to_string();
                 params.insert(key, value);
                 // move to next table
                 self.year_end = true;
             }
             // pull next year from years
-            YearSelection::Yearly => {
+            SelectionKind::Individual => {
                 if let Some(years) = &self.years {
                     let value = years[self.year_index].clone();
                     params.insert(key, value);
@@ -208,6 +210,8 @@ impl Iterator for FixedAssetsIterator<'_> {
                     self.year_end = true;
                 }
             }
+            // TODO: unimplemented
+            SelectionKind::Multiple => {}
         }
         Some(params)
     }

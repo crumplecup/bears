@@ -51,22 +51,6 @@ impl Mne {
         )
     }
 
-    pub fn iter_di(&self) -> DiIterator {
-        let series_options = SelectionKind::default();
-        let industry_options = SelectionKind::default();
-        let country_options = SelectionKind::Individual;
-        let year_options = SelectionKind::default();
-        let footnotes = Footnotes::default();
-        DiIterator::new(
-            self,
-            series_options,
-            industry_options,
-            country_options,
-            year_options,
-            footnotes,
-        )
-    }
-
     pub fn queue() -> Result<Queue, BeaErr> {
         let req = Request::Data;
         let mut app = req.init()?;
@@ -236,327 +220,6 @@ impl TryFrom<&std::path::PathBuf> for Mne {
             };
             Ok(table)
         }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, derive_setters::Setters)]
-#[setters(prefix = "with_", borrow_self, into)]
-pub struct DiIterator<'a> {
-    #[setters(skip)]
-    data: &'a Mne,
-    series_options: SelectionKind,
-    industry_options: SelectionKind,
-    country_options: SelectionKind,
-    year_options: SelectionKind,
-    footnotes: Footnotes,
-    // index into data.direction_of_investment
-    #[setters(skip)]
-    doi_index: usize,
-    #[setters(skip)]
-    doi_end: bool,
-    // index into data.classification
-    #[setters(skip)]
-    class_index: usize,
-    #[setters(skip)]
-    class_end: bool,
-    // index into data.series_id
-    #[setters(skip)]
-    series_index: usize,
-    #[setters(skip)]
-    series_end: bool,
-    // index into data.industry
-    #[setters(skip)]
-    industries: Vec<&'a String>,
-    #[setters(skip)]
-    industry_index: usize,
-    #[setters(skip)]
-    industry_end: bool,
-    // index into data.country
-    #[setters(skip)]
-    countries: Vec<&'a String>,
-    #[setters(skip)]
-    country_index: usize,
-    #[setters(skip)]
-    country_end: bool,
-    // index into year value subset of data.year
-    #[setters(skip)]
-    years: Vec<&'a String>,
-    #[setters(skip)]
-    year_index: usize,
-    #[setters(skip)]
-    year_end: bool,
-}
-
-impl<'a> DiIterator<'a> {
-    pub fn new(
-        data: &'a Mne,
-        series_options: SelectionKind,
-        industry_options: SelectionKind,
-        country_options: SelectionKind,
-        year_options: SelectionKind,
-        footnotes: Footnotes,
-    ) -> Self {
-        let doi_index = 0;
-        let doi_end = false;
-        let class_index = 0;
-        let class_end = false;
-        let mut years = Vec::new();
-        for opt in data.year() {
-            match opt.kind() {
-                YearKind::Year(_) => {
-                    years.push(opt.key());
-                }
-                _ => {
-                    tracing::trace!("Not an individual value.");
-                }
-            }
-        }
-        let series_index = 0;
-        let series_end = false;
-        let mut industries = Vec::new();
-        for opt in data.industry() {
-            match opt.kind() {
-                IntegerKind::All => {}
-                IntegerKind::Integer(_) => industries.push(opt.key()),
-            }
-        }
-        let industry_index = 0;
-        let industry_end = false;
-        let mut countries = Vec::new();
-        for opt in data.country() {
-            match opt.kind() {
-                IntegerKind::All => {}
-                IntegerKind::Integer(_) => countries.push(opt.key()),
-            }
-        }
-        let country_index = 0;
-        let country_end = false;
-        let year_index = 0;
-        let year_end = false;
-        Self {
-            data,
-            series_options,
-            industry_options,
-            country_options,
-            year_options,
-            footnotes,
-            doi_index,
-            doi_end,
-            class_index,
-            class_end,
-            series_index,
-            series_end,
-            industries,
-            industry_index,
-            industry_end,
-            countries,
-            country_index,
-            country_end,
-            years,
-            year_index,
-            year_end,
-        }
-    }
-}
-
-impl Iterator for DiIterator<'_> {
-    type Item = std::collections::BTreeMap<String, String>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        // advance state
-        // primary driver year
-        // secondary driver series
-        // tertiary driver industry
-        // quartiary driver country
-        // penultimate driver classification
-        // ultimate driver direction of investment
-        if self.year_end {
-            // no more year values in self.years
-            // advance series
-            match self.series_options {
-                SelectionKind::All => self.series_end = true,
-                SelectionKind::Individual => {
-                    if self.series_index == self.data.series_id.len() - 1 {
-                        tracing::trace!("Ending series index.");
-                        self.series_end = true;
-                    } else {
-                        tracing::trace!("Advancing series index.");
-                        self.series_index += 1;
-                        self.year_index = 0;
-                        self.year_end = false;
-                    }
-                }
-                SelectionKind::Multiple => self.series_end = true,
-            }
-        }
-
-        // set to true when out of years for a given option combo
-        if self.series_end {
-            // no more series in self.data.series_id
-            // advance industry
-            match self.industry_options {
-                SelectionKind::All => self.industry_end = true,
-                SelectionKind::Individual => {
-                    if self.industry_index == self.industries.len() - 1 {
-                        tracing::trace!("Ending industy index.");
-                        self.industry_end = true;
-                    } else {
-                        tracing::trace!("Advancing industy index.");
-                        self.industry_index += 1;
-                        self.series_index = 0;
-                        self.series_end = false;
-                        self.year_index = 0;
-                        self.year_end = false;
-                    }
-                }
-                SelectionKind::Multiple => self.industry_end = true,
-            }
-        }
-
-        // set to true when out of industries for a given option combo
-        if self.industry_end {
-            // no more industries in self.data.industry
-            // advance country
-            match self.country_options {
-                SelectionKind::All => self.country_end = true,
-                SelectionKind::Individual => {
-                    if self.country_index == self.countries.len() - 1 {
-                        tracing::trace!("Ending country index.");
-                        self.country_end = true;
-                    } else {
-                        tracing::trace!("Advancing country index.");
-                        self.country_index += 1;
-                        self.industry_index = 0;
-                        self.industry_end = false;
-                        self.series_index = 0;
-                        self.series_end = false;
-                        self.year_index = 0;
-                        self.year_end = false;
-                    }
-                }
-                SelectionKind::Multiple => self.country_end = true,
-            }
-        }
-
-        // set to true when out of countries for a given option combo
-        if self.country_end {
-            // no more countries in self.data.country
-            // advance classification
-            if self.class_index == self.data.classification.len() - 1 {
-                tracing::trace!("Ending class index.");
-                self.class_end = true;
-            } else {
-                tracing::trace!("Advancing class index.");
-                self.class_index += 1;
-                self.country_index = 0;
-                self.country_end = false;
-                self.industry_index = 0;
-                self.industry_end = false;
-                self.series_index = 0;
-                self.series_end = false;
-                self.year_index = 0;
-                self.year_end = false;
-            }
-        }
-
-        if self.class_end {
-            // DI only has inward and outward directions, indexed at 0 and 1
-            if self.doi_index == 1 {
-                // if self.doi_index == self.data.direction_of_investment.len() - 1 {
-                tracing::trace!("Ending doi index.");
-                self.doi_end = true;
-            } else {
-                tracing::trace!("Advancing doi index.");
-                self.doi_index += 1;
-                self.class_index = 0;
-                self.class_end = false;
-                self.country_index = 0;
-                self.country_end = false;
-                self.industry_index = 0;
-                self.industry_end = false;
-                self.series_index = 0;
-                self.series_end = false;
-                self.year_index = 0;
-                self.year_end = false;
-            }
-        }
-
-        if self.doi_end {
-            return None;
-        }
-
-        // empty parameters dictionary
-        let mut params = std::collections::BTreeMap::new();
-        // set footnotes
-        let (key, value) = self.footnotes.params();
-        params.insert(key, value);
-
-        // set direction of investment
-        let key = ParameterName::DirectionOfInvestment.to_string();
-        let value = self.data.direction_of_investment[self.doi_index]
-            .key()
-            .to_string();
-        params.insert(key, value);
-
-        // set classification
-        let key = ParameterName::Classification.to_string();
-        let value = self.data.classification[self.class_index].key().to_string();
-        params.insert(key, value);
-
-        // set series id
-        let key = ParameterName::SeriesID.to_string();
-        let value = match self.series_options {
-            SelectionKind::All => "all".to_string(),
-            SelectionKind::Individual => self.data.series_id[self.series_index].value().to_string(),
-            SelectionKind::Multiple => "all".to_string(),
-        };
-        params.insert(key, value);
-
-        // set industry
-        let key = ParameterName::Industry.to_string();
-        let value = match self.industry_options {
-            SelectionKind::All => "all",
-            SelectionKind::Individual => self.industries[self.industry_index],
-            SelectionKind::Multiple => "all",
-        };
-        params.insert(key, value.to_string());
-
-        // set country
-        let key = ParameterName::Country.to_string();
-        let value = match self.country_options {
-            SelectionKind::All => "all",
-            SelectionKind::Individual => self.countries[self.country_index],
-            SelectionKind::Multiple => "all",
-        };
-        params.insert(key, value.to_string());
-
-        // set year
-        let key = ParameterName::Year.to_string();
-        let value = match self.year_options {
-            SelectionKind::All => {
-                self.year_end = true;
-                "all"
-            }
-            SelectionKind::Individual => {
-                // Pull current year from self.years by self.year_index
-                let year = self.years[self.year_index];
-                // Check if more years are available
-                if self.year_index == self.years.len() - 1 {
-                    // No more years, move to next table
-                    self.year_end = true;
-                } else {
-                    // Increment year index
-                    self.year_index += 1;
-                }
-                year
-            }
-            SelectionKind::Multiple => {
-                self.year_end = true;
-                "all"
-            }
-        };
-        params.insert(key, value.to_string());
-        Some(params)
     }
 }
 
@@ -747,214 +410,148 @@ impl Iterator for MneIterator<'_> {
         // ultimate driver ownership level
         if self.year_end {
             // no more year values in self.years
+            // reset index and flag (necessary or doesn't hurt)
+            self.year_index = 0;
+            self.year_end = false;
             // advance series
             match self.series_options {
                 SelectionKind::All => self.series_end = true,
                 SelectionKind::Individual => {
-                    if self.series_index == self.data.series_id.len() - 1 {
-                        tracing::trace!("Ending series index.");
-                        self.series_end = true;
-                    } else {
+                    if self.series_index < self.data.series_id.len() - 1 {
                         tracing::trace!("Advancing series index.");
                         self.series_index += 1;
-                        self.year_index = 0;
-                        self.year_end = false;
+                    } else {
+                        tracing::trace!("Ending series index.");
+                        self.series_end = true;
                     }
                 }
-                SelectionKind::Multiple => self.series_end = true,
+                // TODO: unimplemented
+                SelectionKind::Multiple => {}
             }
         }
 
         // set to true when out of years for a given option combo
         if self.series_end {
             // no more series in self.data.series_id
+            self.series_index = 0;
+            self.series_end = false;
             // advance industry
             match self.industry_options {
                 SelectionKind::All => self.industry_end = true,
                 SelectionKind::Individual => {
-                    if self.industry_index == self.industries.len() - 1 {
-                        tracing::trace!("Ending industy index.");
-                        self.industry_end = true;
-                    } else {
+                    if self.industry_index < self.industries.len() - 1 {
                         tracing::trace!("Advancing industy index.");
                         self.industry_index += 1;
-                        self.series_index = 0;
-                        self.series_end = false;
-                        self.year_index = 0;
-                        self.year_end = false;
+                    } else {
+                        tracing::trace!("Ending industy index.");
+                        self.industry_end = true;
                     }
                 }
-                SelectionKind::Multiple => self.industry_end = true,
+                // TODO: unimplemented
+                SelectionKind::Multiple => {}
             }
         }
 
         // set to true when out of industries for a given option combo
         if self.industry_end {
             // no more industries in self.data.industry
+            self.industry_index = 0;
+            self.industry_end = false;
             // advance country
             match self.country_options {
                 SelectionKind::All => self.country_end = true,
                 SelectionKind::Individual => {
-                    if self.country_index == self.countries.len() - 1 {
-                        tracing::trace!("Ending country index.");
-                        self.country_end = true;
-                    } else {
+                    if self.country_index < self.countries.len() - 1 {
                         tracing::trace!("Advancing country index.");
                         self.country_index += 1;
-                        self.industry_index = 0;
-                        self.industry_end = false;
-                        self.series_index = 0;
-                        self.series_end = false;
-                        self.year_index = 0;
-                        self.year_end = false;
+                    } else {
+                        tracing::trace!("Ending country index.");
+                        self.country_end = true;
                     }
                 }
-                SelectionKind::Multiple => self.country_end = true,
+                // TODO: unimplemented
+                SelectionKind::Multiple => {}
             }
         }
 
         // set to true when out of countries for a given option combo
         if self.country_end {
             // no more countries in self.data.country
+            self.country_index = 0;
+            self.country_end = false;
             // advance classification
-            if self.class_index == self.data.classification.len() - 1 {
-                tracing::trace!("Ending class index.");
-                self.class_end = true;
-            } else {
+            if self.class_index < self.data.classification.len() - 1 {
                 tracing::trace!("Advancing class index.");
                 self.class_index += 1;
-                self.country_index = 0;
-                self.country_end = false;
-                self.industry_index = 0;
-                self.industry_end = false;
-                self.series_index = 0;
-                self.series_end = false;
-                self.year_index = 0;
-                self.year_end = false;
+            } else {
+                tracing::trace!("Ending class index.");
+                self.class_end = true;
             }
         }
 
         if self.class_end {
+            self.class_index = 0;
+            self.class_end = false;
             let doi_cap = match self.mne_kinds[self.mne_index] {
                 MneKind::Amne => self.data.direction_of_investment.len() - 1,
                 // DI only has inward and outward directions, indexed at 0 and 1
                 MneKind::Di => 1,
             };
-            if self.doi_index == doi_cap {
-                tracing::trace!("Ending doi index.");
-                self.doi_end = true;
-            } else {
+            if self.doi_index < doi_cap {
                 tracing::trace!("Advancing doi index.");
                 self.doi_index += 1;
-                self.class_index = 0;
-                self.class_end = false;
-                self.country_index = 0;
-                self.country_end = false;
-                self.industry_index = 0;
-                self.industry_end = false;
-                self.series_index = 0;
-                self.series_end = false;
-                self.year_index = 0;
-                self.year_end = false;
+            } else {
+                tracing::trace!("Ending doi index.");
+                self.doi_end = true;
             }
         }
 
         if self.doi_end {
+            self.doi_index = 0;
+            self.doi_end = false;
             match self.mne_kinds[self.mne_index] {
                 MneKind::Amne => {
-                    if self.nonbank_index == self.data.nonbank_affiliates_only.len() - 1 {
-                        tracing::trace!("Ending nonbank index.");
-                        self.nonbank_end = true;
-                    } else {
+                    if self.nonbank_index < self.data.nonbank_affiliates_only.len() - 1 {
                         tracing::trace!("Advancing nonbank index.");
                         self.nonbank_index += 1;
-                        self.doi_index = 0;
-                        self.doi_end = false;
-                        self.class_index = 0;
-                        self.class_end = false;
-                        self.country_index = 0;
-                        self.country_end = false;
-                        self.industry_index = 0;
-                        self.industry_end = false;
-                        self.series_index = 0;
-                        self.series_end = false;
-                        self.year_index = 0;
-                        self.year_end = false;
+                    } else {
+                        tracing::trace!("Ending nonbank index.");
+                        self.nonbank_end = true;
                     }
                 }
                 MneKind::Di => {
-                    if self.mne_index == self.mne_kinds.len() - 1 {
-                        tracing::trace!("Ending mne index.");
-                        self.mne_end = true;
-                    } else {
+                    if self.mne_index < self.mne_kinds.len() - 1 {
                         tracing::trace!("Advancing mne index.");
                         self.mne_index += 1;
-                        self.nonbank_index = 0;
-                        self.nonbank_end = false;
-                        self.doi_index = 0;
-                        self.doi_end = false;
-                        self.class_index = 0;
-                        self.class_end = false;
-                        self.country_index = 0;
-                        self.country_end = false;
-                        self.industry_index = 0;
-                        self.industry_end = false;
-                        self.series_index = 0;
-                        self.series_end = false;
-                        self.year_index = 0;
-                        self.year_end = false;
+                    } else {
+                        tracing::trace!("Ending mne index.");
+                        self.mne_end = true;
                     }
                 }
             }
         }
 
         if self.nonbank_end {
-            if self.ownership_index == self.data.ownership_level.len() - 1 {
-                tracing::trace!("Ending ownership index.");
-                self.ownership_end = true;
-            } else {
+            self.nonbank_index = 0;
+            self.nonbank_end = false;
+            if self.ownership_index < self.data.ownership_level.len() - 1 {
                 tracing::trace!("Advancing ownership index.");
                 self.ownership_index += 1;
-                self.nonbank_index = 0;
-                self.nonbank_end = false;
-                self.doi_index = 0;
-                self.doi_end = false;
-                self.class_index = 0;
-                self.class_end = false;
-                self.country_index = 0;
-                self.country_end = false;
-                self.industry_index = 0;
-                self.industry_end = false;
-                self.series_index = 0;
-                self.series_end = false;
-                self.year_index = 0;
-                self.year_end = false;
+            } else {
+                tracing::trace!("Ending ownership index.");
+                self.ownership_end = true;
             }
         }
 
         if self.ownership_end {
-            if self.mne_index == self.mne_kinds.len() - 1 {
-                tracing::trace!("Ending ownership index.");
-                self.mne_end = true;
-            } else {
+            self.ownership_index = 0;
+            self.ownership_end = false;
+            if self.mne_index < self.mne_kinds.len() - 1 {
                 tracing::trace!("Advancing mne index.");
                 self.mne_index += 1;
-                self.ownership_index = 0;
-                self.ownership_end = false;
-                self.nonbank_index = 0;
-                self.nonbank_end = false;
-                self.doi_index = 0;
-                self.doi_end = false;
-                self.class_index = 0;
-                self.class_end = false;
-                self.country_index = 0;
-                self.country_end = false;
-                self.industry_index = 0;
-                self.industry_end = false;
-                self.series_index = 0;
-                self.series_end = false;
-                self.year_index = 0;
-                self.year_end = false;
+            } else {
+                tracing::trace!("Ending ownership index.");
+                self.mne_end = true;
             }
         }
 
