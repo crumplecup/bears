@@ -55,3 +55,8 @@ uuid = { version = "1.13.1", features = ["serde", "v4"] }
 
 [dev-dependencies]
 anyhow = "1.0.95"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
