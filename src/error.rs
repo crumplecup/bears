@@ -291,6 +291,24 @@ impl From<JsonParseErrorKind> for JsonParseError {
     }
 }
 
+macro_rules! impl_json_parse_error {
+    ( $( $name:ident),* ) => {
+        $(
+            impl From<$name> for JsonParseError {
+                fn from(value: $name) -> Self {
+                    let error = JsonParseErrorKind::from(value);
+                    Self::from(error)
+                }
+            }
+        )*
+    };
+    ( $( $name:ident),+ ,) => {
+       impl_json_parse_error![ $( $name ),* ];
+    };
+}
+
+impl_json_parse_error!(KeyMissing);
+
 #[derive(Debug, derive_new::new, derive_more::Deref, derive_more::DerefMut)]
 pub struct JsonParseError {
     kind: JsonParseErrorKind,
@@ -404,61 +422,37 @@ impl std::error::Error for ReqwestError {
 }
 
 #[derive(
-    Debug, derive_getters::Getters, derive_setters::Setters, derive_more::Display, derive_new::new,
+    Debug,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    derive_more::Display,
+    derive_new::new,
+    derive_more::Error,
 )]
-#[display(".env file missing {}", self.target)]
+#[display(".env file missing {target} at line {line} in {file}")]
 #[setters(prefix = "with_", borrow_self)]
 pub struct EnvError {
-    pub target: String,
-    pub source: std::env::VarError,
-}
-
-impl EnvError {
-    #[tracing::instrument]
-    pub fn from_env(key: &str) -> Result<String, Self> {
-        match std::env::var(key) {
-            Ok(value) => Ok(value),
-            Err(source) => {
-                let error = Self::new(key.to_string(), source);
-                Err(error)
-            }
-        }
-    }
-}
-
-impl std::error::Error for EnvError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(&self.source)
-    }
+    target: String,
+    source: std::env::VarError,
+    line: u32,
+    file: String,
 }
 
 #[derive(
-    Debug, derive_getters::Getters, derive_setters::Setters, derive_more::Display, derive_new::new,
+    Debug,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    derive_more::Display,
+    derive_more::Error,
+    derive_new::new,
 )]
-#[display("{} failed parse to a valid url", self.target)]
+#[display("{target} failed to parse to a valid url at line {line} in {file}")]
 #[setters(prefix = "with_", borrow_self)]
 pub struct UrlParseError {
     pub target: String,
     pub source: url::ParseError,
-}
-
-impl UrlParseError {
-    #[tracing::instrument]
-    pub fn into_url(s: &str) -> Result<url::Url, Self> {
-        match url::Url::parse(s) {
-            Ok(value) => Ok(value),
-            Err(source) => {
-                let error = Self::new(s.to_string(), source);
-                Err(error)
-            }
-        }
-    }
-}
-
-impl std::error::Error for UrlParseError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(&self.source)
-    }
+    line: u32,
+    file: String,
 }
 
 #[derive(
