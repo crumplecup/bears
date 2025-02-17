@@ -22,9 +22,10 @@ pub enum Method {
     /// Primary data retrieval method.
     #[default]
     GetData,
-    /// Available BEA datasets, corresponding to variants of [`Dataset`].
+    /// Available BEA datasets, corresponding to variants of [`Dataset`](crate::Dataset).
     GetDataSetList,
-    /// Valid [`ParameterName`] values for a given [`Dataset`].
+    /// Valid [`ParameterName`](crate::ParameterName) values for a given
+    /// [`Dataset`](crate::Dataset).
     GetParameterList,
     GetParameterValues,
     GetParameterValuesFiltered,

@@ -59,18 +59,6 @@ impl Json {
 
     #[tracing::instrument(skip_all)]
     pub fn datasets_diff(actual: &str, expected: &str) -> Result<(), IoError> {
-        // let p = format!("{path}/datasets.json");
-        // let s = include_str!(p);
-        // let mut file = std::fs::File::open(p)?;
-        // let mut res = Vec::new();
-        // let _ = file.read_to_end(&mut res)?;
-        // let res = serde_json::json!(res);
-        // let p = format!("{path}/bea_datasets.json");
-        // let mut file = std::fs::File::open(p)?;
-        // let mut nat = Vec::new();
-        // let _ = file.read_to_end(&mut nat)?;
-        // let nat = serde_json::json!(nat);
-        // assert_json_include!(actual: res.to_string(), expected: nat.to_string());
         assert_json_include!(actual: actual, expected: expected);
         Ok(())
     }

@@ -260,7 +260,7 @@ impl ParameterName {
         }
     }
 
-    /// Invoked by [`Parameters::read_json`].  A wrapper around the `TryFrom` impl that accepts a
+    /// Invoked by [`Parameter::read_json`].  A wrapper around the `TryFrom` impl that accepts a
     /// [`serde_json::Map`].
     ///
     /// Produces an error if the String value under the `PARAMETERNAME` key does not parse to a
