@@ -6,18 +6,6 @@ fn parameter_names() -> anyhow::Result<()> {
     Ok(())
 }
 
-// #[test]
-// fn io_read() -> anyhow::Result<()> {
-//     check::io_read()?;
-//     Ok(())
-// }
-
-#[test]
-fn env() -> anyhow::Result<()> {
-    check::env()?;
-    Ok(())
-}
-
 #[tokio::test]
 async fn datasets() -> anyhow::Result<()> {
     #[cfg(feature = "api")]

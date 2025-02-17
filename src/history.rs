@@ -1,5 +1,5 @@
 use crate::{
-    App, BeaErr, Data, Dataset, EnvError, Event, IoError, Mode, Queue, ResultStatus, SerdeJson,
+    bea_data, App, BeaErr, Data, Dataset, Event, IoError, Mode, Queue, ResultStatus, SerdeJson,
 };
 
 #[derive(
@@ -17,8 +17,7 @@ pub struct History(std::collections::BTreeMap<std::path::PathBuf, Event>);
 impl History {
     pub fn from_env() -> Result<Self, BeaErr> {
         dotenvy::dotenv().ok();
-        let path = EnvError::from_env("BEA_DATA")?;
-        let path = std::path::PathBuf::from(path);
+        let path = bea_data()?;
         let path = path.join("history");
         Self::try_from(&path)
     }
@@ -153,9 +152,7 @@ impl TryFrom<(Dataset, Mode)> for History {
     fn try_from(ctx: (Dataset, Mode)) -> Result<Self, Self::Error> {
         dotenvy::dotenv().ok();
         let (dataset, mode) = ctx;
-        let key = "BEA_DATA".to_string();
-        let bea_data = std::env::var(&key).map_err(|e| EnvError::new(key, e))?;
-        let path = std::path::PathBuf::from(&bea_data);
+        let path = bea_data()?;
         let path = path.join("history");
         let path = path.join(format!("history_{dataset}_{mode}.log"));
         Self::try_from(&path)

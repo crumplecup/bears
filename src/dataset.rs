@@ -1,5 +1,5 @@
 use crate::{
-    map_to_string, ApiMetadata, App, BeaErr, BeaResponse, DatasetMissing, EnvError, FixedAssets,
+    bea_data, map_to_string, ApiMetadata, App, BeaErr, BeaResponse, DatasetMissing, FixedAssets,
     GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, IoError, Ita, JsonParseError,
     JsonParseErrorKind, KeyMissing, Mne, NiUnderlyingDetail, Nipa, NotObject, ParameterName, Queue,
     Regional, Request, ReqwestError, Results, SerdeJson, UnderlyingGdpByIndustry, VariantMissing,
@@ -184,8 +184,8 @@ impl Dataset {
                 let contents = serde_json::to_vec(&json)
                     .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                 dotenvy::dotenv().ok();
-                let bea_data = EnvError::from_env("BEA_DATA")?;
-                let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
+                let path = bea_data()?;
+                let path = path.join("datasets.json");
                 std::fs::write(&path, contents)
                     .map_err(|e| IoError::new(path, e, line!(), file!().into()).into())
             }
@@ -204,9 +204,8 @@ impl Dataset {
     #[tracing::instrument]
     pub fn load() -> Result<BeaResponse, BeaErr> {
         dotenvy::dotenv().ok();
-        let bea_data = EnvError::from_env("BEA_DATA")?;
-        tracing::info!("BEA_DATA present.");
-        let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
+        let path = bea_data()?;
+        let path = path.join("datasets.json");
         let file = std::fs::File::open(&path)
             .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
         tracing::info!("File opened.");
@@ -230,8 +229,8 @@ impl Dataset {
                 let contents = serde_json::to_vec(&json)
                     .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                 dotenvy::dotenv().ok();
-                let bea_data = EnvError::from_env("BEA_DATA")?;
-                let path = std::path::PathBuf::from(&format!("{bea_data}/parameters"));
+                let path = bea_data()?;
+                let path = path.join("parameters");
                 if !path.exists() {
                     std::fs::DirBuilder::new()
                         .create(&path)
@@ -272,15 +271,15 @@ impl Dataset {
         let mut opts = app.options().clone();
         opts.with_dataset(self);
         opts.with_param_name(name);
-        app.add_options(opts);
+        app.with_options(opts);
         let data = app.get().await?;
         match data.json::<serde_json::Value>().await {
             Ok(json) => {
                 let contents = serde_json::to_vec(&json)
                     .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                 dotenvy::dotenv().ok();
-                let bea_data = EnvError::from_env("BEA_DATA")?;
-                let path = std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
+                let path = bea_data()?;
+                let path = path.join("parameter_values");
                 if !path.exists() {
                     std::fs::DirBuilder::new()
                         .create(&path)
@@ -333,7 +332,7 @@ impl Dataset {
         let mut options = app.options().clone();
         options.with_dataset(self);
         options.with_target(name);
-        app.add_options(options.clone());
+        app.with_options(options.clone());
         let data = app.get().await?;
         tracing::info!("{data:#?}");
         match data.json::<serde_json::Value>().await {
@@ -349,9 +348,8 @@ impl Dataset {
                         let contents = serde_json::to_vec(&json)
                             .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                         dotenvy::dotenv().ok();
-                        let bea_data = EnvError::from_env("BEA_DATA")?;
-                        let path =
-                            std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
+                        let path = bea_data()?;
+                        let path = path.join("parameter_values");
                         if !path.exists() {
                             std::fs::DirBuilder::new().create(&path).map_err(|e| {
                                 IoError::new(path.clone(), e, line!(), file!().into())
@@ -426,7 +424,7 @@ impl Dataset {
 
     pub async fn value_gdp(self, app: &mut App, name: ParameterName) -> Result<(), BeaErr> {
         dotenvy::dotenv().ok();
-        let bea_data = EnvError::from_env("BEA_DATA")?;
+        let bea_data = bea_data()?;
         let table_id = match self {
             Self::GDPbyIndustry => GdpByIndustry::read_table_id(&bea_data)?,
             Self::UnderlyingGDPbyIndustry => UnderlyingGdpByIndustry::read_table_id(&bea_data)?,
@@ -446,7 +444,7 @@ impl Dataset {
         options.with_target(name);
         match name {
             ParameterName::Industry => {
-                let path = std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
+                let path = bea_data.join("parameter_values");
                 if !path.exists() {
                     std::fs::DirBuilder::new()
                         .create(&path)
@@ -462,7 +460,7 @@ impl Dataset {
                 }
                 for id in table_id {
                     options.with_table_id(*id.value());
-                    app.add_options(options.clone());
+                    app.with_options(options.clone());
                     let data = app.get().await?;
                     tracing::info!("{data:#?}");
                     match data.json::<serde_json::Value>().await {
@@ -495,7 +493,7 @@ impl Dataset {
                 }
             }
             ParameterName::Year => {
-                let path = std::path::PathBuf::from(&format!("{bea_data}/parameter_values"));
+                let path = bea_data.join("parameter_values");
                 if !path.exists() {
                     std::fs::DirBuilder::new()
                         .create(&path)
@@ -511,7 +509,7 @@ impl Dataset {
                 }
                 for id in table_id {
                     options.with_table_id(*id.value());
-                    app.add_options(options.clone());
+                    app.with_options(options.clone());
                     let data = app.get().await?;
                     tracing::info!("{data:#?}");
                     match data.json::<serde_json::Value>().await {
@@ -554,7 +552,7 @@ impl Dataset {
     }
 
     /// Two parameters in the GdpByIndustry dataset have valid input sets that vary by table_id, namely
-    /// Year and Industry.  Obtain table ids using [`Method::GetParameterValues`] prior to running this
+    /// Year and Industry.  Obtain table ids using [`Method::GetParameterValues`](crate::Method::GetParameterValues) prior to running this
     /// check. For these two parameters, we obtain a response for each table_id and write the result to
     /// a folder in the BEA_DATA directory.
     ///
@@ -766,8 +764,7 @@ impl Dataset {
     #[tracing::instrument]
     pub fn value_sets() -> Result<(), BeaErr> {
         dotenvy::dotenv().ok();
-        let bea_data = EnvError::from_env("BEA_DATA")?;
-        let path = std::path::PathBuf::from(bea_data);
+        let path = bea_data()?;
         let datasets: Vec<Dataset> = Dataset::iter().collect();
         for dataset in &datasets {
             dataset.value_set(&path)?;

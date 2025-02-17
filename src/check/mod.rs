@@ -1,6 +1,5 @@
 mod data;
 mod datasets;
-mod errors;
 mod histories;
 mod parameter_values;
 mod parameters;
@@ -11,7 +10,6 @@ pub use datasets::{
     check_datasets, datasets_from_file, datasets_json_to_bin, datasets_to_json,
     deserialize_datasets,
 };
-pub use errors::env;
 pub use histories::download_summary;
 pub use parameter_values::{
     parameter_value_filtered, parameter_value_from_bin, parameter_value_from_file,

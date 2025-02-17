@@ -1,9 +1,9 @@
-use crate::SerdeJson;
+use crate::{bea_data, SerdeJson};
 pub use crate::{
-    AffiliateLevel, BeaErr, BeaResponse, BoolOptions, Dataset, DirectionOfInvestment, EnvError,
-    Footnotes, Integer, IntegerKind, IntegerOptions, IoError, MneDoi, OwnershipLevel,
-    ParameterName, ParameterValueTable, ParameterValueTableVariant, Queue, Request, SelectionKind,
-    Set, State, YearKind, YearOptions,
+    AffiliateLevel, BeaErr, BeaResponse, BoolOptions, Dataset, DirectionOfInvestment, Footnotes,
+    Integer, IntegerKind, IntegerOptions, IoError, MneDoi, OwnershipLevel, ParameterName,
+    ParameterValueTable, ParameterValueTableVariant, Queue, Request, SelectionKind, Set, State,
+    YearKind, YearOptions,
 };
 use strum::IntoEnumIterator;
 
@@ -57,8 +57,7 @@ impl Mne {
         let dataset = Dataset::Mne;
         app.with_dataset(dataset);
         dotenvy::dotenv().ok();
-        let bea_data = EnvError::from_env("BEA_DATA")?;
-        let path = std::path::PathBuf::from(&bea_data);
+        let path = bea_data()?;
         let data = Mne::try_from(&path)?;
         let mut queue = Vec::new();
         for params in data.iter() {

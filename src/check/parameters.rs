@@ -1,5 +1,5 @@
 use crate::{
-    trace_init, App, BeaErr, BeaResponse, Dataset, EnvError, IoError, Json, ParameterName, Request,
+    bea_data, trace_init, App, BeaErr, BeaResponse, Dataset, IoError, Json, ParameterName, Request,
     ReqwestError, SerdeJson,
 };
 use std::str::FromStr;
@@ -45,18 +45,17 @@ pub fn parameters_from_file() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
+    let path = bea_data()?;
+    let path = path.join("parameters");
     for dataset in datasets {
         tracing::info!("Response pass.");
-        let path =
-            std::path::PathBuf::from(&format!("{bea_data}/parameters/{dataset}_parameters.json"));
-        parameter_from_json(path)?;
+        let res = path.join(format!("{dataset}_parameters.json"));
+        parameter_from_json(res)?;
 
         tracing::info!("Native pass.");
-        let path =
-            std::path::PathBuf::from(&format!("{bea_data}/parameters/{dataset}_parameters.bin"));
-        tracing::info!("Reading from {path:?}");
-        parameter_from_bin(path)?;
+        let nat = path.join(format!("{dataset}_parameters.json"));
+        tracing::info!("Reading from {nat:?}");
+        parameter_from_bin(nat)?;
     }
     Ok(())
 }
@@ -66,13 +65,13 @@ pub fn parameters_json_to_bin() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
+    let path = bea_data()?;
+    let path = path.join("parameters");
     for dataset in datasets {
         // Set path for json file.
-        let path = format!("{bea_data}/parameters/{dataset}_parameters.json");
-        let path = std::path::PathBuf::from(path);
-        let file = std::fs::File::open(&path)
-            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
+        let json = path.join(format!("{dataset}_parameters.json"));
+        let file = std::fs::File::open(&json)
+            .map_err(|e| IoError::new(json, e, line!(), file!().into()))?;
         // Create reader from path.
         let rdr = std::io::BufReader::new(file);
         // Deserialize to serde_json::Value.
@@ -82,11 +81,10 @@ pub fn parameters_json_to_bin() -> Result<(), BeaErr> {
         let contents = serde_json::to_vec(&res)
             .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         // Set path for binary file.
-        let path = format!("{bea_data}/parameters/{dataset}_parameters.bin");
-        let path = std::path::PathBuf::from(path);
+        let bin = path.join(format!("{dataset}_parameters.bin"));
         // Write binary to file.
-        std::fs::write(&path, contents)
-            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
+        std::fs::write(&bin, contents)
+            .map_err(|e| IoError::new(bin, e, line!(), file!().into()))?;
     }
     Ok(())
 }
@@ -108,7 +106,7 @@ pub async fn deserialize_parameters() -> Result<(), BeaErr> {
 pub async fn deserialize_parameter(app: &mut App, dataset: Dataset) -> Result<(), BeaErr> {
     let mut opts = app.options().clone();
     opts.with_dataset(dataset);
-    app.add_options(opts);
+    app.with_options(opts);
 
     let data = app.get().await?;
     match data.json::<serde_json::Value>().await {
@@ -117,10 +115,10 @@ pub async fn deserialize_parameter(app: &mut App, dataset: Dataset) -> Result<()
             tracing::trace!("Result: {:#?}", params);
             let contents = BeaResponse::serialize(&params)?;
             dotenvy::dotenv().ok();
-            let bea_data = EnvError::from_env("BEA_DATA")?;
-            let path = format!("{bea_data}/parameters/{dataset}_parameters.bin");
-            tracing::info!("Writing to path {}", path);
-            let path = std::path::PathBuf::from(&path);
+            let path = bea_data()?;
+            let path = path.join("parameters");
+            let path = path.join(format!("{dataset}_parameters.bin"));
+            tracing::info!("Writing to path {:?}", path);
             std::fs::write(&path, contents)
                 .map_err(|e| IoError::new(path, e, line!(), file!().into()).into())
         }

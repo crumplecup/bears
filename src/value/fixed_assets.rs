@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, EnvError, IoError, NipaRange, NipaRanges, ParameterName,
+    bea_data, BeaErr, BeaResponse, Dataset, IoError, NipaRange, NipaRanges, ParameterName,
     ParameterValueTable, ParameterValueTableVariant, Queue, Request, SelectionKind, SerdeJson, Set,
     TableName,
 };
@@ -23,8 +23,7 @@ impl FixedAssets {
         let dataset = Dataset::FixedAssets;
         app.with_dataset(dataset);
         dotenvy::dotenv().ok();
-        let bea_data = EnvError::from_env("BEA_DATA")?;
-        let path = std::path::PathBuf::from(&bea_data);
+        let path = bea_data()?;
         let data = FixedAssets::try_from(&path)?;
         let mut queue = Vec::new();
         for params in data.iter() {

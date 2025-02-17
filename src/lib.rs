@@ -31,19 +31,19 @@ pub use error::{
     VariantMissing, YearInvalid,
 };
 pub use free::{
-    file_size, from_csv, init, json_bool, json_str, map_to_bool, map_to_float, map_to_int,
-    map_to_string, to_csv, trace_init,
+    bea_data, file_size, from_csv, init, json_bool, json_str, map_to_bool, map_to_float,
+    map_to_int, map_to_string, to_csv, trace_init,
 };
 pub use history::History;
 pub use json::Json;
 pub use method::Method;
 pub use naics::Naics;
-pub use parameter::{deserialize_bool, ParameterName, Parameters};
+pub use parameter::{deserialize_bool, Parameter, ParameterName, Parameters};
 pub use parameter_value::{
     Metadata, MneDoi, NipaFrequency, NipaShowMillions, NipaTable, NipaYear, ParameterFields,
     ParameterValueTable, ParameterValues,
 };
-pub use queue::{Event, Mode, Queue};
+pub use queue::{Event, Mode, Queue, Tracker};
 pub use request::{Request, RequestParameter, RequestParameters};
 pub use results::{BeaResponse, Results};
 pub use value::{

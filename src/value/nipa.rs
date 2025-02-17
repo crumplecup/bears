@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, EnvError, Frequencies, Frequency, IoError, Millions,
+    bea_data, BeaErr, BeaResponse, Dataset, Frequencies, Frequency, IoError, Millions,
     MillionsOptions, NipaRange, NipaRanges, ParameterName, ParameterValueTable,
     ParameterValueTableVariant, Queue, Request, SelectionKind, SerdeJson, Set, TableName,
 };
@@ -30,8 +30,7 @@ impl Nipa {
         let dataset = Dataset::Nipa;
         app.with_dataset(dataset);
         dotenvy::dotenv().ok();
-        let bea_data = EnvError::from_env("BEA_DATA")?;
-        let path = std::path::PathBuf::from(&bea_data);
+        let path = bea_data()?;
         let data = Nipa::try_from(&path)?;
         let mut queue = Vec::new();
         for params in data.iter() {
@@ -387,8 +386,7 @@ impl NiUnderlyingDetail {
         let dataset = Dataset::NIUnderlyingDetail;
         app.with_dataset(dataset);
         dotenvy::dotenv().ok();
-        let bea_data = EnvError::from_env("BEA_DATA")?;
-        let path = std::path::PathBuf::from(&bea_data);
+        let path = bea_data()?;
         let data = NiUnderlyingDetail::try_from(&path)?;
         let mut queue = Vec::new();
         for params in data.iter() {

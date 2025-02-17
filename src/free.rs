@@ -4,13 +4,19 @@ use crate::{
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
+pub fn bea_data() -> Result<std::path::PathBuf, EnvError> {
+    let key = "BEA_DATA".to_string();
+    let path = std::env::var(&key)
+        .map_err(|source| EnvError::new(key, source, line!(), file!().into()))?;
+    Ok(std::path::PathBuf::from(&path))
+}
+
 /// Initiates a subscriber for the tracing library. Used to instrument internal library functions
 /// for debugging and diagnostics.
 #[tracing::instrument]
 pub fn trace_init() -> Result<(), BeaErr> {
     dotenvy::dotenv().ok();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
-    let path = std::path::PathBuf::from(bea_data);
+    let path = bea_data()?;
     let path = path.join("history");
     if !path.exists() {
         std::fs::DirBuilder::new()
@@ -59,9 +65,14 @@ pub fn init() -> Result<App, BeaErr> {
     trace_init()?;
     tracing::info!("Test logging initialized.");
     dotenvy::dotenv().ok();
-    let url = EnvError::from_env("BEA_URL")?;
-    let url = UrlParseError::into_url(&url)?;
-    let key = EnvError::from_env("API_KEY")?;
+    let url = "BEA_URL".to_string();
+    let url = std::env::var(&url)
+        .map_err(|source| EnvError::new(url, source, line!(), file!().into()))?;
+    let url = url::Url::parse(&url)
+        .map_err(|source| UrlParseError::new(url, source, line!(), file!().into()))?;
+    let key = "API_KEY".to_string();
+    let key = std::env::var(&key)
+        .map_err(|source| EnvError::new(key, source, line!(), file!().into()))?;
     let options = Options::default();
     let app = App::new(key, options, url);
     Ok(app)

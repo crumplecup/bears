@@ -1,5 +1,5 @@
 use crate::{
-    trace_init, BeaErr, BeaResponse, Dataset, DatasetMissing, EnvError, IoError, Request,
+    bea_data, trace_init, BeaErr, BeaResponse, Dataset, DatasetMissing, IoError, Request,
     ReqwestError, SerdeJson,
 };
 use strum::IntoEnumIterator;
@@ -19,9 +19,9 @@ pub async fn datasets_to_json() -> Result<(), BeaErr> {
 pub fn datasets_from_file() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
+    let bea_data = bea_data()?;
     tracing::info!("BEA_DATA present.");
-    let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
+    let path = bea_data.join("datasets.json");
     let file =
         std::fs::File::open(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
     tracing::info!("File opened.");
@@ -31,7 +31,7 @@ pub fn datasets_from_file() -> Result<(), BeaErr> {
     let bea = BeaResponse::try_from(&json)?;
     tracing::info!("Response: {bea:#?}");
 
-    let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.bin"));
+    let path = bea_data.join("datasets.bin");
     tracing::info!("Reading {path:?}.");
     let decode =
         std::fs::read(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
@@ -56,8 +56,8 @@ pub async fn deserialize_datasets() -> Result<(), BeaErr> {
             tracing::info!("Result: {:#?}", datasets);
             let contents = BeaResponse::serialize(&datasets)?;
             dotenvy::dotenv().ok();
-            let bea_data = EnvError::from_env("BEA_DATA")?;
-            let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.bin"));
+            let path = bea_data()?;
+            let path = path.join("datasets.bin");
             tracing::info!("Writing to path {:?}", path);
             std::fs::write(&path, contents)
                 .map_err(|e| IoError::new(path, e, line!(), file!().into()).into())
@@ -81,8 +81,8 @@ pub async fn deserialize_datasets() -> Result<(), BeaErr> {
 pub fn check_datasets() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
-    let path = std::path::PathBuf::from(&format!("{bea_data}/datasets.json"));
+    let path = bea_data()?;
+    let path = path.join("datasets.json");
     let file =
         std::fs::File::open(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
     let rdr = std::io::BufReader::new(file);
@@ -116,10 +116,8 @@ pub fn check_datasets() -> Result<(), BeaErr> {
 pub fn datasets_json_to_bin() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
-    // Set path for json file.
-    let path = format!("{bea_data}/datasets.json");
-    let path = std::path::PathBuf::from(path);
+    let bea_data = bea_data()?;
+    let path = bea_data.join("datasets.json");
     // Create reader from path.
     let file =
         std::fs::File::open(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
@@ -131,8 +129,7 @@ pub fn datasets_json_to_bin() -> Result<(), BeaErr> {
     let contents =
         serde_json::to_vec(&res).map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
     // Set path for binary file.
-    let path = format!("{bea_data}/datasets.bin");
-    let path = std::path::PathBuf::from(path);
+    let path = bea_data.join("datasets.bin");
     // Write binary to file.
     std::fs::write(&path, contents)
         .map_err(|e| IoError::new(path, e, line!(), file!().into()).into())

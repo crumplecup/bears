@@ -1,5 +1,5 @@
 use crate::{
-    trace_init, ApiMetadata, BeaErr, BeaResponse, Dataset, EnvError, FixedAssets, GdpByIndustry,
+    bea_data, trace_init, ApiMetadata, BeaErr, BeaResponse, Dataset, FixedAssets, GdpByIndustry,
     Iip, InputOutput, IntlServSta, IntlServTrade, IoError, Ita, Mne, NiUnderlyingDetail, Nipa,
     Regional, SerdeJson, UnderlyingGdpByIndustry,
 };
@@ -11,8 +11,8 @@ use strum::IntoEnumIterator;
 pub fn api_error() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
-    let path = std::path::PathBuf::from(&format!("{bea_data}/values_api_error.json"));
+    let path = bea_data()?;
+    let path = path.join("values_api_error.json");
     let file =
         std::fs::File::open(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
     let rdr = std::io::BufReader::new(file);
@@ -29,8 +29,8 @@ pub fn api_error() -> Result<(), BeaErr> {
 pub fn requests_exceeded() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
-    let path = std::path::PathBuf::from(&format!("{bea_data}/requests_exceeded.json"));
+    let path = bea_data()?;
+    let path = path.join("requests_exceeded.json");
     let file =
         std::fs::File::open(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
     let rdr = std::io::BufReader::new(file);
@@ -62,7 +62,7 @@ pub async fn values_filtered_subset() -> Result<(), BeaErr> {
 }
 
 /// Two parameters in the GdpByIndustry dataset have valid input sets that vary by table_id, namely
-/// Year and Industry.  Obtain table ids using [`Method::GetParameterValues`] prior to running this
+/// Year and Industry.  Obtain table ids using [`Method::GetParameterValues`](crate::Method::GetParameterValues) prior to running this
 /// check. For these two parameters, we obtain a response for each table_id and write the result to
 /// a folder in the BEA_DATA directory.
 ///
@@ -74,7 +74,7 @@ pub async fn values_gdp_filtered() -> Result<(), BeaErr> {
 }
 
 /// Two parameters in the UnderlyingGdpByIndustry dataset have valid input sets that vary by table_id, namely
-/// Year and Industry.  Obtain table ids using [`Method::GetParameterValues`] prior to running this
+/// Year and Industry.  Obtain table ids using [`Method::GetParameterValues`](crate::Method::GetParameterValues) prior to running this
 /// check. For these two parameters, we obtain a response for each table_id and write the result to
 /// a folder in the BEA_DATA directory.
 ///
@@ -89,8 +89,7 @@ pub async fn values_ugdp_filtered() -> Result<(), BeaErr> {
 pub fn value_sets() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
-    let bea_data = EnvError::from_env("BEA_DATA")?;
-    let path = std::path::PathBuf::from(bea_data);
+    let path = bea_data()?;
     let datasets: Vec<Dataset> = Dataset::iter().collect();
     for dataset in &datasets {
         match dataset {
