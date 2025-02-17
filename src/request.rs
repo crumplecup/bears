@@ -324,7 +324,7 @@ impl Request {
                 let mut options = Options::default();
                 let method = Method::GetData;
                 options.with_method(method);
-                app.add_options(options);
+                app.with_options(options);
                 tracing::info!("App configured for {method}.");
                 Ok(app)
             }
@@ -334,7 +334,7 @@ impl Request {
                 let mut options = Options::default();
                 let method = Method::GetDataSetList;
                 options.with_method(method);
-                app.add_options(options);
+                app.with_options(options);
                 tracing::info!("App configured for {method}.");
                 Ok(app)
             }
@@ -344,7 +344,7 @@ impl Request {
                 let mut options = Options::default();
                 let method = Method::GetParameterList;
                 options.with_method(method);
-                app.add_options(options);
+                app.with_options(options);
                 tracing::info!("App configured for {method}.");
                 Ok(app)
             }
@@ -354,7 +354,7 @@ impl Request {
                 let mut options = Options::default();
                 let method = Method::GetParameterValues;
                 options.with_method(method);
-                app.add_options(options);
+                app.with_options(options);
                 tracing::info!("App configured for {method}.");
                 Ok(app)
             }
@@ -364,7 +364,7 @@ impl Request {
                 let mut options = Options::default();
                 let method = Method::GetParameterValuesFiltered;
                 options.with_method(method);
-                app.add_options(options);
+                app.with_options(options);
                 tracing::info!("App configured for {method}.");
                 Ok(app)
             }
