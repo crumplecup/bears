@@ -51,7 +51,9 @@ impl RowCode {
                         // 3327,"Machine Shops; Turned Product; and Screw, Nut, and Bolt Manufacturing",,
                         "Machine shop products, turned products, and screws, nuts, and bolts"
                         | "Machine shops; turned products; and screws, nuts, and bolts" => {
-                            tracing::trace!("Categorizing machine shop products, turned products, screws nuts and bolts.");
+                            tracing::trace!(
+                                "Categorizing machine shop products, turned products, screws nuts and bolts."
+                            );
                             Ok(Self::Naics(3327))
                         }
                         // 5171,Wired and Wireless Telecommunications (except Satellite),,
@@ -68,12 +70,16 @@ impl RowCode {
                         }
                         // 5419,"Other Professional, Scientific, and Technical Services",,
                         "Other-Professional, scientific, and technical services" => {
-                            tracing::trace!("Categorizing other professional, scientific, and technical services.");
+                            tracing::trace!(
+                                "Categorizing other professional, scientific, and technical services."
+                            );
                             Ok(Self::Naics(5419))
                         }
                         // 5222,Nondepository Credit Intermediation ,,
                         "Non-depository credit intermediation, except branches and agencies" => {
-                            tracing::trace!("Categorizing Non-depository credit intermediation, except branches and agencies.");
+                            tracing::trace!(
+                                "Categorizing Non-depository credit intermediation, except branches and agencies."
+                            );
                             Ok(Self::Naics(5222))
                         }
                         // 42471,Petroleum Bulk Stations and Terminals ,,
@@ -140,6 +146,42 @@ impl RowCode {
                         "Other-Mining" => {
                             tracing::trace!("Categorizing other mining.");
                             Ok(Self::Parent(21))
+                        }
+                        // 92615,"Regulation, Licensing, and Inspection of Miscellaneous Commercial Sectors ",,
+                        "Fees, taxes, permits, licenses" => {
+                            tracing::trace!("Categorizing addendum.");
+                            Ok(Self::Parent(92615))
+                        }
+                        // 5132,Software Publishers,,
+                        "Intellectual property rights" => {
+                            tracing::trace!("Categorizing Intellectual property rights.");
+                            Ok(Self::Parent(5132))
+                        }
+                        // 531,Real Estate,,
+                        "Land" => {
+                            tracing::trace!("Categorizing Land.");
+                            Ok(Self::Parent(531))
+                        }
+                        // 23621,Industrial Building Construction,,
+                        // could also be sewage treatment
+                        "Plant and equipment" => {
+                            tracing::trace!("Categorizing Plant and equipment.");
+                            Ok(Self::Parent(23621))
+                        }
+                        // 3399,Other Miscellaneous Manufacturing,,
+                        "Other---  All  --" => {
+                            tracing::trace!("Categorizing Other---  All  --.");
+                            Ok(Self::Parent(3399))
+                        }
+                        // 45999,All Other Miscellaneous Retailers ,,
+                        "Miscellaneous retailers" => {
+                            tracing::trace!("Categorizing Miscellaneous retailers.");
+                            Ok(Self::Parent(45999))
+                        }
+                        // 3322,Cutlery and Handtool Manufacturing,,
+                        "Cutlery and handtools" => {
+                            tracing::trace!("Categorizing Cutlery and handtools.");
+                            Ok(Self::Parent(3322))
                         }
                         // Not a valid NAICS category.
                         // Regional designations

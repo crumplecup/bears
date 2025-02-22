@@ -287,6 +287,8 @@ pub enum Annotation {
     L,
     #[display("M")]
     M,
+    #[display("r")]
+    R,
     #[display("--")]
     Dash,
     #[display("- - - - -")]
@@ -313,12 +315,18 @@ impl Annotation {
             "K" => Self::K,
             "L" => Self::L,
             "M" => Self::M,
+            "r" => Self::R,
             "--" => Self::Dash,
             // the first hyphen gets grabbed by the parser as a minus sign
             "-" => Self::Dash,
             "- - - - -" => Self::Dashes,
             " - - - -" => Self::Dashes,
             "..." => Self::Dots,
+            "...." => Self::Dots,
+            "……………" => Self::Dots,
+            "……………." => Self::Dots,
+            "………………" => Self::Dots,
+            "…………………" => Self::Dots,
             "n.a." => Self::NotApplicable,
             _ => {
                 let error = AnnotationMissing::new(value.to_string(), line!(), file!().to_string());
@@ -340,6 +348,7 @@ impl Annotation {
             Self::K => "K",
             Self::L => "L",
             Self::M => "M",
+            Self::R => "r",
             Self::Dash => "--",
             Self::Dashes => "- - - - -",
             Self::Dots => "...",
