@@ -1,7 +1,7 @@
 use crate::{
-    bea_data, BeaErr, BeaResponse, Dataset, DeriveFromStr, IoError, JsonParseError,
-    JsonParseErrorKind, KeyMissing, Method, MillionsOptions, Options, ParameterName, RateLimit,
-    ReqwestError, Results, SerdeJson, VariantMissing,
+    bea_data, BTreeKeyMissing, BeaErr, BeaResponse, Dataset, DeriveFromStr, IoError,
+    JsonParseError, JsonParseErrorKind, KeyMissing, Method, MillionsOptions, Options,
+    ParameterKind, ParameterName, RateLimit, ReqwestError, Results, SerdeJson, VariantMissing,
 };
 use std::collections::BTreeMap;
 use std::str::FromStr;
@@ -226,22 +226,34 @@ impl App {
 
     /// Returns the value of the parameter containing the selected [`Method`].  Used to determine
     /// path destinations for queries.
-    pub fn method(&self) -> Result<Method, DeriveFromStr> {
+    pub fn method(&self) -> Result<Method, BeaErr> {
         let query = self.query();
-        let method = query["METHOD"].clone();
+        let key = ParameterKind::Method.header();
+        let method = match query.get(&key) {
+            Some(value) => value.to_string(),
+            None => {
+                let error = BTreeKeyMissing::new(key, line!(), file!().to_string());
+                return Err(error.into());
+            }
+        };
         Method::from_str(&method)
-            .map_err(|source| DeriveFromStr::new(method, source, line!(), file!().into()))
+            .map_err(|source| DeriveFromStr::new(method, source, line!(), file!().into()).into())
     }
 
     /// Returns the value of the parameter containing the selected [`Dataset`].  Used to determine
     /// path destinations for queries.
-    // TODO: Replace named indexes into query with an error type for better developer experience when a
-    // key is missing.
-    pub fn dataset(&self) -> Result<Dataset, DeriveFromStr> {
+    pub fn dataset(&self) -> Result<Dataset, BeaErr> {
         let query = self.query();
-        let dataset = query["DatasetName"].clone();
+        let key = ParameterKind::Dataset.header();
+        let dataset = match query.get(&key) {
+            Some(value) => value.to_string(),
+            None => {
+                let error = BTreeKeyMissing::new(key, line!(), file!().to_string());
+                return Err(error.into());
+            }
+        };
         Dataset::from_str(&dataset)
-            .map_err(|source| DeriveFromStr::new(dataset, source, line!(), file!().into()))
+            .map_err(|source| DeriveFromStr::new(dataset, source, line!(), file!().into()).into())
     }
 
     /// The `destination` method returns the query path of self.  The query parameters in the `query` field of self determine the path destination.

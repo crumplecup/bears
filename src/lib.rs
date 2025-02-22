@@ -19,16 +19,16 @@ mod validate;
 mod value;
 
 pub use app::{App, ResultStatus};
-pub use config::Options;
+pub use config::{Options, ParameterKind};
 pub use data::{Data, NipaData};
 pub use dataset::{Dataset, Datasets};
 pub use error::{
-    AnnotationMissing, BeaErr, BeaErrorKind, BincodeError, BoolInvalid, Check, Csv, DatasetMissing,
-    DeriveFromStr, EnvError, FromStrError, IntegerInvalid, InvestmentInvalid, IoError, Jiff,
-    JsonParseError, JsonParseErrorKind, KeyMissing, Nom, NotArray, NotFloat, NotInteger, NotObject,
-    NotParameterName, NotQuarter, OwnershipInvalid, ParameterValueTableVariant, ParseFloat,
-    ParseInt, ParseInteger, RateLimit, ReqwestError, RowCodeMissing, SerdeJson, Set, UrlParseError,
-    VariantMissing, YearInvalid,
+    AnnotationMissing, BTreeKeyMissing, BeaErr, BeaErrorKind, BincodeError, BoolInvalid, Check,
+    Csv, DatasetMissing, DeriveFromStr, EnvError, FromStrError, IntegerInvalid, InvestmentInvalid,
+    IoError, Jiff, JsonParseError, JsonParseErrorKind, KeyMissing, Nom, NotArray, NotFloat,
+    NotInteger, NotObject, NotParameterName, NotQuarter, OwnershipInvalid,
+    ParameterValueTableVariant, ParseFloat, ParseInt, ParseInteger, RateLimit, ReqwestError,
+    RowCodeMissing, SerdeJson, Set, UrlParseError, VariantMissing, YearInvalid,
 };
 pub use free::{
     bea_data, file_size, from_csv, init, json_bool, json_str, map_to_bool, map_to_float,

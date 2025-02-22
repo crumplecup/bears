@@ -42,6 +42,7 @@ impl_bea_err!(
     AnnotationMissing,
     BincodeError,
     BoolInvalid,
+    BTreeKeyMissing,
     Check,
     Csv,
     DatasetMissing,
@@ -74,6 +75,8 @@ pub enum BeaErrorKind {
     Bincode(BincodeError),
     #[from(BoolInvalid)]
     BoolInvalid(BoolInvalid),
+    #[from(BTreeKeyMissing)]
+    BTreeKeyMissing(BTreeKeyMissing),
     #[from(Check)]
     Check(Check),
     #[from(Csv)]
@@ -130,6 +133,9 @@ impl std::fmt::Display for BeaErrorKind {
                 write!(f, "{e}")
             }
             Self::BoolInvalid(e) => {
+                write!(f, "{e}")
+            }
+            Self::BTreeKeyMissing(e) => {
                 write!(f, "{e}")
             }
             Self::Check(e) => {
@@ -208,6 +214,7 @@ impl std::error::Error for BeaErrorKind {
             Self::AnnotationMissing(e) => e.source(),
             Self::Bincode(e) => Some(e.source()),
             Self::BoolInvalid(e) => e.source(),
+            Self::BTreeKeyMissing(e) => e.source(),
             Self::Check(e) => e.source(),
             Self::Csv(e) => e.source(),
             Self::DatasetMissing(e) => e.source(),
@@ -897,6 +904,20 @@ pub struct RateLimit {
 }
 
 impl std::error::Error for RateLimit {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("BTree Key Missing: {key} at line {line} in {file}")]
+pub struct BTreeKeyMissing {
+    key: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for BTreeKeyMissing {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }
