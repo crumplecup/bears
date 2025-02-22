@@ -56,38 +56,72 @@ impl Options {
 
     #[tracing::instrument(skip_all)]
     pub fn params(&self) -> BTreeMap<String, String> {
+        use ParameterKind as pk;
         let mut params = BTreeMap::new();
         if let Some(dataset) = self.dataset {
-            params.insert("DatasetName".to_string(), dataset.to_string());
+            params.insert(pk::Dataset.header(), dataset.to_string());
         }
         if let Some(geofips) = self.geofips {
-            params.insert("GeoFips".to_string(), geofips.to_string());
+            params.insert(pk::GeoFips.header(), geofips.to_string());
         }
         if let Some(industry) = &self.industry {
-            params.insert("Industry".to_string(), industry.to_string());
+            params.insert(pk::Industry.header(), industry.to_string());
         }
         if let Some(linecode) = self.linecode {
-            params.insert("LineCode".to_string(), linecode.to_string());
+            params.insert(pk::LineCode.header(), linecode.to_string());
         }
         if let Some(method) = self.method {
-            params.insert("METHOD".to_string(), method.to_string());
+            params.insert(pk::Method.header(), method.to_string());
         }
         if let Some(param_name) = self.param_name {
-            params.insert("ParameterName".to_string(), param_name.to_string());
+            params.insert(pk::ParameterName.header(), param_name.to_string());
         }
         if let Some(table) = &self.table {
-            params.insert("TableName".to_string(), table.to_string());
+            params.insert(pk::TableName.header(), table.to_string());
         }
         if let Some(table_id) = self.table_id {
-            params.insert("TableID".to_string(), table_id.to_string());
+            params.insert(pk::TableId.header(), table_id.to_string());
         }
         if let Some(target) = self.target {
-            params.insert("TargetParameter".to_string(), target.to_string());
+            params.insert(pk::TargetParameter.header(), target.to_string());
         }
         if let Some(year) = self.year.clone() {
-            params.insert("Year".to_string(), year);
+            params.insert(pk::Year.header(), year);
         }
-        params.insert("RESULTFORMAT".to_string(), "JSON".to_string());
+        params.insert(pk::ResultFormat.header(), "JSON".to_string());
         params
+    }
+}
+
+pub enum ParameterKind {
+    Dataset,
+    GeoFips,
+    Industry,
+    LineCode,
+    Method,
+    ParameterName,
+    ResultFormat,
+    TableName,
+    TableId,
+    TargetParameter,
+    Year,
+}
+
+impl ParameterKind {
+    pub fn header(&self) -> String {
+        let value = match self {
+            Self::Dataset => "DatasetName",
+            Self::GeoFips => "GeoFips",
+            Self::Industry => "Industry",
+            Self::LineCode => "LineCode",
+            Self::Method => "METHOD",
+            Self::ParameterName => "ParameterName",
+            Self::ResultFormat => "RESULTFORMAT",
+            Self::TableName => "TableName",
+            Self::TableId => "TableID",
+            Self::TargetParameter => "TargetParameter",
+            Self::Year => "Year",
+        };
+        value.to_string()
     }
 }
