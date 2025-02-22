@@ -1,6 +1,23 @@
 use crate::{Dataset, Method, ParameterName};
 use std::collections::BTreeMap;
 
+/// The `Options` struct holds values for parameters in a BEA request.
+///
+/// Each field represents a different parameter field in the request.  Only fields that evaluate to
+/// `Some(T)` will be included in the request, and fields set to `None` are ignored.
+///
+/// Fields include:
+///
+/// * **dataset** - The `DatasetName` parameter, corresponding to the [`Dataset`] type.
+/// * **geofips** - The `Geofips` parameter, represented by an `i32`.
+/// * **industry** - The `Industry` parameter, represented by a `String`.
+/// * **linecode** - The `LineCode` parameter, represented by an `i32`.
+/// * **method** - The `METHOD` parameter, corresponding to the [`Method`] type.
+/// * **param_name** - The `ParameterName` parameter, corresponding to the [`ParameterName`] type.
+/// * **table** - The `TableName` parameter, represented by a `String`.
+/// * **table_id** - The `TableID` parameter, represented by an `i32`.
+/// * **target** - The `TargetParameter` parameter, corresponding to the [`ParameterName`] type.
+/// * **year** - The `Year` parameter, represented by a `String`.
 #[derive(
     Debug,
     Default,
@@ -30,6 +47,8 @@ pub struct Options {
 }
 
 impl Options {
+    /// Creates a new instance of `Options` using the default implementation, with each field set
+    /// to `None`.
     #[tracing::instrument]
     pub fn new() -> Self {
         Default::default()
