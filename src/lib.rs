@@ -1,3 +1,4 @@
+#![doc(html_playground_url = "https://play.rust-lang.org/")]
 mod app;
 pub mod check;
 pub mod command;
