@@ -48,21 +48,24 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 pub async fn data_from_json() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::FixedAssets];
+    let datasets = vec![Dataset::Mne];
     for dataset in datasets {
-        let queue = dataset.queue()?;
-        // let mut queue = dataset.queue()?;
-        // queue.retain(|app| &app.query()["Country"] == "000");
+        // let queue = dataset.queue()?;
+        let mut queue = dataset.queue()?;
+        // queue.retain(|app| &app.query()["Country"] == "400");
         // queue.retain(|app| &app.query()["DirectionOfInvestment"] == "outward");
-        // queue.retain(|app| &app.query()["Classification"] == "Country");
+        // queue.retain(|app| &app.query()["Classification"] == "Industry");
         // queue.retain(|app| &app.query()["ShowMillions"] == "N");
-        // tracing::info!("Queue length: {}", queue.len());
-        // queue.dedup();
         tracing::info!("Queue length: {}", queue.len());
-        // let history = History::try_from((dataset, Mode::Load))?;
-        // // strict is true means only download errors included in the event history
-        // queue.errors(&history, true)?;
+        // queue.dedup();
         // tracing::info!("Queue length: {}", queue.len());
+        let history = History::try_from((dataset, Mode::Load))?;
+        // let path = "/home/erik/bea/history/history_MNE_Errors.log";
+        // let path = std::path::PathBuf::from(path);
+        // let history = History::try_from(&path)?;
+        // strict is true means only download errors included in the event history
+        queue.errors(&history, true)?;
+        tracing::info!("Queue length: {}", queue.len());
         //
         // let queues = history.iter().with_queue(&queue);
         // for q in queues {
