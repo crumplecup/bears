@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2025-02-23
+
+### 🐛 Bug Fixes
+
+- Missing annotations added to Annotation type.  Missing row codes added to row_code module.
+
+### 🚜 Refactor
+
+- ParameterKind added to organize parameter headers.
+- BTreeKeyMissing error added for cases when the expected key is not present in internal BTreeMap structures, such as `Options` for `App` types.
+- Tests for data load and download in the `check` module remain a work in progress.
+
+### 📚 Documentation
+
+- Description added to Options type.
+- Link to playground added.  Examples do not yet work, as `bears` is not a recognized library.
+
+### ⚙️ Miscellaneous Tasks
+
+- Cargo-audit and OmniBOR supply chain security tooling added to release build artifacts.
+- Migrate to 2024 Edition.  Patch updates for dependencies.
+- Patch update for dependency uuid.
+
 ## [0.1.1] - 2025-02-17
 
 ### 🚀 Features
@@ -46,6 +69,7 @@ All notable changes to this project will be documented in this file.
 - Changelog synced to proper release tag.
 - Jiff updated to 0.2.0.  Patch updates for other dependencies.
 - Cargo dist tool added to CI.
+- Changelog updated for version 0.1.1.
 
 ## [0.1.0] - 2025-02-08
 
