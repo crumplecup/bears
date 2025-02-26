@@ -22,7 +22,7 @@ mod value;
 pub use app::{App, ResultStatus};
 pub use config::{Options, ParameterKind};
 pub use data::{Data, NipaData};
-pub use dataset::{Dataset, Datasets};
+pub use dataset::{Dataset, DatasetDetails, Datasets};
 pub use error::{
     AnnotationMissing, BTreeKeyMissing, BeaErr, BeaErrorKind, BincodeError, BoolInvalid, Check,
     Csv, DatasetMissing, DeriveFromStr, EnvError, FromStrError, IntegerInvalid, InvestmentInvalid,

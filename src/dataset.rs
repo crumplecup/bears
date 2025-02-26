@@ -1,8 +1,8 @@
 use crate::{
     bea_data, map_to_string, ApiMetadata, App, BeaErr, BeaResponse, DatasetMissing, FixedAssets,
     GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, IoError, Ita, JsonParseError,
-    JsonParseErrorKind, KeyMissing, Mne, NiUnderlyingDetail, Nipa, NotObject, ParameterName, Queue,
-    Regional, Request, ReqwestError, Results, SerdeJson, UnderlyingGdpByIndustry, VariantMissing,
+    KeyMissing, Mne, NiUnderlyingDetail, Nipa, NotObject, ParameterName, Queue, Regional, Request,
+    ReqwestError, Results, SerdeJson, UnderlyingGdpByIndustry, VariantMissing,
 };
 use convert_case::Casing;
 use serde::{Deserialize, Serialize};
@@ -16,6 +16,11 @@ use strum::IntoEnumIterator;
 /// We match the variants against the response from the
 /// [`Method::GetDataSetList`](crate::Method::GetDataSetList) in a unit test to detect new
 /// additions.
+///
+/// The `Dataset` type contains convenience methods for downloading the valid parameter values
+/// associates with the different parameters of each dataset. For datasets with a limited range of
+/// potential values, there is significant overlap of coverage between the
+/// [`Dataset::parameter_values`] and [`Dataset::values`] methods.
 #[derive(
     Debug,
     Default,
@@ -198,9 +203,8 @@ impl Dataset {
         }
     }
 
-    /// reads response and native format from file
-    /// avoids making api calls to bea
-    /// used to test internal parsing of responses
+    /// The `load` method reads a [`BeaResponse`] from the `BEA_DATA` directory.
+    /// TODO: Unused.  Keep or delete?
     #[tracing::instrument]
     pub fn load() -> Result<BeaResponse, BeaErr> {
         dotenvy::dotenv().ok();
@@ -217,9 +221,10 @@ impl Dataset {
         Ok(bea)
     }
 
-    /// Reads response to json using serde_json.
-    /// Prints the output to the terminal.
+    /// The `parameter` method reads a [`BeaResponse`] to json using the `serde_json` crate.
     /// Saves the result to the `BEA_DATA` directory.
+    ///
+    /// Called by [`Self::parameters`].
     #[tracing::instrument(skip_all)]
     pub async fn parameter(&self, app: &mut App) -> Result<(), BeaErr> {
         app.with_dataset(*self);
@@ -266,6 +271,10 @@ impl Dataset {
         Ok(())
     }
 
+    /// The `parameter_value` method requests the valid values for parameter `name` of the
+    /// `Dataset`.
+    ///
+    /// Called by [`Self::parameter_values`].
     #[tracing::instrument(skip_all)]
     pub async fn parameter_value(self, app: &mut App, name: ParameterName) -> Result<(), BeaErr> {
         let mut opts = app.options().clone();
@@ -302,6 +311,9 @@ impl Dataset {
         }
     }
 
+    /// The `parameter_values` method requests the valid range of values for each parameter in the
+    /// [`Dataset`].
+    ///
     /// After a successfull response from an API request, the goal is to parse the response into
     /// internal library data structures.  The JSON responses can include heavily nested data
     /// structures, which makes deserializing directly into Rust types a brittle process.  Instead, we
@@ -328,6 +340,10 @@ impl Dataset {
         Ok(())
     }
 
+    /// The `value` method downloads the valid values for parameter `name` in the `Dataset`.
+    ///
+    /// Called by [`Self::values`].
+    #[tracing::instrument(skip(self, app))]
     pub async fn value(self, app: &mut App, name: ParameterName) -> Result<(), BeaErr> {
         let mut options = app.options().clone();
         options.with_dataset(self);
@@ -422,12 +438,20 @@ impl Dataset {
         Ok(())
     }
 
+    /// The `value_gdp` method uses the ParameterValuesFiltered method to specify valid
+    /// values for parameter `name` in the `Dataset` based on the table name.
+    ///
+    /// Used for GdpByIndustry and UnderlyingGdpByIndustry variants.  Called by [`Self::values_gdp`] and [`Self::values_ugdp`].
+    #[tracing::instrument(skip(self, app))]
     pub async fn value_gdp(self, app: &mut App, name: ParameterName) -> Result<(), BeaErr> {
         dotenvy::dotenv().ok();
+        // path to bea_data directory
         let bea_data = bea_data()?;
+        // set table_ids from the Dataset type
         let table_id = match self {
             Self::GDPbyIndustry => GdpByIndustry::read_table_id(&bea_data)?,
             Self::UnderlyingGDPbyIndustry => UnderlyingGdpByIndustry::read_table_id(&bea_data)?,
+            // no other BEA datasets use table ids as a parameter value
             other => {
                 tracing::error!("GdpByIndustry or UnderlyingGDPbyIndustry required, found {self}.");
                 let error = VariantMissing::new(
@@ -439,42 +463,54 @@ impl Dataset {
                 return Err(error.into());
             }
         };
+        // Add dataset and target parameter to options
         let mut options = app.options().clone();
         options.with_dataset(self);
         options.with_target(name);
+        // navigate to parameter_values directory
+        let path = bea_data.join("parameter_values");
+        // create the folder if it does not exist
+        if !path.exists() {
+            std::fs::DirBuilder::new()
+                .create(&path)
+                .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
+            tracing::info!("Target directory for Parameter Values created.");
+        }
+        // navigate to dataset-parameter subdirectory
+        let path = path.join(format!("{self}_{name}"));
+        if !path.exists() {
+            std::fs::DirBuilder::new()
+                .create(&path)
+                .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
+            tracing::info!("Target directory for Parameter Values created.");
+        }
         match name {
             ParameterName::Industry => {
-                let path = bea_data.join("parameter_values");
-                if !path.exists() {
-                    std::fs::DirBuilder::new()
-                        .create(&path)
-                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
-                    tracing::info!("Target directory for Parameter Values created.");
-                }
-                let path = path.join(format!("{self}_{name}"));
-                if !path.exists() {
-                    std::fs::DirBuilder::new()
-                        .create(&path)
-                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
-                    tracing::info!("Target directory for Parameter Values created.");
-                }
                 for id in table_id {
+                    // add table id to options
                     options.with_table_id(*id.value());
+                    // update app with modified options
                     app.with_options(options.clone());
+                    // fire off the get request using the configured app
                     let data = app.get().await?;
-                    tracing::info!("{data:#?}");
+                    tracing::trace!("{data:#?}");
+                    // parse the response as json
                     match data.json::<serde_json::Value>().await {
                         Ok(json) => {
+                            // Convert to file storage format (Vec<u8>)
                             let contents = serde_json::to_vec(&json)
                                 .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
+                            // update path with file name
                             let path = path.join(format!(
                                 "{self}_{name}_byTableId_{}_values.json",
                                 id.value()
                             ));
                             tracing::info!("Current target path: {path:?}");
+                            // Write contents of response to file
                             std::fs::write(&path, contents)
                                 .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
                         }
+                        // if reqwest cannot convert the response to json, it probably failed
                         Err(source) => {
                             let url = app.url().to_string();
                             let method = "get".to_string();
@@ -492,21 +528,8 @@ impl Dataset {
                     }
                 }
             }
+            // TODO: Test this branch
             ParameterName::Year => {
-                let path = bea_data.join("parameter_values");
-                if !path.exists() {
-                    std::fs::DirBuilder::new()
-                        .create(&path)
-                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
-                    tracing::info!("Target directory for Parameter Values created.");
-                }
-                let path = path.join(format!("{self}_{name}"));
-                if !path.exists() {
-                    std::fs::DirBuilder::new()
-                        .create(&path)
-                        .map_err(|e| IoError::new(path.clone(), e, line!(), file!().into()))?;
-                    tracing::info!("Target directory for Parameter Values created.");
-                }
                 for id in table_id {
                     options.with_table_id(*id.value());
                     app.with_options(options.clone());
@@ -551,6 +574,8 @@ impl Dataset {
         Ok(())
     }
 
+    /// The `values_gdp` method downloads the valid parameter values for [`Dataset::GDPbyIndustry`] variant.
+    ///
     /// Two parameters in the GdpByIndustry dataset have valid input sets that vary by table_id, namely
     /// Year and Industry.  Obtain table ids using [`Method::GetParameterValues`](crate::Method::GetParameterValues) prior to running this
     /// check. For these two parameters, we obtain a response for each table_id and write the result to
@@ -570,6 +595,8 @@ impl Dataset {
         Ok(())
     }
 
+    /// The `values_ugdp` method downloads the valid parameter values for
+    /// [`Dataset::UnderlyingGDPbyIndustry`] variant.
     #[tracing::instrument]
     pub async fn values_ugdp() -> Result<(), BeaErr> {
         let req = Request::ParameterValueFilter;
@@ -582,6 +609,10 @@ impl Dataset {
         Ok(())
     }
 
+    /// The `values_gdp_set` method download the valid parameter values for the
+    /// [`Dataset::GDPbyIndustry`] and [`Dataset::UnderlyingGDPbyIndustry`] variants.
+    ///
+    /// Calls [`Self::values_gdp`] and [`Self::values_ugdp`].
     #[tracing::instrument]
     pub async fn values_gdp_set() -> Result<(), BeaErr> {
         Self::values_gdp().await?;
@@ -589,6 +620,11 @@ impl Dataset {
         Ok(())
     }
 
+    /// The `queue` method is a convenience wrapper that produces a [`Queue`] from the `Dataset`.
+    /// The weakness of this approach is that user cannot modify the iterator used to generate the
+    /// queue, so only the default iterator is accessible.  Since users are meant to be able to modify the
+    /// iterator, this lack of access is counter-productive.
+    #[tracing::instrument(skip_all)]
     pub fn queue(&self) -> Result<Queue, BeaErr> {
         match self {
             Self::Nipa => Nipa::queue(),
@@ -606,6 +642,12 @@ impl Dataset {
         }
     }
 
+    /// The purpose of the `value_set` method is to dispatch the given `path` to the correct `TryFrom`
+    /// implementation based on the variant of `Self`.
+    ///
+    /// Logs summary statistics from the dataset to the console at the `INFO` level.
+    ///
+    /// Called by [`Self::value_sets`].
     #[tracing::instrument]
     pub fn value_set<P: AsRef<std::path::Path> + std::fmt::Debug>(
         self,
@@ -761,6 +803,10 @@ impl Dataset {
         Ok(())
     }
 
+    /// The `value_sets` method constructs the value set for each variant of `Dataset`.
+    /// Value sets contain the parameter values used to build requests for a [`Queue`].
+    /// Used during testing to verify the build process.
+    /// TODO: remove this and value_set method?
     #[tracing::instrument]
     pub fn value_sets() -> Result<(), BeaErr> {
         dotenvy::dotenv().ok();
@@ -773,6 +819,14 @@ impl Dataset {
     }
 }
 
+/// The `DatasetDetails` type represents dataset descriptions in a BEA response.  This data type is
+/// an intermediary between the [`serde_json::Value`] representation and the strongly-typed
+/// internal representation, implemented using the lowly `String`.
+///
+/// ## Fields
+///
+/// * **dataset_description** - String describing the dataset.
+/// * **dataset_name** - String representation of the dataset name.
 #[derive(
     Clone,
     Debug,
@@ -795,7 +849,6 @@ pub struct DatasetDetails {
 
 impl TryFrom<serde_json::Value> for DatasetDetails {
     type Error = BeaErr;
-    // #[tracing::instrument(skip_all)]
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         match value {
             serde_json::Value::Object(m) => {
@@ -806,7 +859,6 @@ impl TryFrom<serde_json::Value> for DatasetDetails {
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
                 let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseErrorKind::from(error);
                 let error = JsonParseError::from(error);
                 Err(error.into())
             }
@@ -814,6 +866,14 @@ impl TryFrom<serde_json::Value> for DatasetDetails {
     }
 }
 
+/// The `Datasets` type is a thin wrapper around a vector of [`DatasetDetails`].
+///
+/// Internally, we validate the variants of [`Dataset`] against the BEA response listing valid
+/// datasets.  We collect the response into a `Datasets` type, map each dataset name to an existing
+/// variant, and ensure that each [`DatasetDetails`] matching an existing variant, and all variants
+/// are still in use.  See [`check_datasets`](crate::check::check_datasets).
+///
+/// TODO: Convert from struct to tuple.  May need to remove "binary" methods first.
 #[derive(
     Clone,
     Debug,
@@ -854,7 +914,6 @@ impl TryFrom<serde_json::Value> for Datasets {
                 } else {
                     tracing::trace!("Unexpected content: {m:#?}");
                     let error = KeyMissing::new(key, line!(), file!().to_string());
-                    let error = JsonParseErrorKind::from(error);
                     let error = JsonParseError::from(error);
                     Err(error.into())
                 }
@@ -862,7 +921,6 @@ impl TryFrom<serde_json::Value> for Datasets {
             _ => {
                 tracing::trace!("Wrong Value type: {value:#?}");
                 let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseErrorKind::from(error);
                 let error = JsonParseError::from(error);
                 Err(error.into())
             }

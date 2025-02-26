@@ -93,6 +93,8 @@ impl Options {
     }
 }
 
+/// The `ParameterKind` enum exists to provide a single source of truth for how to spell the
+/// parameter value that functions as the header for a given parameter.
 pub enum ParameterKind {
     Dataset,
     GeoFips,
@@ -104,10 +106,13 @@ pub enum ParameterKind {
     TableName,
     TableId,
     TargetParameter,
+    UserId,
     Year,
 }
 
 impl ParameterKind {
+    /// The `header` method produces the `String` that identifies the parameter type of the
+    /// accompanying value.
     pub fn header(&self) -> String {
         let value = match self {
             Self::Dataset => "DatasetName",
@@ -120,6 +125,7 @@ impl ParameterKind {
             Self::TableName => "TableName",
             Self::TableId => "TableID",
             Self::TargetParameter => "TargetParameter",
+            Self::UserId => "USERID",
             Self::Year => "Year",
         };
         value.to_string()

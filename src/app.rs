@@ -78,7 +78,7 @@ impl App {
     ///   ```
     pub fn new(key: String, options: Options, url: url::Url) -> Self {
         let mut query = options.params();
-        query.insert("USERID".to_string(), key.clone());
+        query.insert(ParameterKind::UserId.header(), key.clone());
         Self {
             key,
             options,
@@ -135,7 +135,7 @@ impl App {
     #[tracing::instrument(skip_all)]
     pub fn params(&self) -> BTreeMap<String, String> {
         let mut params = self.options.params();
-        params.insert("USERID".to_string(), self.key.clone());
+        params.insert(ParameterKind::UserId.header(), self.key.clone());
         params
     }
 

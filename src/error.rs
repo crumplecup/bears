@@ -314,7 +314,7 @@ macro_rules! impl_json_parse_error {
     };
 }
 
-impl_json_parse_error!(KeyMissing);
+impl_json_parse_error!(KeyMissing, NotObject);
 
 #[derive(Debug, derive_new::new, derive_more::Deref, derive_more::DerefMut)]
 pub struct JsonParseError {

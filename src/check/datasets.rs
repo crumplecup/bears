@@ -31,6 +31,7 @@ pub fn datasets_from_file() -> Result<(), BeaErr> {
     let bea = BeaResponse::try_from(&json)?;
     tracing::info!("Response: {bea:#?}");
 
+    // TODO: Remove
     let path = bea_data.join("datasets.bin");
     tracing::info!("Reading {path:?}.");
     let decode =
@@ -46,6 +47,7 @@ pub fn datasets_from_file() -> Result<(), BeaErr> {
 /// Deserialize directly from response.
 /// Write to binary format in the BEA_DATA directory.
 /// Pings the BEA API.
+/// TODO: Remove
 #[tracing::instrument]
 pub async fn deserialize_datasets() -> Result<(), BeaErr> {
     let req = Request::Dataset;
@@ -112,6 +114,7 @@ pub fn check_datasets() -> Result<(), BeaErr> {
     Ok(())
 }
 
+// TODO: Remove
 #[tracing::instrument]
 pub fn datasets_json_to_bin() -> Result<(), BeaErr> {
     trace_init()?;
