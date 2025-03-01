@@ -419,17 +419,33 @@ impl MneError {
                         }
                     }
                 }
+                serde_json::Value::Array(v) => {
+                    tracing::trace!("Array found for {key}.");
+                    if let Some(serde_json::Value::Object(m)) = v.clone().pop() {
+                        let error = map_to_string("error", &m)?;
+                        let number = map_to_string("number", &m)?;
+                        match str::parse::<i32>(&number) {
+                            Ok(number) => Ok(Self::new(number, error)),
+                            Err(source) => {
+                                let error = ParseInt::new(number, source, line!(), file!().into());
+                                Err(error.into())
+                            }
+                        }
+                    } else {
+                        let error = NotObject::new(line!(), file!().to_string());
+                        let error = JsonParseError::from(error);
+                        Err(error.into())
+                    }
+                }
                 _ => {
                     tracing::trace!("Invalid Value: {value:#?}");
                     let error = NotObject::new(line!(), file!().to_string());
-                    let error = JsonParseErrorKind::from(error);
                     let error = JsonParseError::from(error);
                     Err(error.into())
                 }
             }
         } else {
             let error = KeyMissing::new(key, line!(), file!().to_string());
-            let error = JsonParseErrorKind::from(error);
             let error = JsonParseError::from(error);
             Err(error.into())
         }
