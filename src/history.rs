@@ -310,7 +310,7 @@ impl From<&History> for Chunks {
         let chunk_index = value.chunk_index();
         let buckets = value.buckets();
         let mut chunks = Vec::new();
-        for i in 0..buckets {
+        for i in 0..=buckets {
             let events = values.clone();
             let mut events = events
                 .into_iter()
