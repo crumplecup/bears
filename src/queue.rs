@@ -160,8 +160,8 @@ impl Queue {
                     slack = tracker.check_slack();
                     size_available = tracker.size_available();
                 }
-                while slack == 0 || size_available <= next_size {
-                    tracing::trace!("Limiting call rate.");
+                while slack == 0 || (size_available <= next_size && next_size < 100_000_000) {
+                    tracing::info!("Limiting call rate.");
                     {
                         // Scoped to release lock before checking for slack
                         let tracker = tracker.lock().await;
