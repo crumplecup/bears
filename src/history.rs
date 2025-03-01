@@ -22,42 +22,65 @@ impl History {
         Self::try_from(&path)
     }
 
-    pub fn contains(&self, path: &std::path::PathBuf) -> bool {
-        self.contains_key(path)
-    }
-
+    /// The `is_success` method only returns a bool indicating whether the operation at the
+    /// destination of `app` was successful if the event is present in `self`, otherwise returning
+    /// `None`.
+    ///
+    /// Called by [`Queue::successes`].
+    #[tracing::instrument(skip_all)]
     pub fn is_success(&self, app: &App) -> Result<Option<bool>, BeaErr> {
+        // get the path destination associated with app
         let path = app.destination(false)?;
         if let Some(event) = self.get(&path) {
+            // path is present in event history
             match event.status() {
+                // event was successful, return true
                 ResultStatus::Success(_, _) => Ok(Some(true)),
+                // event was not successful, return false
                 _ => Ok(Some(false)),
             }
         } else {
+            // path is not present in event history
             Ok(None)
         }
     }
 
+    /// The `is_error` method only returns a bool indicating whether the operation at the
+    /// destination of `app` was a failure if the event is present in `self`, otherwise returning
+    /// `None`.
+    ///
+    /// Called by [`Queue::errors`] and [`Queue::active_subset`].
+    #[tracing::instrument(skip_all)]
     pub fn is_error(&self, app: &App) -> Result<Option<bool>, BeaErr> {
+        // get the path destination associated with app
         let path = app.destination(false)?;
         if let Some(event) = self.get(&path) {
+            // path is present in event history
             match event.status() {
+                // event was a failure, return true
                 ResultStatus::Error(_) => Ok(Some(true)),
+                // event was not a failure, return false
                 _ => Ok(Some(false)),
             }
         } else {
+            // path is not present in event history
             Ok(None)
         }
     }
 
     /// The `with_mode` method filters entries by the provided `mode`, returning the subset of
     /// entries where the mode of the event matches `mode`.
+    #[tracing::instrument(skip_all)]
     pub fn with_mode(&self, mode: Mode) -> Self {
         let mut values = self.values().cloned().collect::<Vec<Event>>();
         values.retain(|event| *event.mode() == mode);
         Self::from(values)
     }
 
+    /// The `summary` method prints summary statistics of the event history to the console at the
+    /// INFO level.  Includes the number of successes and errors, as well as the total size of
+    /// downloaded files.
+    #[tracing::instrument(skip_all)]
     pub fn summary(&self) {
         let mut success = 0;
         let mut error = 0;

@@ -30,17 +30,16 @@ pub struct Queue(Vec<App>);
 
 impl Queue {
     #[tracing::instrument(skip_all)]
-    /// Subset of queue that contains a success status.
+    /// Subset of queue that is not contained within the `history`.
     pub fn exclude(&mut self, history: &History) -> Result<(), BeaErr> {
         history.summary();
-        self.retain(|app| !history.contains(&app.destination(false).unwrap()));
+        self.retain(|app| !history.contains_key(&app.destination(false).unwrap()));
         Ok(())
     }
 
     #[tracing::instrument(skip_all)]
     /// Subset of queue that contains a success status.
-    pub fn successes(&mut self, strict: bool) -> Result<(), BeaErr> {
-        let history = History::from_env()?;
+    pub fn successes(&mut self, history: &History, strict: bool) -> Result<(), BeaErr> {
         history.summary();
         self.retain(|app| history.is_success(app).unwrap_or(None).unwrap_or(!strict));
         Ok(())
