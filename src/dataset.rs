@@ -1,8 +1,9 @@
 use crate::{
-    bea_data, map_to_string, ApiMetadata, App, BeaErr, BeaResponse, DatasetMissing, FixedAssets,
-    GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, IoError, Ita, JsonParseError,
-    KeyMissing, Mne, NiUnderlyingDetail, Nipa, NotObject, ParameterName, Queue, Regional, Request,
-    ReqwestError, Results, SerdeJson, UnderlyingGdpByIndustry, VariantMissing,
+    bea_data, map_to_string, ApiMetadata, App, BeaErr, BeaResponse, Data, DatasetMissing,
+    FixedAssets, GdpByIndustry, History, Iip, InputOutput, IntlServSta, IntlServTrade, IoError,
+    Ita, JsonParseError, KeyMissing, Mne, Mode, NiUnderlyingDetail, Nipa, NotObject, ParameterName,
+    Queue, Regional, Request, ReqwestError, Results, SerdeJson, UnderlyingGdpByIndustry,
+    VariantMissing,
 };
 use convert_case::Casing;
 use serde::{Deserialize, Serialize};
@@ -219,6 +220,65 @@ impl Dataset {
         let bea = BeaResponse::try_from(&json)?;
         tracing::info!("Response: {bea:#?}");
         Ok(bea)
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub async fn download_with_history(&self) -> Result<(), BeaErr> {
+        let queue = self.queue()?;
+        tracing::info!("Queue length: {}", queue.len());
+
+        // get the download history for the size hints
+        let history = History::try_from((*self, Mode::Download))?;
+        history.summary();
+        // only download successes in history
+        // strict = true set to include no others in queue.
+        history.iter().download(&queue, false).await?;
+        Ok(())
+    }
+
+    /// Load all successfully downloaded files in the download [`History`] for the `Dataset`.
+    /// If the user provides a `load_history`, the method will exclude previously loaded files in
+    /// the provided [`History`].
+    #[tracing::instrument(skip_all)]
+    pub async fn initial_load(&self, load_history: Option<&History>) -> Result<Vec<Data>, BeaErr> {
+        let mut queue = self.queue()?;
+        tracing::info!("Queue length: {}", queue.len());
+
+        // A fresh queue has been downloaded, try loading the successes
+        let downloads = History::try_from((*self, Mode::Download))?;
+        // only download successes in history
+        // strict = true set to include no others in queue.
+        queue.successes(&downloads, true)?;
+        tracing::info!("Files downloaded: {}", queue.len());
+
+        if let Some(loads) = load_history {
+            // exclude previously loaded files in load history
+            queue.exclude(loads)?;
+            tracing::info!("Files left to load: {}", queue.len());
+        }
+
+        let data = queue.load().await?;
+        let data = data.lock().await;
+        tracing::info!("{} datasets loaded.", data.len());
+        Ok(data.to_vec())
+    }
+
+    /// Tries to load any files in the history that previously failed to load.
+    #[tracing::instrument(skip_all)]
+    pub async fn retry_load(&self) -> Result<Vec<Data>, BeaErr> {
+        let mut queue = self.queue()?;
+        tracing::info!("Queue length: {}", queue.len());
+
+        // The load history contains errors, try them again.
+        let history = History::try_from((*self, Mode::Load))?;
+        // strict is true means only download errors included in the event history
+        queue.errors(&history, true)?;
+        tracing::info!("Files to retry: {}", queue.len());
+
+        let data = queue.load().await?;
+        let data = data.lock().await;
+        tracing::info!("{} datasets loaded.", data.len());
+        Ok(data.to_vec())
     }
 
     /// The `parameter` method reads a [`BeaResponse`] to json using the `serde_json` crate.
