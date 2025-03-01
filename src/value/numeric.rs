@@ -297,6 +297,8 @@ pub enum Annotation {
     Dots,
     #[display("n.a.")]
     NotApplicable,
+    #[display("Note 2&#x0D;&#x0A;J")]
+    Note,
     #[display("(*)")]
     Star,
 }
@@ -328,6 +330,7 @@ impl Annotation {
             "………………" => Self::Dots,
             "…………………" => Self::Dots,
             "n.a." => Self::NotApplicable,
+            "Note 2&#x0D;&#x0A;J" => Self::Note,
             _ => {
                 let error = AnnotationMissing::new(value.to_string(), line!(), file!().to_string());
                 return Err(error.into());
@@ -353,6 +356,7 @@ impl Annotation {
             Self::Dashes => "- - - - -",
             Self::Dots => "...",
             Self::NotApplicable => "n.a.",
+            Self::Note => "Note 2&#x0D;&#x0A;J",
             Self::Star => "(*)",
         };
         anno.to_string()
