@@ -2,6 +2,8 @@ use crate::{
     bea_data, App, BeaErr, Data, Dataset, Event, IoError, Mode, Queue, ResultStatus, SerdeJson,
 };
 
+/// The `History` struct contains a log of [`Event`] data stored as values in a `BTreeMap`, using the `Event`
+/// path as the key.
 #[derive(
     Debug,
     Clone,
@@ -15,6 +17,12 @@ use crate::{
 pub struct History(std::collections::BTreeMap<std::path::PathBuf, Event>);
 
 impl History {
+    /// History logs live in the `history` folder of the `BEA_DATA` directory.
+    /// The `from_env` method is an internal function used to establish the appropriate directory
+    /// for writing and reading log files.
+    ///
+    /// Called by [`Queue::active_subset`].
+    #[tracing::instrument]
     pub fn from_env() -> Result<Self, BeaErr> {
         dotenvy::dotenv().ok();
         let path = bea_data()?;
@@ -104,6 +112,7 @@ impl History {
 
     /// Returns the number of buckets required to sort the `Queue` into sets of 100 requests, the
     /// maximum number of requests per minute allowed by the BEA API server.
+    #[tracing::instrument(skip_all)]
     pub fn buckets(&self) -> usize {
         // minimum chunk size should be one, so we call ceil to round up.
         // How many chunks do we need?
@@ -114,6 +123,7 @@ impl History {
     /// Based on the `Queue` size, assign an index representing a bucket to requests such that the
     /// size of the cumulative requests in the bucket is less likely to exceed maximum download
     /// size limit set by the BEA API server.
+    #[tracing::instrument(skip_all)]
     pub fn chunk_index(&self) -> Vec<usize> {
         let buckets = self.buckets();
         // A vector of indexes for chunks
@@ -125,6 +135,7 @@ impl History {
 
     /// Clones the `History` and returns a vector of [`Event`] type sorted by the length field (file
     /// size).
+    #[tracing::instrument(skip_all)]
     pub fn by_size(&self) -> Vec<Event> {
         // clone to a mutable vector to apply sorting by event field
         let mut values = self.values().cloned().collect::<Vec<Event>>();
@@ -135,6 +146,7 @@ impl History {
         values
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn iter(&self) -> Chunks {
         Chunks::from(self)
     }
@@ -189,6 +201,7 @@ pub struct BucketIter {
 }
 
 impl BucketIter {
+    #[tracing::instrument(skip_all)]
     pub fn from_len(length: usize) -> Self {
         Self {
             start: 0,
@@ -236,6 +249,7 @@ impl Iterator for BucketIter {
 pub struct Chunk(Vec<Event>);
 
 impl Chunk {
+    #[tracing::instrument(skip_all)]
     pub fn with_queue(&self, queue: &Queue) -> Queue {
         let queue = self
             .iter()
@@ -272,6 +286,7 @@ pub struct Chunks(Vec<Chunk>);
 impl Chunks {
     /// Constructs a request queue from a download history.
     /// Includes apps in queue where the destination matches the event path.
+    #[tracing::instrument(skip_all)]
     pub fn with_queue(&self, queue: &Queue) -> Vec<Queue> {
         self.iter()
             .map(|chunk| chunk.with_queue(queue))
@@ -280,8 +295,12 @@ impl Chunks {
 
     /// Batches requests into bins of max requests per minute (100), averaged over expected file size.
     /// Calls download on each batch in sequence.
+    #[tracing::instrument(skip_all)]
     pub async fn download(&self, queue: &Queue, overwrite: bool) -> Result<(), BeaErr> {
-        for queue in self.with_queue(queue) {
+        let queues = self.with_queue(queue);
+        tracing::info!("Chunks to download: {}.", queues.len());
+        for (i, queue) in queues.iter().enumerate() {
+            tracing::info!("Downloading chunk {i}.");
             queue.download(overwrite).await?;
         }
         Ok(())
@@ -293,6 +312,7 @@ impl Chunks {
     /// history.
     /// Calls load on each batch in sequence.
     /// Gathers the results into a vector to return to the user.
+    #[tracing::instrument(skip_all)]
     pub async fn load(&self, queue: &Queue) -> Result<Vec<Data>, BeaErr> {
         let mut data = Vec::new();
         for queue in self.with_queue(queue) {

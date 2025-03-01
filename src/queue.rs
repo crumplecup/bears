@@ -152,6 +152,7 @@ impl Queue {
                 let id = event.id;
                 let mut slack;
                 let next_size = app.size_hint().unwrap_or(0);
+                tracing::info!("Next size is {}", bytesize::ByteSize::b(next_size));
                 let mut size_available;
                 {
                     // Scoped to release lock before entering while loop
@@ -171,6 +172,7 @@ impl Queue {
                         let mut tracker = tracker.lock().await;
                         slack = tracker.check_slack();
                         size_available = tracker.size_available();
+                        tracing::info!("Size available: {size_available}");
                     }
                 }
                 {
