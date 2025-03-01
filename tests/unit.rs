@@ -87,6 +87,36 @@ fn value_sets() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+async fn inspect_queues() -> anyhow::Result<()> {
+    check::inspect_queues().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn datasets_download() -> anyhow::Result<()> {
+    check::datasets_download().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn datasets_initial_load_start() -> anyhow::Result<()> {
+    check::datasets_initial_load().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn datasets_initial_load_continued() -> anyhow::Result<()> {
+    check::datasets_initial_load_continued().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn datasets_retry_load() -> anyhow::Result<()> {
+    check::datasets_retry_load().await?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn data_to_json() -> anyhow::Result<()> {
     #[cfg(feature = "api")]
     check::data_to_json().await?;

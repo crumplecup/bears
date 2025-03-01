@@ -59,12 +59,27 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
         tracing::info!("Queue length: {}", queue.len());
         // queue.dedup();
         // tracing::info!("Queue length: {}", queue.len());
+
+        // A fresh queue has been downloaded, try loading the successes
+        // let history = History::try_from((dataset, Mode::Download))?;
+        // only download successes in history
+        // strict = true set to include no others in queue.
+        // queue.successes(&history, true)?;
+        // tracing::info!("Files downloaded: {}", queue.len());
+        // exclude previously loaded files in load history
+        // let history = History::try_from((dataset, Mode::Load))?;
+        // queue.exclude(&history)?;
+        // tracing::info!("Files left to load: {}", queue.len());
+
+        // The load history contains errors, try them again.
         let history = History::try_from((dataset, Mode::Load))?;
+        queue.errors(&history, true)?;
+        tracing::info!("Files to retry: {}", queue.len());
+
         // let path = "/home/erik/bea/history/history_MNE_Errors.log";
         // let path = std::path::PathBuf::from(path);
         // let history = History::try_from(&path)?;
-        // strict is true means only download errors included in the event history
-        queue.errors(&history, true)?;
+        // queue.errors(&history, true)?;
         tracing::info!("Queue length: {}", queue.len());
         //
         // let queues = history.iter().with_queue(&queue);
@@ -79,6 +94,56 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
         let data = queue.load().await?;
         let data = data.lock().await;
         tracing::info!("{} datasets loaded.", data.len());
+    }
+    Ok(())
+}
+
+#[tracing::instrument(skip_all)]
+pub async fn datasets_download() -> Result<(), BeaErr> {
+    trace_init()?;
+    // let datasets = vec![
+    //     Dataset::Nipa,
+    //     Dataset::NIUnderlyingDetail,
+    //     Dataset::FixedAssets,
+    //     Dataset::Mne,
+    // ];
+    let datasets = vec![Dataset::NIUnderlyingDetail];
+    for dataset in datasets {
+        dataset.download_with_history().await?;
+    }
+    Ok(())
+}
+
+#[tracing::instrument(skip_all)]
+pub async fn datasets_initial_load() -> Result<(), BeaErr> {
+    trace_init()?;
+    let datasets = vec![Dataset::NIUnderlyingDetail];
+    for dataset in datasets {
+        let result = dataset.initial_load(None).await?;
+        tracing::info!("{} datasets loaded.", result.len());
+    }
+    Ok(())
+}
+
+#[tracing::instrument(skip_all)]
+pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
+    trace_init()?;
+    let datasets = vec![Dataset::Mne];
+    for dataset in datasets {
+        let loads = History::try_from((dataset, Mode::Load))?;
+        let result = dataset.initial_load(Some(&loads)).await?;
+        tracing::info!("{} datasets loaded.", result.len());
+    }
+    Ok(())
+}
+
+#[tracing::instrument(skip_all)]
+pub async fn datasets_retry_load() -> Result<(), BeaErr> {
+    trace_init()?;
+    let datasets = vec![Dataset::Mne];
+    for dataset in datasets {
+        let result = dataset.retry_load().await?;
+        tracing::info!("{} datasets loaded.", result.len());
     }
     Ok(())
 }
