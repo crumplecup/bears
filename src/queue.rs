@@ -3,6 +3,7 @@ use crate::{
     JsonParseErrorKind, KeyMissing, NotObject, ParseInt, ResultStatus,
 };
 use jiff::ToSpan;
+use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
 use std::str::FromStr;
 
 // Cannot exceed 30 errors per minute.
@@ -71,6 +72,7 @@ impl Queue {
 
     /// Filters the `Queue` for members with a destination path matching the [`Event`] path in
     /// 'event'.
+    #[tracing::instrument(skip_all)]
     pub fn with_event(&mut self, event: &Event) {
         // Since we are not creating new directories, constructing the destination path should
         // never panic.
@@ -79,6 +81,71 @@ impl Queue {
         self.iter_mut()
             .map(|app| app.with_size_hint(*event.length()))
             .for_each(drop);
+    }
+
+    /// Filters the `Queue` in parallel for members with a destination path matching the [`Event`] path in
+    /// 'event'.
+    #[tracing::instrument(skip_all)]
+    pub fn with_event_par(&mut self, event: &Event) {
+        // Since we are not creating new directories, constructing the destination path should
+        // never panic.
+        self.retain(|app| app.destination(false).unwrap() == *event.path());
+        // Update the `size_hint` field of the app to the event length.
+        self.par_iter_mut()
+            .map(|app| app.with_size_hint(*event.length()))
+            .for_each(drop);
+    }
+
+    /// Filters the `Queue` for members with a destination path matching the [`Event`] path in
+    /// 'event'.
+    #[tracing::instrument(skip_all)]
+    pub fn with_event_ref(&mut self, event: &Event) {
+        let mut paths = self
+            .iter()
+            .enumerate()
+            .map(|(i, q)| (i, q.destination(false).unwrap()))
+            .collect::<Vec<(usize, std::path::PathBuf)>>();
+        paths.sort_by_key(|p| p.1.clone());
+        let ids = paths.iter().map(|x| x.0).collect::<Vec<usize>>();
+        let paths = paths
+            .into_iter()
+            .map(|x| x.1)
+            .collect::<Vec<std::path::PathBuf>>();
+        let index = paths.binary_search(event.path()).unwrap();
+        // Update the `size_hint` field of the app to the event length.
+        self[ids[index]].with_size_hint(*event.length());
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn with_events(&self, events: &Vec<Event>) -> Self {
+        let mut paths = self
+            .iter()
+            .enumerate()
+            .map(|(i, q)| (i, q.destination(false).unwrap()))
+            .collect::<Vec<(usize, std::path::PathBuf)>>();
+        // perform an initial sort to enable binary search
+        paths.sort_by_key(|p| p.1.clone());
+        // retain the indexes of the app associated with each path
+        let ids = paths.iter().map(|x| x.0).collect::<Vec<usize>>();
+        // split the paths off into their own vec for search
+        let paths = paths
+            .into_iter()
+            .map(|x| x.1)
+            .collect::<Vec<std::path::PathBuf>>();
+        // apps matching events will go into this vector
+        let mut apps = Vec::new();
+        // match apps to events
+        for event in events {
+            // get the index of the matching path
+            let index = paths.binary_search(event.path()).unwrap();
+            // get the app associated with the path index
+            let mut app = self[ids[index]].clone();
+            // Update the `size_hint` field of the app to the event length.
+            app.with_size_hint(*event.length());
+            // add to results vector
+            apps.push(app);
+        }
+        Self::new(apps)
     }
 
     #[tracing::instrument(skip_all)]

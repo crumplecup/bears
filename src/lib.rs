@@ -35,7 +35,7 @@ pub use free::{
     bea_data, file_size, from_csv, init, json_bool, json_str, map_to_bool, map_to_float,
     map_to_int, map_to_string, to_csv, trace_init,
 };
-pub use history::History;
+pub use history::{Chunk, Chunks, History};
 pub use json::Json;
 pub use method::Method;
 pub use naics::Naics;

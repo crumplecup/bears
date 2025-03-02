@@ -1,6 +1,8 @@
 use crate::{
     bea_data, App, BeaErr, Data, Dataset, Event, IoError, Mode, Queue, ResultStatus, SerdeJson,
 };
+use indicatif::{ParallelProgressIterator, ProgressIterator};
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 
 /// The `History` struct contains a log of [`Event`] data stored as values in a `BTreeMap`, using the `Event`
 /// path as the key.
@@ -251,6 +253,10 @@ pub struct Chunk(Vec<Event>);
 impl Chunk {
     #[tracing::instrument(skip_all)]
     pub fn with_queue(&self, queue: &Queue) -> Queue {
+        let style = indicatif::ProgressStyle::with_template(
+            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to queue.'}",
+        )
+        .unwrap();
         let queue = self
             .iter()
             .map(|event| {
@@ -258,10 +264,33 @@ impl Chunk {
                 q.with_event(event);
                 q.to_vec()
             })
+            .progress_with_style(style)
             .fold(Vec::new(), |mut result, apps| {
                 result.extend(apps);
                 result
             });
+        Queue::new(queue)
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn with_queue_par(&self, queue: &Queue) -> Queue {
+        let style = indicatif::ProgressStyle::with_template(
+            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to queue.'}",
+        )
+        .unwrap();
+        let queue = self
+            .par_iter()
+            .map(|event| {
+                let mut q = queue.clone();
+                q.with_event(event);
+                q.to_vec()
+            })
+            .progress_with_style(style)
+            .collect::<Vec<Vec<App>>>();
+        let queue = queue.into_iter().fold(Vec::new(), |mut result, apps| {
+            result.extend(apps);
+            result
+        });
         Queue::new(queue)
     }
 }
@@ -287,9 +316,42 @@ impl Chunks {
     /// Constructs a request queue from a download history.
     /// Includes apps in queue where the destination matches the event path.
     #[tracing::instrument(skip_all)]
-    pub fn with_queue(&self, queue: &Queue) -> Vec<Queue> {
+    pub fn with_queue_single(&self, queue: &Queue) -> Vec<Queue> {
+        let style = indicatif::ProgressStyle::with_template(
+            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to chunks.'}",
+        )
+        .unwrap();
         self.iter()
             .map(|chunk| chunk.with_queue(queue))
+            .progress_with_style(style)
+            .collect::<Vec<Queue>>()
+    }
+
+    /// Constructs a request queue from a download history.
+    /// Includes apps in queue where the destination matches the event path.
+    #[tracing::instrument(skip_all)]
+    pub fn with_queue(&self, queue: &Queue) -> Vec<Queue> {
+        let style = indicatif::ProgressStyle::with_template(
+            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to chunks.'}",
+        )
+        .unwrap();
+        self.iter()
+            .map(|chunk| queue.with_events(chunk))
+            .progress_with_style(style)
+            .collect::<Vec<Queue>>()
+    }
+
+    /// Constructs a request queue from a download history.
+    /// Includes apps in queue where the destination matches the event path.
+    #[tracing::instrument(skip_all)]
+    pub fn with_queue_par(&self, queue: &Queue) -> Vec<Queue> {
+        let style = indicatif::ProgressStyle::with_template(
+            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to chunks.'}",
+        )
+        .unwrap();
+        self.par_iter()
+            .map(|chunk| queue.with_events(chunk))
+            .progress_with_style(style)
             .collect::<Vec<Queue>>()
     }
 
@@ -297,7 +359,7 @@ impl Chunks {
     /// Calls download on each batch in sequence.
     #[tracing::instrument(skip_all)]
     pub async fn download(&self, queue: &Queue, overwrite: bool) -> Result<(), BeaErr> {
-        let queues = self.with_queue(queue);
+        let queues = self.with_queue_par(queue);
         tracing::info!("Chunks to download: {}.", queues.len());
         for (i, queue) in queues.iter().enumerate() {
             tracing::info!("Downloading chunk {i}.");
@@ -315,7 +377,7 @@ impl Chunks {
     #[tracing::instrument(skip_all)]
     pub async fn load(&self, queue: &Queue) -> Result<Vec<Data>, BeaErr> {
         let mut data = Vec::new();
-        for queue in self.with_queue(queue) {
+        for queue in self.with_queue_single(queue) {
             let dataset = queue.load().await?;
             let dataset = dataset.lock().await;
             data.extend(dataset.clone())
@@ -326,9 +388,15 @@ impl Chunks {
 
 impl From<&History> for Chunks {
     fn from(value: &History) -> Self {
+        let style = indicatif::ProgressStyle::with_template(
+            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Chunking history.'}",
+        )
+        .unwrap();
         let values = value.by_size();
         let chunk_index = value.chunk_index();
         let buckets = value.buckets();
+        let bar = indicatif::ProgressBar::new(buckets as u64);
+        let bar = indicatif::ProgressBar::with_style(bar, style);
         let mut chunks = Vec::new();
         for i in 0..=buckets {
             let events = values.clone();
@@ -343,7 +411,9 @@ impl From<&History> for Chunks {
                 .collect::<Vec<Event>>();
             let chunk = Chunk::from(events);
             chunks.push(chunk);
+            bar.inc(1);
         }
+        bar.finish_and_clear();
         Self::from(chunks)
     }
 }
