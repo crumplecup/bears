@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2025-03-03
+
+### 🚀 Features
+
+- Methods `initial_load`, `initial_load_continued`, `retry_load` and `download_with_history` added to the `Dataset` type.
+- Method variants for `with_events` added to the Queue and History types to facilitate benchmarking.
+- GdpDatum type added to represent return values for the `Dataset::GDPbyIndustry` variant.
+- Download support added to GdpByIndustry via the GdpByIndustryIterator type.
+
+### 🐛 Bug Fixes
+
+- Note variant added to the Addendum type.
+- The MneError type now recognizes multiple error codes returned in an array.
+- The size limiting check no longer prevents users from requesting files larger than the 100MB limit.
+- Logical bug patched in the impl for `Chunks` from `History`.  The inner vector will now include the final `Chunk`.
+- Off-by-one logical error fixed for generating frequency parameters from a list.
+
+### 🚜 Refactor
+
+- The Error cap has been raised to 29, and the Call cap to 89, since size tracking is now enabled.
+- The History::contains method has been removed in favor of calling `contains_key` directly on the inner BTreeMap.
+- Streamlined error handling for JsonParseError variants.
+
+### 📚 Documentation
+
+- Method descriptions added to the `dataset` module.
+- Descriptions added for `History` methods.
+
+### 🧪 Testing
+
+- Coverage added for the `History` methods `initial_load`, `initial_load_continued`, `retry_load` and `download_with_history`.
+- Benchmarking added to the `with_event` family of methods for the Queue and Chunks types.
+
+### ⚙️ Miscellaneous Tasks
+
+- Increment version to 0.1.3 in Cargo.toml.
+
 ## [0.1.2] - 2025-02-23
 
 ### 🐛 Bug Fixes
