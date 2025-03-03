@@ -8,6 +8,7 @@ use std::str::FromStr;
     Debug,
     Copy,
     Clone,
+    Default,
     PartialEq,
     Eq,
     PartialOrd,
@@ -19,6 +20,7 @@ use std::str::FromStr;
     derive_more::FromStr,
 )]
 pub enum Frequency {
+    #[default]
     Annual,
     Monthly,
     Quarterly,
@@ -104,7 +106,7 @@ impl Frequencies {
         let ln = v.len();
         for (index, item) in v.iter().enumerate() {
             result.push_str(item);
-            if index < ln {
+            if index < ln - 1 {
                 result.push(',');
             }
         }
