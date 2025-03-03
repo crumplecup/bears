@@ -4,7 +4,7 @@ use crate::{trace_init, BeaErr, Dataset, History, Mode, Naics};
 #[tracing::instrument]
 pub async fn data_to_json() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::Mne];
+    let datasets = vec![Dataset::GDPbyIndustry];
     for dataset in datasets {
         // let queue = dataset.queue()?;
         let mut queue = dataset.queue()?;
@@ -34,10 +34,10 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
         // tracing::info!("Counter is length {}", counter.len());
 
         // queue.active_subset(false)?;
-        let history = History::try_from((dataset, Mode::Download))?;
-        queue.exclude(&history)?;
+        // let history = History::try_from((dataset, Mode::Download))?;
+        // queue.exclude(&history)?;
         // queue.errors(&history, false)?;
-        tracing::info!("Queue is length {}", queue.len());
+        // tracing::info!("Queue is length {}", queue.len());
         // tracing::info!("{queue:#?}");
         queue.download(false).await?;
         // counter.download(false).await?;
@@ -107,7 +107,7 @@ pub async fn datasets_download() -> Result<(), BeaErr> {
     //     Dataset::FixedAssets,
     //     Dataset::Mne,
     // ];
-    let datasets = vec![Dataset::NIUnderlyingDetail];
+    let datasets = vec![Dataset::Mne];
     for dataset in datasets {
         dataset.download_with_history().await?;
     }

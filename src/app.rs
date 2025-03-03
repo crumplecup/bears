@@ -360,6 +360,30 @@ impl App {
                             Ok(path.join(format!("{class}_{doi}.json")))
                         }
                     }
+                    Dataset::GDPbyIndustry => {
+                        let table_id = query[&ParameterName::TableID.to_string()].clone();
+                        let mut title = table_id;
+                        if let Some(frequency) = query.get(&ParameterName::Frequency.to_string()) {
+                            if frequency != "A,Q" {
+                                title.push('_');
+                                title.push_str(frequency);
+                            }
+                        }
+                        if let Some(value) = query.get(&ParameterName::Industry.to_string()) {
+                            if value != "ALL" {
+                                title.push('_');
+                                title.push_str(value);
+                            }
+                        }
+                        if let Some(value) = query.get(&ParameterName::Year.to_string()) {
+                            if value != "ALL" {
+                                title.push('_');
+                                title.push_str(value);
+                            }
+                        }
+                        title.push_str(".json");
+                        Ok(path.join(title))
+                    }
                     _ => {
                         tracing::info!("{dataset} not yet implemented.");
                         Ok(path)

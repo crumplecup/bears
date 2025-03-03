@@ -111,6 +111,6 @@ pub fn chunk_with_event(c: &mut Criterion) {
     group.finish();
 }
 
-// criterion_group!(benches, queue_with_event, chunk_with_event);
-criterion_group!(benches, chunk_with_event);
+criterion_group!(benches, queue_with_event, chunk_with_event);
+// criterion_group!(benches, chunk_with_event);
 criterion_main!(benches);

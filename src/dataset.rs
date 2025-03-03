@@ -691,9 +691,11 @@ impl Dataset {
             Self::NIUnderlyingDetail => NiUnderlyingDetail::queue(),
             Self::FixedAssets => FixedAssets::queue(),
             Self::Mne => Mne::queue(),
+            Self::GDPbyIndustry => GdpByIndustry::queue(),
             _ => {
                 let error = DatasetMissing::new(
-                    "Nipa, NIUnderlyingDetail, FixedAssets or Mne variants required".to_string(),
+                    "Nipa, NIUnderlyingDetail, FixedAssets, Mne or GDPbyIndustry variants required"
+                        .to_string(),
                     line!(),
                     file!().to_string(),
                 );

@@ -1,6 +1,7 @@
 mod fixed_assets;
 mod footnote;
 mod frequency;
+mod gdp_by_industry;
 mod investment;
 mod millions;
 mod mne;
@@ -17,6 +18,7 @@ mod year;
 pub use fixed_assets::FixedAssets;
 pub use footnote::Footnotes;
 pub use frequency::{Frequencies, Frequency, FrequencyOptions};
+pub use gdp_by_industry::GdpByIndustry;
 pub use investment::{DirectionOfInvestment, InvestmentKind};
 pub use millions::{Millions, MillionsOptions};
 pub use mne::Mne;
@@ -28,7 +30,7 @@ pub use owner::{AffiliateKind, AffiliateLevel, OwnershipKind, OwnershipLevel};
 pub use row_code::RowCode;
 pub use selection::SelectionKind;
 pub use sets::{
-    ApiMetadata, GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, Ita, Regional,
+    ApiMetadata, Iip, InputOutput, IntlServSta, IntlServTrade, Ita, Regional,
     UnderlyingGdpByIndustry, ValueSet, ValueSets,
 };
 pub use state::{State, StateKind};
