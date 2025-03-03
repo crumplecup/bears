@@ -560,10 +560,23 @@ impl TryFrom<&serde_json::Value> for MneDiData {
             _ => {
                 tracing::trace!("Wrong Value type: {value:#?}");
                 let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseErrorKind::from(error);
                 let error = JsonParseError::from(error);
                 Err(error.into())
             }
         }
     }
+}
+
+/// Return value format associated with the
+/// [`Dataset::GDPbyIndustry`](crate::Dataset::GDPbyIndustry) variant.
+#[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
+pub struct GdpDatum {
+    data_value: f64,
+    frequency: Frequency,
+    industry_description: String,
+    industry: i64,
+    note_ref: i64,
+    quarter: String,
+    table_id: i64,
+    year: jiff::civil::Date,
 }
