@@ -22,11 +22,11 @@ mod value;
 
 pub use app::{App, ResultStatus};
 pub use config::{Options, ParameterKind};
-pub use data::{Data, NipaData};
+pub use data::{Data, GdpData, NipaData};
 pub use dataset::{Dataset, DatasetDetails, Datasets};
 pub use error::{
-    AnnotationMissing, BTreeKeyMissing, BeaErr, BeaErrorKind, BincodeError, BoolInvalid, Check,
-    Csv, DatasetMissing, DeriveFromStr, EnvError, FromStrError, IntegerInvalid, InvestmentInvalid,
+    AnnotationMissing, BTreeKeyMissing, BeaErr, BeaErrorKind, BoolInvalid, Check, Csv,
+    DatasetMissing, DeriveFromStr, EnvError, FromStrError, IntegerInvalid, InvestmentInvalid,
     IoError, Jiff, JsonParseError, JsonParseErrorKind, KeyMissing, Nom, NotArray, NotFloat,
     NotInteger, NotObject, NotParameterName, NotQuarter, OwnershipInvalid,
     ParameterValueTableVariant, ParseFloat, ParseInt, ParseInteger, RateLimit, ReqwestError,
