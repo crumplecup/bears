@@ -1,6 +1,6 @@
 use crate::{
-    BeaErr, DeriveFromStr, NipaFrequency, ParameterName, ParameterValueTable,
-    ParameterValueTableVariant,
+    BeaErr, DeriveFromStr, JsonParseError, KeyMissing, NipaFrequency, ParameterName,
+    ParameterValueTable, ParameterValueTableVariant,
 };
 use std::str::FromStr;
 
@@ -34,6 +34,19 @@ impl Frequency {
             Self::Quarterly => "Q",
         };
         s.to_string()
+    }
+
+    pub fn from_value(value: &str) -> Result<Self, JsonParseError> {
+        let frequency = match value {
+            "A" => Self::Annual,
+            "M" => Self::Monthly,
+            "Q" => Self::Quarterly,
+            _ => {
+                let error = KeyMissing::new(value.to_owned(), line!(), file!().to_owned());
+                return Err(error.into());
+            }
+        };
+        Ok(frequency)
     }
 
     pub fn params(&self) -> (String, String) {
