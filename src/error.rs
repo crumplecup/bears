@@ -40,7 +40,6 @@ macro_rules! impl_bea_err {
 
 impl_bea_err!(
     AnnotationMissing,
-    BincodeError,
     BoolInvalid,
     BTreeKeyMissing,
     Check,
@@ -71,8 +70,6 @@ impl_bea_err!(
 pub enum BeaErrorKind {
     #[from(AnnotationMissing)]
     AnnotationMissing(AnnotationMissing),
-    #[from(BincodeError)]
-    Bincode(BincodeError),
     #[from(BoolInvalid)]
     BoolInvalid(BoolInvalid),
     #[from(BTreeKeyMissing)]
@@ -127,9 +124,6 @@ impl std::fmt::Display for BeaErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::AnnotationMissing(e) => {
-                write!(f, "{e}")
-            }
-            Self::Bincode(e) => {
                 write!(f, "{e}")
             }
             Self::BoolInvalid(e) => {
@@ -212,7 +206,6 @@ impl std::error::Error for BeaErrorKind {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::AnnotationMissing(e) => e.source(),
-            Self::Bincode(e) => Some(e.source()),
             Self::BoolInvalid(e) => e.source(),
             Self::BTreeKeyMissing(e) => e.source(),
             Self::Check(e) => e.source(),
@@ -460,22 +453,6 @@ pub struct UrlParseError {
     pub source: url::ParseError,
     line: u32,
     file: String,
-}
-
-#[derive(
-    Debug, derive_getters::Getters, derive_setters::Setters, derive_more::Display, derive_new::new,
-)]
-#[display("error {}", self.desc)]
-#[setters(prefix = "with_", borrow_self)]
-pub struct BincodeError {
-    pub desc: String,
-    pub source: Box<bincode::ErrorKind>,
-}
-
-impl std::error::Error for BincodeError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(&self.source)
-    }
 }
 
 #[derive(

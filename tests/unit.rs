@@ -12,8 +12,6 @@ async fn datasets() -> anyhow::Result<()> {
     check::datasets_to_json().await?;
     #[cfg(feature = "api")]
     tracing::info!("Response received from BEA API.");
-    check::datasets_json_to_bin()?;
-    tracing::info!("Datasets serialized into binary.");
     check::datasets_from_file()?;
     tracing::info!("Datasets deserialized from file.");
     check::check_datasets()?;
@@ -27,8 +25,6 @@ async fn parameters() -> anyhow::Result<()> {
     check::parameters_to_json().await?;
     #[cfg(feature = "api")]
     tracing::info!("Response received from BEA API.");
-    check::parameters_json_to_bin()?;
-    tracing::info!("Parameters serialized into binary.");
     check::parameters_from_file()?;
     tracing::info!("Parameters deserialized from file.");
     Ok(())
@@ -40,8 +36,6 @@ async fn parameter_values() -> anyhow::Result<()> {
     check::parameter_values_to_json().await?;
     #[cfg(feature = "api")]
     tracing::info!("Response received from BEA API.");
-    check::parameter_value_json_to_bin()?;
-    tracing::info!("Parameter Values serialized into binary.");
     check::parameter_value_from_file()?;
     tracing::info!("Parameter values deserialized from file.");
     Ok(())
@@ -92,9 +86,21 @@ async fn inspect_queues() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[test]
+fn debug_gdpbyindustry() -> anyhow::Result<()> {
+    check::debug_gdpbyindustry()?;
+    Ok(())
+}
+
 #[tokio::test]
-async fn datasets_download() -> anyhow::Result<()> {
-    check::datasets_download().await?;
+async fn datasets_download_initial() -> anyhow::Result<()> {
+    check::datasets_download_initial().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn datasets_download_with_history() -> anyhow::Result<()> {
+    check::datasets_download_with_history().await?;
     Ok(())
 }
 
