@@ -495,7 +495,7 @@ impl App {
         match method {
             Method::GetData => {
                 let path = self.destination(false)?;
-                tracing::info!("Opening {path:?}.");
+                tracing::trace!("Opening {path:?}.");
                 // Create reader from path.
                 let file = std::fs::File::open(&path)
                     .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;

@@ -177,7 +177,7 @@ impl Queue {
                 ResultStatus::Success(_, _) | ResultStatus::Error(_) => {
                     let mut tracker = tracker.lock().await;
                     tracker.update_status(status, mode);
-                    tracing::info!("Update: {status}.");
+                    tracing::trace!("Update: {status}.");
                 }
                 ResultStatus::Pass(_) | ResultStatus::Pending => {}
                 ResultStatus::Abort => {
@@ -219,7 +219,7 @@ impl Queue {
                 let id = event.id;
                 let mut slack;
                 let next_size = app.size_hint().unwrap_or(0);
-                tracing::info!("Next size is {}", bytesize::ByteSize::b(next_size));
+                tracing::trace!("Next size is {}", bytesize::ByteSize::b(next_size));
                 let mut size_available;
                 {
                     // Scoped to release lock before entering while loop
@@ -228,7 +228,7 @@ impl Queue {
                     size_available = tracker.size_available();
                 }
                 while slack == 0 || (size_available <= next_size && next_size < 100_000_000) {
-                    tracing::info!("Limiting call rate.");
+                    tracing::trace!("Limiting call rate.");
                     {
                         // Scoped to release lock before checking for slack
                         let tracker = tracker.lock().await;
@@ -239,7 +239,7 @@ impl Queue {
                         let mut tracker = tracker.lock().await;
                         slack = tracker.check_slack();
                         size_available = tracker.size_available();
-                        tracing::info!("Size available: {size_available}");
+                        tracing::trace!("Size available: {size_available}");
                     }
                 }
                 {
@@ -253,7 +253,7 @@ impl Queue {
 
                 let fut = tokio::spawn(async move {
                     let mut result = ResultStatus::Pass(id);
-                    tracing::info!("Calling download for {path:#?}");
+                    tracing::trace!("Calling download for {path:#?}");
                     if let Ok(status) = app.download(id).await {
                         result = status;
                     } else {
@@ -295,7 +295,7 @@ impl Queue {
                 let tx = tx.clone();
                 let app = app.clone();
                 let handle = tokio::spawn(async move {
-                    tracing::info!("Calling load for {path:#?}");
+                    tracing::trace!("Calling load for {path:#?}");
                     let status;
                     match app.load() {
                         Ok(response) => {
@@ -304,7 +304,7 @@ impl Queue {
                                     // Scoped to release lock immediately after pushing update.
                                     let mut data = data.lock().await;
                                     data.push(dataset);
-                                    tracing::info!("Dataset loaded.");
+                                    tracing::trace!("Dataset loaded.");
                                 }
                                 let size = file_size(path).unwrap_or(0);
                                 status = ResultStatus::Success(id, size);
@@ -495,7 +495,7 @@ impl Tracker {
         tracing::trace!("Pending slack {pending_slack}.");
         tracing::trace!("Error slack {error_slack}.");
         tracing::trace!("Call slack {call_slack}.");
-        tracing::info!("Slack is {slack}.");
+        tracing::trace!("Slack is {slack}.");
         slack
     }
 
@@ -539,7 +539,7 @@ impl Tracker {
                     < 1.minutes().total(jiff::Unit::Minute).unwrap()
             });
         }
-        tracing::info!(
+        tracing::trace!(
             "Calls: {}, Errors: {}, Sizes: {}.",
             self.calls.len(),
             self.errors.len(),

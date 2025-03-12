@@ -116,13 +116,13 @@ impl TryFrom<&std::path::PathBuf> for NipaData {
         let res: serde_json::Value = serde_json::from_reader(rdr)
             .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         let data = BeaResponse::try_from(&res)?;
-        tracing::info!("Response read.");
+        tracing::trace!("Response read.");
         tracing::trace!("Response: {data:#?}");
         let results = data.results();
         if let Some(data) = results.into_data() {
             match data {
                 Data::Nipa(nipa) => {
-                    tracing::info!("{} Nipa records read.", nipa.len());
+                    tracing::trace!("{} Nipa records read.", nipa.len());
                     Ok(nipa)
                 }
                 _ => {
@@ -151,7 +151,7 @@ impl TryFrom<&std::path::PathBuf> for NipaData {
 impl TryFrom<&serde_json::Value> for NipaData {
     type Error = BeaErr;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading NipaData");
+        tracing::trace!("Reading NipaData");
         match value {
             serde_json::Value::Object(m) => {
                 let key = "Data".to_string();
@@ -287,13 +287,13 @@ impl TryFrom<&std::path::PathBuf> for FixedAssetData {
         let res: serde_json::Value = serde_json::from_reader(rdr)
             .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         let data = BeaResponse::try_from(&res)?;
-        tracing::info!("Response read.");
+        tracing::trace!("Response read.");
         tracing::trace!("Response: {data:#?}");
         let results = data.results();
         if let Some(data) = results.into_data() {
             match data {
                 Data::FixedAssets(value) => {
-                    tracing::info!("{} FixedAsset records read.", value.len());
+                    tracing::trace!("{} FixedAsset records read.", value.len());
                     Ok(value)
                 }
                 _ => {
@@ -321,7 +321,7 @@ impl TryFrom<&std::path::PathBuf> for FixedAssetData {
 impl TryFrom<&serde_json::Value> for FixedAssetData {
     type Error = BeaErr;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::info!("Reading FixedAssetData");
+        tracing::trace!("Reading FixedAssetData");
         match value {
             serde_json::Value::Object(m) => {
                 let key = "Data".to_string();
@@ -471,13 +471,13 @@ impl TryFrom<&std::path::PathBuf> for MneDiData {
         let res: serde_json::Value = serde_json::from_reader(rdr)
             .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
         let data = BeaResponse::try_from(&res)?;
-        tracing::info!("Response read.");
+        tracing::trace!("Response read.");
         tracing::trace!("Response: {data:#?}");
         let results = data.results();
         if let Some(data) = results.into_data() {
             match data {
                 Data::MneDi(value) => {
-                    tracing::info!("{} MneDi records read.", value.len());
+                    tracing::trace!("{} MneDi records read.", value.len());
                     Ok(value)
                 }
                 _ => {
@@ -527,7 +527,7 @@ impl TryFrom<&serde_json::Value> for MneDiData {
                                     }
                                 }
                             }
-                            tracing::info!("Data found: {} records.", data.len());
+                            tracing::trace!("Data found: {} records.", data.len());
                             Ok(Self(data))
                         }
                         _ => {

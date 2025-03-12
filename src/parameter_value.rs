@@ -689,7 +689,7 @@ impl TryFrom<&serde_json::Value> for ParameterValues {
                 }
             }
             _ => {
-                tracing::trace!("Wrong Value type: {value:#?}");
+                // tracing::trace!("Wrong Value type: {value:#?}");
                 let error = NotObject::new(line!(), file!().to_string());
                 let error = JsonParseErrorKind::from(error);
                 Err(error.into())
