@@ -1,4 +1,4 @@
-use bears::{Chunks, Dataset, Event, History, Mode, Queue};
+use bears::{Chunks, Dataset, Event, History, Mode, Queue, Style};
 use criterion::{criterion_group, criterion_main, Criterion};
 
 pub fn queue_with_event(c: &mut Criterion) {
@@ -73,6 +73,8 @@ pub fn chunk_with_event(c: &mut Criterion) {
         .map(|d| History::try_from((*d, Mode::Load)).unwrap())
         .collect::<Vec<History>>();
     let chunks = histories.iter().map(|h| h.iter()).collect::<Vec<Chunks>>();
+    let styles = Style::try_new().unwrap();
+    let style = styles["with_queue"].clone();
 
     let mut group = c.benchmark_group("queue sizes");
     for (i, chunk) in chunks.iter().enumerate() {
@@ -84,7 +86,7 @@ pub fn chunk_with_event(c: &mut Criterion) {
             )),
             chunk,
             |b, chunk| {
-                b.iter(|| chunk.with_queue(&queues[i]));
+                b.iter(|| chunk.with_queue(&queues[i], style.clone()));
             },
         );
         group.bench_with_input(
@@ -94,7 +96,7 @@ pub fn chunk_with_event(c: &mut Criterion) {
             )),
             chunk,
             |b, chunk| {
-                b.iter(|| chunk.with_queue_single(&queues[i]));
+                b.iter(|| chunk.with_queue_single(&queues[i], style.clone()));
             },
         );
         group.bench_with_input(
@@ -104,7 +106,7 @@ pub fn chunk_with_event(c: &mut Criterion) {
             )),
             chunk,
             |b, chunk| {
-                b.iter(|| chunk.with_queue_par(&queues[i]));
+                b.iter(|| chunk.with_queue_par(&queues[i], style.clone()));
             },
         );
     }
