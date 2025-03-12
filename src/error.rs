@@ -1,3 +1,5 @@
+use crate::Progress;
+
 #[derive(Debug, derive_more::Deref, derive_more::DerefMut)]
 pub struct BeaErr {
     kind: Box<BeaErrorKind>,
@@ -56,6 +58,7 @@ impl_bea_err!(
     OwnershipInvalid,
     ParameterValueTableVariant,
     ParseInt,
+    Progress,
     RateLimit,
     ReqwestError,
     RowCodeMissing,
@@ -102,6 +105,8 @@ pub enum BeaErrorKind {
     ParameterValueTableVariant(ParameterValueTableVariant),
     #[from(ParseInt)]
     ParseInt(ParseInt),
+    #[from(Progress)]
+    Progress(Progress),
     #[from(RateLimit)]
     RateLimit(RateLimit),
     #[from(ReqwestError)]
@@ -174,6 +179,9 @@ impl std::fmt::Display for BeaErrorKind {
             Self::ParseInt(e) => {
                 write!(f, "{e}")
             }
+            Self::Progress(e) => {
+                write!(f, "{e}")
+            }
             Self::RateLimit(e) => {
                 write!(f, "{e}")
             }
@@ -222,6 +230,7 @@ impl std::error::Error for BeaErrorKind {
             Self::OwnershipInvalid(e) => e.source(),
             Self::ParameterValueTableVariant(e) => e.source(),
             Self::ParseInt(e) => Some(e.source()),
+            Self::Progress(e) => e.source(),
             Self::RateLimit(e) => e.source(),
             Self::Reqwest(e) => Some(e.source()),
             Self::RowCodeMissing(e) => e.source(),

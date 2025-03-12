@@ -13,6 +13,7 @@ mod method;
 mod naics;
 mod parameter;
 mod parameter_value;
+mod progress;
 mod queue;
 mod request;
 mod results;
@@ -44,15 +45,17 @@ pub use parameter_value::{
     Metadata, MneDoi, NipaFrequency, NipaShowMillions, NipaTable, NipaYear, ParameterFields,
     ParameterValueTable, ParameterValues,
 };
+pub use progress::{Progress, Style};
 pub use queue::{Event, Mode, Queue, Tracker};
 pub use request::{Request, RequestParameter, RequestParameters};
 pub use results::{BeaResponse, Results};
 pub use value::{
-    date_by_period, parse_year, AffiliateKind, AffiliateLevel, AnnotatedInteger, Annotation,
-    ApiMetadata, BoolOptions, DirectionOfInvestment, FixedAssets, Footnotes, Frequencies,
-    Frequency, FrequencyOptions, GdpByIndustry, Iip, InputOutput, Integer, IntegerKind,
-    IntegerOptions, IntlServSta, IntlServTrade, InvestmentKind, Ita, Millions, MillionsOptions,
-    Mne, NiUnderlyingDetail, Nipa, NipaIterator, NipaRange, NipaRangeIterator, NipaRanges,
-    OwnershipKind, OwnershipLevel, Regional, RowCode, SelectionKind, State, StateKind, TableName,
-    UnderlyingGdpByIndustry, ValueSet, ValueSets, Year, YearKind, YearOptions, YearRange,
+    date_by_period, parse_year, roman_numeral_quarter, AffiliateKind, AffiliateLevel,
+    AnnotatedInteger, Annotation, ApiMetadata, BoolOptions, DirectionOfInvestment, FixedAssets,
+    Footnotes, Frequencies, Frequency, FrequencyOptions, GdpByIndustry, Iip, InputOutput, Integer,
+    IntegerKind, IntegerOptions, IntlServSta, IntlServTrade, InvestmentKind, Ita, Millions,
+    MillionsOptions, Mne, NiUnderlyingDetail, Nipa, NipaIterator, NipaRange, NipaRangeIterator,
+    NipaRanges, OwnershipKind, OwnershipLevel, Regional, RowCode, SelectionKind, State, StateKind,
+    TableName, UnderlyingGdpByIndustry, ValueSet, ValueSets, Year, YearKind, YearOptions,
+    YearRange,
 };

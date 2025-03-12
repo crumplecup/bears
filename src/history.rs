@@ -252,11 +252,7 @@ pub struct Chunk(Vec<Event>);
 
 impl Chunk {
     #[tracing::instrument(skip_all)]
-    pub fn with_queue(&self, queue: &Queue) -> Queue {
-        let style = indicatif::ProgressStyle::with_template(
-            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to queue.'}",
-        )
-        .unwrap();
+    pub fn with_queue(&self, queue: &Queue, style: indicatif::ProgressStyle) -> Queue {
         let queue = self
             .iter()
             .map(|event| {
@@ -273,11 +269,7 @@ impl Chunk {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn with_queue_par(&self, queue: &Queue) -> Queue {
-        let style = indicatif::ProgressStyle::with_template(
-            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to queue.'}",
-        )
-        .unwrap();
+    pub fn with_queue_par(&self, queue: &Queue, style: indicatif::ProgressStyle) -> Queue {
         let queue = self
             .par_iter()
             .map(|event| {
@@ -316,25 +308,17 @@ impl Chunks {
     /// Constructs a request queue from a download history.
     /// Includes apps in queue where the destination matches the event path.
     #[tracing::instrument(skip_all)]
-    pub fn with_queue_single(&self, queue: &Queue) -> Vec<Queue> {
-        let style = indicatif::ProgressStyle::with_template(
-            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to chunks.'}",
-        )
-        .unwrap();
+    pub fn with_queue_single(&self, queue: &Queue, style: indicatif::ProgressStyle) -> Vec<Queue> {
         self.iter()
-            .map(|chunk| chunk.with_queue(queue))
-            .progress_with_style(style)
+            .map(|chunk| chunk.with_queue(queue, style.clone()))
+            .progress_with_style(style.clone())
             .collect::<Vec<Queue>>()
     }
 
     /// Constructs a request queue from a download history.
     /// Includes apps in queue where the destination matches the event path.
     #[tracing::instrument(skip_all)]
-    pub fn with_queue(&self, queue: &Queue) -> Vec<Queue> {
-        let style = indicatif::ProgressStyle::with_template(
-            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to chunks.'}",
-        )
-        .unwrap();
+    pub fn with_queue(&self, queue: &Queue, style: indicatif::ProgressStyle) -> Vec<Queue> {
         self.iter()
             .map(|chunk| queue.with_events(chunk))
             .progress_with_style(style)
@@ -344,11 +328,7 @@ impl Chunks {
     /// Constructs a request queue from a download history.
     /// Includes apps in queue where the destination matches the event path.
     #[tracing::instrument(skip_all)]
-    pub fn with_queue_par(&self, queue: &Queue) -> Vec<Queue> {
-        let style = indicatif::ProgressStyle::with_template(
-            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Matching event history to chunks.'}",
-        )
-        .unwrap();
+    pub fn with_queue_par(&self, queue: &Queue, style: indicatif::ProgressStyle) -> Vec<Queue> {
         self.par_iter()
             .map(|chunk| queue.with_events(chunk))
             .progress_with_style(style)
@@ -358,11 +338,16 @@ impl Chunks {
     /// Batches requests into bins of max requests per minute (100), averaged over expected file size.
     /// Calls download on each batch in sequence.
     #[tracing::instrument(skip_all)]
-    pub async fn download(&self, queue: &Queue, overwrite: bool) -> Result<(), BeaErr> {
-        let queues = self.with_queue_par(queue);
-        tracing::info!("Chunks to download: {}.", queues.len());
-        for (i, queue) in queues.iter().enumerate() {
-            tracing::info!("Downloading chunk {i}.");
+    pub async fn download(
+        &self,
+        queue: &Queue,
+        overwrite: bool,
+        style: indicatif::ProgressStyle,
+    ) -> Result<(), BeaErr> {
+        let queues = self.with_queue_par(queue, style.clone());
+        tracing::trace!("Chunks to download: {}.", queues.len());
+        for (i, queue) in queues.iter().enumerate().progress_with_style(style) {
+            tracing::trace!("Downloading chunk {i}.");
             queue.download(overwrite).await?;
         }
         Ok(())
@@ -375,9 +360,17 @@ impl Chunks {
     /// Calls load on each batch in sequence.
     /// Gathers the results into a vector to return to the user.
     #[tracing::instrument(skip_all)]
-    pub async fn load(&self, queue: &Queue) -> Result<Vec<Data>, BeaErr> {
+    pub async fn load(
+        &self,
+        queue: &Queue,
+        style: indicatif::ProgressStyle,
+    ) -> Result<Vec<Data>, BeaErr> {
         let mut data = Vec::new();
-        for queue in self.with_queue_single(queue) {
+        for queue in self
+            .with_queue_single(queue, style.clone())
+            .iter()
+            .progress_with_style(style)
+        {
             let dataset = queue.load().await?;
             let dataset = dataset.lock().await;
             data.extend(dataset.clone())
