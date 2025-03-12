@@ -36,6 +36,6 @@ pub use sets::{
 pub use state::{State, StateKind};
 pub use table_name::TableName;
 pub use year::{
-    date_by_period, parse_year, NipaRange, NipaRangeIterator, NipaRanges, Year, YearKind,
-    YearOptions, YearRange,
+    date_by_period, parse_year, roman_numeral_quarter, NipaRange, NipaRangeIterator, NipaRanges,
+    Year, YearKind, YearOptions, YearRange,
 };

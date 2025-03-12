@@ -59,6 +59,17 @@ pub fn parse_year(input: &str) -> Result<jiff::civil::Date, ParseInt> {
     }
 }
 
+pub fn roman_numeral_quarter(quarter: &str, year: jiff::civil::Date) -> Option<jiff::civil::Date> {
+    let duration = match quarter {
+        "I" => jiff::Span::new(),
+        "II" => jiff::Span::new().months(3),
+        "III" => jiff::Span::new().months(6),
+        "IV" => jiff::Span::new().months(9),
+        _ => return None,
+    };
+    Some(year + duration)
+}
+
 pub fn date_by_quarter(input: &str) -> Option<jiff::civil::Date> {
     if let Some((q, _)) = input.match_indices("Q").next() {
         let (year, quarter) = input.split_at(q);
