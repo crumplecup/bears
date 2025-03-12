@@ -9,38 +9,6 @@ pub async fn parameter_values_to_json() -> Result<(), BeaErr> {
     Dataset::parameter_values().await
 }
 
-#[tracing::instrument]
-pub fn parameter_value_json_to_bin() -> Result<(), BeaErr> {
-    trace_init()?;
-    dotenvy::dotenv().ok();
-    let datasets: Vec<Dataset> = Dataset::iter().collect();
-    let path = bea_data()?;
-    for dataset in datasets {
-        let names = dataset.names();
-        for name in names {
-            // Set path for json file.
-            let pv = path.join("parameter_values");
-            let path = pv.join(format!("{dataset}_{name}_parameter_values.json"));
-            // Create reader from path.
-            let file = std::fs::File::open(&path)
-                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
-            let rdr = std::io::BufReader::new(file);
-            // Deserialize to serde_json::Value.
-            let res: serde_json::Value = serde_json::from_reader(rdr)
-                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
-            // Serialize to binary.
-            let contents = serde_json::to_vec(&res)
-                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
-            // Set path for binary file.
-            let path = pv.join("{dataset}_{name}_parameter_values.bin");
-            // Write binary to file.
-            std::fs::write(&path, contents)
-                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
-        }
-    }
-    Ok(())
-}
-
 #[tracing::instrument(skip_all)]
 pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), BeaErr> {
     let file =
@@ -51,18 +19,6 @@ pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), BeaErr>
     let data = BeaResponse::try_from(&res)?;
     tracing::info!("Response read.");
     tracing::trace!("Response: {data:#?}");
-    Ok(())
-}
-
-#[tracing::instrument(skip_all)]
-pub fn parameter_value_from_bin(path: std::path::PathBuf) -> Result<(), BeaErr> {
-    let decode =
-        std::fs::read(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
-    tracing::info!("Path read.");
-    let data: serde_json::Value = serde_json::from_slice(&decode)
-        .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
-    let data = BeaResponse::try_from(&data)?;
-    tracing::info!("Native: {data:#?}");
     Ok(())
 }
 
@@ -82,11 +38,6 @@ pub fn parameter_value_from_file() -> Result<(), BeaErr> {
             let pv = path.join("parameter_values");
             let path = pv.join(format!("{dataset}_{name}_parameter_values.json"));
             parameter_value_from_json(path)?;
-
-            tracing::info!("Native pass for {name} in {dataset}");
-            let path = pv.join(format!("{dataset}_{name}_parameter_values.bin"));
-            tracing::info!("Reading from {path:?}");
-            parameter_value_from_bin(path)?;
         }
     }
     Ok(())
