@@ -223,16 +223,25 @@ impl Dataset {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn download_with_history(&self) -> Result<(), BeaErr> {
+    pub async fn initial_download(&self) -> Result<(), BeaErr> {
+        let queue = self.queue()?;
+        tracing::info!("Queue length: {}", queue.len());
+        queue.download(false).await?;
+        Ok(())
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub async fn download_with_history(
+        &self,
+        style: indicatif::ProgressStyle,
+    ) -> Result<(), BeaErr> {
         let queue = self.queue()?;
         tracing::info!("Queue length: {}", queue.len());
 
         // get the download history for the size hints
-        let history = History::try_from((*self, Mode::Download))?;
+        let history = History::try_from((*self, Mode::Load))?;
         history.summary();
-        // only download successes in history
-        // strict = true set to include no others in queue.
-        history.iter().download(&queue, false).await?;
+        history.iter().download(&queue, false, style).await?;
         Ok(())
     }
 
