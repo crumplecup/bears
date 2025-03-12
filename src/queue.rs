@@ -2,6 +2,7 @@ use crate::{
     file_size, map_to_string, App, BeaErr, Data, DeriveFromStr, History, Jiff, JsonParseError,
     JsonParseErrorKind, KeyMissing, NotObject, ParseInt, ResultStatus,
 };
+use indicatif::ProgressIterator;
 use jiff::ToSpan;
 use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
 use std::str::FromStr;
@@ -279,8 +280,12 @@ impl Queue {
         tx: tokio::sync::mpsc::Sender<ResultStatus>,
         tracker: std::sync::Arc<tokio::sync::Mutex<Tracker>>,
     ) -> Result<Vec<tokio::task::JoinHandle<()>>, BeaErr> {
+        let style = indicatif::ProgressStyle::with_template(
+            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} 'Loading files in queue.'",
+        )
+        .unwrap();
         let mut handles = Vec::new();
-        for app in self.iter() {
+        for app in self.iter().progress_with_style(style) {
             let path = app.destination(false)?;
             if path.exists() {
                 let event = Event::new(&path, Mode::Load);
