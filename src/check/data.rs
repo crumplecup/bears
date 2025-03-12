@@ -1,4 +1,4 @@
-use crate::{trace_init, BeaErr, Dataset, History, Mode, Naics};
+use crate::{trace_init, BeaErr, Dataset, GdpByIndustry, GdpData, History, Mode, Naics, Style};
 
 /// Pings the BEA API.
 #[tracing::instrument]
@@ -98,9 +98,39 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
     Ok(())
 }
 
-#[tracing::instrument(skip_all)]
-pub async fn datasets_download() -> Result<(), BeaErr> {
+pub fn debug_gdpbyindustry() -> Result<(), BeaErr> {
     trace_init()?;
+    let dataset = Dataset::GDPbyIndustry;
+    let history = History::try_from((dataset, Mode::Download))?;
+    for (path, _) in (*history).iter() {
+        let data = GdpData::try_from(path)?;
+        tracing::info!("Data loaded: {} records.", data.len());
+    }
+
+    Ok(())
+}
+
+#[tracing::instrument]
+pub async fn datasets_download_initial() -> Result<(), BeaErr> {
+    trace_init()?;
+    // let datasets = vec![
+    //     Dataset::Nipa,
+    //     Dataset::NIUnderlyingDetail,
+    //     Dataset::FixedAssets,
+    //     Dataset::Mne,
+    // ];
+    let datasets = vec![Dataset::GDPbyIndustry];
+    for dataset in datasets {
+        dataset.initial_download().await?;
+    }
+    Ok(())
+}
+
+#[tracing::instrument]
+pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
+    trace_init()?;
+    let styles = Style::try_new()?;
+    let style = styles["queue_download"].clone();
     // let datasets = vec![
     //     Dataset::Nipa,
     //     Dataset::NIUnderlyingDetail,
@@ -109,7 +139,7 @@ pub async fn datasets_download() -> Result<(), BeaErr> {
     // ];
     let datasets = vec![Dataset::Mne];
     for dataset in datasets {
-        dataset.download_with_history().await?;
+        dataset.download_with_history(style.clone()).await?;
     }
     Ok(())
 }
@@ -117,7 +147,13 @@ pub async fn datasets_download() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::NIUnderlyingDetail];
+    // let datasets = vec![
+    //     Dataset::Nipa,
+    //     Dataset::NIUnderlyingDetail,
+    //     Dataset::FixedAssets,
+    //     Dataset::Mne,
+    // ];
+    let datasets = vec![Dataset::GDPbyIndustry];
     for dataset in datasets {
         let result = dataset.initial_load(None).await?;
         tracing::info!("{} datasets loaded.", result.len());
@@ -128,7 +164,13 @@ pub async fn datasets_initial_load() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::Mne];
+    let datasets = vec![
+        Dataset::Nipa,
+        Dataset::NIUnderlyingDetail,
+        Dataset::FixedAssets,
+        Dataset::Mne,
+    ];
+    // let datasets = vec![Dataset::Mne];
     for dataset in datasets {
         let loads = History::try_from((dataset, Mode::Load))?;
         let result = dataset.initial_load(Some(&loads)).await?;
