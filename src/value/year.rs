@@ -59,6 +59,15 @@ pub fn parse_year(input: &str) -> Result<jiff::civil::Date, ParseInt> {
     }
 }
 
+/// Converts Roman numeral notation to a [`Date`](jiff::civil::Date) from the `jiff` crate.
+///
+/// In the GDPbyIndustry tables, the BEA reports the relevant quarter in Roman numerals (I-IV).
+/// This function will return `None` if the `quarter` parameter does not contain either "I", "II",
+/// "III" or "IV".  
+///
+/// Requires the `year` argument to derive the year componenet of the `Date` type.
+/// Since the BEA return data includes a `Year` field, we first convert that `String` to a `jiff`
+/// `Data` type, then derive the value of `Quarter` using `Year` as the context.
 pub fn roman_numeral_quarter(quarter: &str, year: jiff::civil::Date) -> Option<jiff::civil::Date> {
     let duration = match quarter {
         "I" => jiff::Span::new(),
