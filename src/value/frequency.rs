@@ -27,6 +27,8 @@ pub enum Frequency {
 }
 
 impl Frequency {
+    /// Canonical method for converting the given variant into a BEA parameter value for use in a
+    /// request.
     pub fn value(&self) -> String {
         let s = match self {
             Self::Annual => "A",
@@ -36,6 +38,7 @@ impl Frequency {
         s.to_string()
     }
 
+    /// Canonical method for parsing from a BEA parameter value into a variant of `Self`.
     pub fn from_value(value: &str) -> Result<Self, JsonParseError> {
         let frequency = match value {
             "A" => Self::Annual,
@@ -43,12 +46,14 @@ impl Frequency {
             "Q" => Self::Quarterly,
             _ => {
                 let error = KeyMissing::new(value.to_owned(), line!(), file!().to_owned());
+                // Use a JsonParseError until from KeyMissing is impled directly for BeaErr.
                 return Err(error.into());
             }
         };
         Ok(frequency)
     }
 
+    /// Formats the given variant into a key:value pair for use in a BEA request.
     pub fn params(&self) -> (String, String) {
         let key = ParameterName::Frequency.to_string();
         let value = self.value();
