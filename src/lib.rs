@@ -22,7 +22,7 @@ mod value;
 
 pub use app::{App, ResultStatus};
 pub use config::{Options, ParameterKind};
-pub use data::{Data, GdpData, NipaData};
+pub use data::{Data, FixedAssetData, GdpData, GdpDatum, MneDiData, NipaData};
 pub use dataset::{Dataset, DatasetDetails, Datasets};
 pub use error::{
     AnnotationMissing, BTreeKeyMissing, BeaErr, BeaErrorKind, BoolInvalid, Check, Csv,
