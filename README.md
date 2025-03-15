@@ -3,6 +3,7 @@
 A Rust wrapper around the Bureau of Economic Analysis (BEA) REST API.
 
 ![Bears Logo](./data/bears_logo.jpg)
+_Logo produced using Gemini AI._
 
 ## Project Goals
 
@@ -36,14 +37,14 @@ _This project is currently under active development._ Initial goals are to provi
 | NIPA                    | ✅       | ✅   | ☐      |
 | NIUnderlyingDetail      | ✅       | ✅   | ☐      |
 | FixedAssets             | ✅       | ✅   | ☐      |
-| MNE                     | ✅       | ☐    | ☐      |
+| MNE                     | ✅       | ✅   | ☐      |
 | Ita                     | ☐        | ☐    | ☐      |
 | Iip                     | ☐        | ☐    | ☐      |
 | Iip                     | ☐        | ☐    | ☐      |
 | InputOutput             | ☐        | ☐    | ☐      |
 | IntlServTrade           | ☐        | ☐    | ☐      |
 | IntlServSTA             | ☐        | ☐    | ☐      |
-| GDPbyIndustry           | ☐        | ☐    | ☐      |
+| GDPbyIndustry           | ✅       | ✅   | ☐      |
 | Regional                | ☐        | ☐    | ☐      |
 | UnderlyingGDPbyIndustry | ☐        | ☐    | ☐      |
 | APIDatasetMetadata      | ☐        | ☐    | ☐      |
@@ -55,14 +56,14 @@ _This project is currently under active development._ Initial goals are to provi
 | NIPA                    | 626   | 1.1 GB   | Year and Frequency set to "ALL" |
 | NIUnderlyingDetail      | 60    | 527.7 MB | Year set to "ALL"               |
 | FixedAssets             | 109   | 148.1 MB | Year set to "ALL"               |
-| MNE                     | ☐     | ☐        | ☐                               |
+| MNE                     | 5387  | 15.4 GB  | Year and Frequency set to "ALL" |
 | Ita                     | ☐     | ☐        | ☐                               |
 | Iip                     | ☐     | ☐        | ☐                               |
 | Iip                     | ☐     | ☐        | ☐                               |
 | InputOutput             | ☐     | ☐        | ☐                               |
 | IntlServTrade           | ☐     | ☐        | ☐                               |
 | IntlServSTA             | ☐     | ☐        | ☐                               |
-| GDPbyIndustry           | ☐     | ☐        | ☐                               |
+| GDPbyIndustry           | 39    | 131 MB   | Year and Frequency set to "ALL" |
 | Regional                | ☐     | ☐        | ☐                               |
 | UnderlyingGDPbyIndustry | ☐     | ☐        | ☐                               |
 | APIDatasetMetadata      | ☐     | ☐        | ☐                               |
@@ -79,5 +80,7 @@ BEA_DATA = "path_to_download_dir"
 ```
 
 You can also specify the directory to store downloaded data in the `BEA_DATA` variable.
+
+For a description of how to use the current testing process, see the documentation for the [`check`](https://docs.rs/bears/latest/bears/check/index.html) module.
 
 _The current status of the library is immature, or not yet ready for use. Feel free to experiment and offer feedback, we would appreciate hearing from you._
