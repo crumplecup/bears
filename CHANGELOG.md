@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4] - 2025-03-15
+
+### 🚀 Features
+
+- 'Style' type added to facilitate progress bars drawn to the console.
+- Method `from_value` added to `Frequency` to provide a canonical means of interpreting BEA parameter values.
+- Added the `roman_numeral_quarter` function mapping Roman Numeral values in the `Quarter` field to the `jiff::civil::Date` type.
+- `GdpData` type added for the GDPbyIndustry dataset.  Companion variant `Data::GdpData` added.
+- Progress bar added to `Queue` file loading.
+- Progress bars added to `History` load and download methods.
+
+### 🚜 Refactor
+
+- Various console logs lowered from Info to Trace, now that the functions of interest are more stable.
+- `MneDiData` and `FixedAssetsData` added to the root namespace following the library convention.
+
+### 📚 Documentation
+
+- Description added for the `roman_numeral_quarter` function.
+- Descriptions added to `Frequency` methods.
+- Module and function level descriptions added the `check` module.
+- Progress statistics updated in the root `README.md`.
+
+### 🧪 Testing
+
+- Additional troubleshooting tests added for loading GDPbyIndustry files.
+- Duplicate test removed.
+
+### ⚙️ Miscellaneous Tasks
+
+- Changelog updated for version 0.1.3.
+- Version incremented to 0.1.4 in Cargo.toml.
+- Changelog action added to justfile.
+- *(dependency)* Patch updates for dependencies.  Bincode dependency removed.
+- Bincode removed from internal tests.
+- Benchmarks updated to use the 'Style' type.
+- *(dependency)* Patch update applied to `tokio`.  Minor update applied to `uuid`.  No changes required to code.
+- Deletion of dead legacy code.
+
 ## [0.1.3] - 2025-03-03
 
 ### 🚀 Features
@@ -61,6 +100,9 @@ All notable changes to this project will be documented in this file.
 - Cargo-audit and OmniBOR supply chain security tooling added to release build artifacts.
 - Migrate to 2024 Edition.  Patch updates for dependencies.
 - Patch update for dependency uuid.
+- Changelog updated for version 0.1.2.
+- Incremented version to 0.1.2.
+- Cargo.lock updated.
 
 ## [0.1.1] - 2025-02-17
 
