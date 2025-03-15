@@ -27,7 +27,6 @@ impl FixedAssets {
         let data = FixedAssets::try_from(&path)?;
         let mut queue = Vec::new();
         for params in data.iter() {
-            tracing::trace!("{params:#?}");
             app.with_params(params.clone());
             queue.push(app.clone());
         }

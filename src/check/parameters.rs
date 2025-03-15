@@ -24,18 +24,6 @@ pub fn parameter_from_json(path: std::path::PathBuf) -> Result<(), BeaErr> {
     Ok(())
 }
 
-#[tracing::instrument(skip_all)]
-pub fn parameter_from_bin(path: std::path::PathBuf) -> Result<(), BeaErr> {
-    let decode =
-        std::fs::read(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
-    tracing::info!("Path read.");
-    let data: serde_json::Value = serde_json::from_slice(&decode)
-        .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
-    let data = BeaResponse::try_from(&data)?;
-    tracing::info!("Native: {data:#?}");
-    Ok(())
-}
-
 /// reads response and native format from file
 /// avoids making api calls to bea
 /// used to test internal parsing of responses
