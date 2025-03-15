@@ -41,7 +41,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 similar = { version = "2.7.0", features = ["serde"] }
 strum = { version = "0.27.1", features = ["derive", "strum_macros"] }
-tokio = { version = "1.44.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.44.1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.41"
 tracing-log = "0.2.0"
 tracing-serde = "0.2.0"
@@ -51,7 +51,7 @@ tracing-subscriber = { version = "0.3.19", features = [
   "json",
 ] }
 url = { version = "2.5.4", features = ["serde"] }
-uuid = { version = "1.15.1", features = ["serde", "v4"] }
+uuid = { version = "1.16.0", features = ["serde", "v4"] }
 
 [dev-dependencies]
 anyhow = "1.0.97"
