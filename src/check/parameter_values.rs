@@ -4,11 +4,17 @@ use crate::{
 };
 use strum::IntoEnumIterator;
 
+/// Download valid parameter values for each dataset from the BEA server using the
+/// `GetParameterValues` method into the `parameter_values` folder of the `BEA_DATA` directory.
 #[tracing::instrument]
 pub async fn parameter_values_to_json() -> Result<(), BeaErr> {
     Dataset::parameter_values().await
 }
 
+/// Load parameter values from the file at `path` and parse into the
+/// [`BeaResponse`](crate::BeaResponse) type.
+///
+/// Called by [`parameter_values_from_file`].
 #[tracing::instrument(skip_all)]
 pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), BeaErr> {
     let file =
@@ -22,11 +28,10 @@ pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), BeaErr>
     Ok(())
 }
 
-/// reads response and native format from file
-/// avoids making api calls to bea
-/// used to test internal parsing of responses
+/// Load parameter values from the `parameter_values` folder of the `BEA_DATA` and serialize into
+/// the [`BeaResponse`](crate::BeaResponse) type.
 #[tracing::instrument]
-pub fn parameter_value_from_file() -> Result<(), BeaErr> {
+pub fn parameter_values_from_file() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();

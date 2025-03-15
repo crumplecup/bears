@@ -11,6 +11,9 @@ pub async fn parameters_to_json() -> Result<(), BeaErr> {
     Dataset::parameters().await
 }
 
+/// Attempts to parse a [`BeaResponse`] from the file at `path`.
+///
+/// Called by [`parameters_from_file`].
 #[tracing::instrument(skip_all)]
 pub fn parameter_from_json(path: std::path::PathBuf) -> Result<(), BeaErr> {
     let file =
@@ -51,6 +54,7 @@ pub fn diff_parameters() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// The `parameter_names` test verifies that translation to and from `&str` is idempotent.
 #[tracing::instrument]
 pub fn parameter_names() -> Result<(), BeaErr> {
     trace_init()?;

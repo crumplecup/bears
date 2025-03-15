@@ -1,4 +1,4 @@
-use crate::{trace_init, BeaErr, Dataset, GdpByIndustry, GdpData, History, Mode, Naics, Style};
+use crate::{trace_init, BeaErr, Dataset, GdpData, History, Mode, Naics, Style};
 
 /// Pings the BEA API.
 #[tracing::instrument]
@@ -98,6 +98,9 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// Specialty function for debugging deserialization errors with the GDPbyIndustry tables.
+/// Attempts to load each file in the download history.
+/// Move the problematic files into the download history (backing up as needed).
 pub fn debug_gdpbyindustry() -> Result<(), BeaErr> {
     trace_init()?;
     let dataset = Dataset::GDPbyIndustry;
@@ -110,6 +113,9 @@ pub fn debug_gdpbyindustry() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// Attempt to download all configurations using the associated iterator for the dataset.
+/// Cannot meter by file size, susceptible to exceeding the 100MB per minute rate limit of the BEA
+/// server.
 #[tracing::instrument]
 pub async fn datasets_download_initial() -> Result<(), BeaErr> {
     trace_init()?;
@@ -126,6 +132,8 @@ pub async fn datasets_download_initial() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// Download existing files of a known size from the download [`History`].
+/// Metered to prevent exceeding the 100MB per minute rate limit set by the BEA server.
 #[tracing::instrument]
 pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
     trace_init()?;
@@ -144,6 +152,7 @@ pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// Attempts to load all files in the download [`History`], without respect to the load `History`.
 #[tracing::instrument(skip_all)]
 pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     trace_init()?;
@@ -161,6 +170,7 @@ pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// Attempts to load all files in the download [`History`] that are not yet in the load `History`.
 #[tracing::instrument(skip_all)]
 pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
     trace_init()?;
@@ -179,6 +189,7 @@ pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// Attempts to reload errors in the load [`History`].
 #[tracing::instrument(skip_all)]
 pub async fn datasets_retry_load() -> Result<(), BeaErr> {
     trace_init()?;
@@ -190,6 +201,9 @@ pub async fn datasets_retry_load() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// Load the NAICS codes from file and print them to the console.
+///
+/// Used for updates to the NAICS file and confirm deserialization.
 #[tracing::instrument]
 pub fn naics() -> Result<(), BeaErr> {
     trace_init()?;

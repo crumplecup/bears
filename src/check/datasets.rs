@@ -3,8 +3,9 @@ use crate::{
 };
 use strum::IntoEnumIterator;
 
+/// Queries valid parameter values for the dataset parameter.
 /// Reads response to json using serde_json.
-/// Saves the result to the `data` folder.
+/// Saves the result as `dataset.json` in the `BEA_DATA` directory.
 /// Pings the BEA API.
 #[tracing::instrument]
 pub async fn datasets_to_json() -> Result<(), BeaErr> {

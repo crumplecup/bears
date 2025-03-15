@@ -1,17 +1,22 @@
 use crate::{trace_init, BeaErr, Dataset, History, Mode};
 
 #[tracing::instrument]
-pub async fn download_summary() -> Result<(), BeaErr> {
+/// Prints summary data from the Load [`History`] of the currently implemented datasets.
+/// Used for reporting and to assess storage requirements.
+pub fn download_summary() -> Result<(), BeaErr> {
     trace_init()?;
     let datasets = vec![
         Dataset::Nipa,
         Dataset::NIUnderlyingDetail,
         Dataset::FixedAssets,
+        Dataset::Mne,
+        Dataset::GDPbyIndustry,
     ];
     for dataset in datasets {
-        let history = History::try_from((dataset, Mode::Download))?;
         tracing::info!("Dataset: {dataset}");
+        let history = History::try_from((dataset, Mode::Load))?;
         history.summary();
     }
+
     Ok(())
 }

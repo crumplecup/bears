@@ -25,6 +25,9 @@ pub fn api_error() -> Result<(), BeaErr> {
     Ok(())
 }
 
+/// Attempts to parse the file `requests_exceeded.json` in the `BEA_DATA` directory to the [`BeaResponse`](crate::BeaResponse)
+/// type.  Verifies that the program accurately recognizing this error condition from the BEA
+/// server.
 #[tracing::instrument]
 pub fn requests_exceeded() -> Result<(), BeaErr> {
     trace_init()?;
