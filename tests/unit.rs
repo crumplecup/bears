@@ -36,7 +36,7 @@ async fn parameter_values() -> anyhow::Result<()> {
     check::parameter_values_to_json().await?;
     #[cfg(feature = "api")]
     tracing::info!("Response received from BEA API.");
-    check::parameter_value_from_file()?;
+    check::parameter_values_from_file()?;
     tracing::info!("Parameter values deserialized from file.");
     Ok(())
 }
@@ -147,8 +147,8 @@ fn download_history() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[tokio::test]
-async fn download_summary() -> anyhow::Result<()> {
-    check::download_summary().await?;
+#[test]
+fn download_summary() -> anyhow::Result<()> {
+    check::download_summary()?;
     Ok(())
 }
