@@ -1,6 +1,6 @@
 use crate::{
     map_to_string, BeaErr, Data, Dataset, DatasetMissing, Datasets, FixedAssetData, GdpData,
-    JsonParseError, KeyMissing, Method, MneDiData, NipaData, NotObject, ParameterValues,
+    ItaData, JsonParseError, KeyMissing, Method, MneDiData, NipaData, NotObject, ParameterValues,
     Parameters, ParseInt, RequestParameters,
 };
 
@@ -90,6 +90,15 @@ impl Results {
                         }
                     },
                     Dataset::GDPbyIndustry => match GdpData::try_from(value) {
+                        Ok(t) => {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                        Err(source) => {
+                            tracing::trace!("{source}");
+                        }
+                    },
+                    Dataset::Ita => match ItaData::try_from(value) {
                         Ok(t) => {
                             let data = Data::from(t);
                             return Ok(Self::from(data));
