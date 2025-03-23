@@ -38,7 +38,7 @@ _This project is currently under active development._ Initial goals are to provi
 | NIUnderlyingDetail      | ✅       | ✅   | ☐      |
 | FixedAssets             | ✅       | ✅   | ☐      |
 | MNE                     | ✅       | ✅   | ☐      |
-| Ita                     | ☐        | ☐    | ☐      |
+| Ita                     | ✅       | ✅   | ☐      |
 | Iip                     | ☐        | ☐    | ☐      |
 | Iip                     | ☐        | ☐    | ☐      |
 | InputOutput             | ☐        | ☐    | ☐      |
@@ -51,22 +51,22 @@ _This project is currently under active development._ Initial goals are to provi
 
 ### Dataset Summary Information
 
-| Dataset                 | Count | Size     | Description                     |
-| ----------------------- | ----- | -------- | ------------------------------- |
-| NIPA                    | 626   | 1.1 GB   | Year and Frequency set to "ALL" |
-| NIUnderlyingDetail      | 60    | 527.7 MB | Year set to "ALL"               |
-| FixedAssets             | 109   | 148.1 MB | Year set to "ALL"               |
-| MNE                     | 5387  | 15.4 GB  | Year and Frequency set to "ALL" |
-| Ita                     | ☐     | ☐        | ☐                               |
-| Iip                     | ☐     | ☐        | ☐                               |
-| Iip                     | ☐     | ☐        | ☐                               |
-| InputOutput             | ☐     | ☐        | ☐                               |
-| IntlServTrade           | ☐     | ☐        | ☐                               |
-| IntlServSTA             | ☐     | ☐        | ☐                               |
-| GDPbyIndustry           | 39    | 131 MB   | Year and Frequency set to "ALL" |
-| Regional                | ☐     | ☐        | ☐                               |
-| UnderlyingGDPbyIndustry | ☐     | ☐        | ☐                               |
-| APIDatasetMetadata      | ☐     | ☐        | ☐                               |
+| Dataset                 | Count | Size     | Description                              |
+| ----------------------- | ----- | -------- | ---------------------------------------- |
+| NIPA                    | 626   | 1.1 GB   | Year and Frequency set to "ALL"          |
+| NIUnderlyingDetail      | 60    | 527.7 MB | Year set to "ALL"                        |
+| FixedAssets             | 109   | 148.1 MB | Year set to "ALL"                        |
+| MNE                     | 5387  | 15.4 GB  | Year and Frequency set to "ALL"          |
+| Ita                     | 94    | 71.4 MB  | Year, Frequency & Indicator set to "ALL" |
+| Iip                     | ☐     | ☐        | ☐                                        |
+| Iip                     | ☐     | ☐        | ☐                                        |
+| InputOutput             | ☐     | ☐        | ☐                                        |
+| IntlServTrade           | ☐     | ☐        | ☐                                        |
+| IntlServSTA             | ☐     | ☐        | ☐                                        |
+| GDPbyIndustry           | 39    | 131 MB   | Year and Frequency set to "ALL"          |
+| Regional                | ☐     | ☐        | ☐                                        |
+| UnderlyingGDPbyIndustry | ☐     | ☐        | ☐                                        |
+| APIDatasetMetadata      | ☐     | ☐        | ☐                                        |
 
 ## Usage
 
