@@ -169,6 +169,7 @@
 mod data;
 mod datasets;
 mod histories;
+mod indicators;
 mod parameter_values;
 mod parameters;
 mod queues;
@@ -181,6 +182,7 @@ pub use data::{
 };
 pub use datasets::{check_datasets, datasets_from_file, datasets_to_json};
 pub use histories::download_summary;
+pub use indicators::check_indicators;
 pub use parameter_values::{
     parameter_value_filtered, parameter_value_from_json, parameter_values_from_file,
     parameter_values_to_json,
