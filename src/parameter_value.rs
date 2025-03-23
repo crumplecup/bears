@@ -628,6 +628,13 @@ impl ParameterValueTable {
         let error = JsonParseErrorKind::from(error);
         Err(error.into())
     }
+
+    pub fn parameter_fields(&self) -> Option<&ParameterFields> {
+        match self {
+            Self::ParameterFields(values) => Some(values),
+            _ => None,
+        }
+    }
 }
 
 /// Thin wrapper around a vector of type [`ParameterValueTable`].
