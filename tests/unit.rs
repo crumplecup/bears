@@ -67,6 +67,12 @@ async fn values_gdp_filtered() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[test]
+fn check_indicators() -> anyhow::Result<()> {
+    check::check_indicators()?;
+    Ok(())
+}
+
 #[tokio::test]
 async fn api_error() -> anyhow::Result<()> {
     check::api_error()?;
