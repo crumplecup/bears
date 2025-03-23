@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2025-03-23
+
+### 🚀 Features
+
+- `Indicator` enum added with variants corresponding to valid values for the Indicator parameter.
+- `AreaOrCountry` enum added with variants for valid values of the "AreaOrCountry" parameter in BEA requests.
+- `ItaFrequency` and `ItaFrequencies` types added to represent valid values for the "Frequency" parameter of the ITA dataset in BEA requests.
+- `SelectionSet` enum added as an alternative abstraction to the `SelectionKind` enum.
+- `Frequency::all` method added to generate valid request parameters for all frequencies.  Only implemented for a subset of datasets.
+- `ItaDatum` and `ItaData` types added to accomodate data responses for the ITA dataset.  Iterator implemented for the `Ita` type.  `Ita::queue` and `Ita::iter` methods added.
+- `ITA` variant added to the TryFrom impl for `Results`.
+- Convenience method `ParameterValueTable::parameter_fields` added to provide access to the value contained within the variant.
+- Added the `Queue::load_par` method to enable parallel loading through the `rayon` library.
+- The `Dataset::initial_load_par` method implements parallel queue loading for benchmarking purposes.
+
+### 🚜 Refactor
+
+- Internal macro impl_json_to_bea_error! added to facilitate conversion of JSON parsing errors to the umbrella internal error type.
+- Convenience function `result_to_data` added to convert a `serde_json::Value` representing a BEA result, to a `serde_json::Value` representing the `Data` portion of the `Result`.  Steps a couple levels down the JSON value tree, preventing rightward drift in the caller.
+- `lib.rs` updated with added types.
+- Added `check_indicators` to `mod.rs` to provide access to unit tests.
+- ITA variant added to the `download_summary` function.
+
+### 📚 Documentation
+
+- Comments added to the `check_datasets` test.
+- README.md updated with ITA stats.
+
+### 🧪 Testing
+
+- The `check_indicators` test ensures all values in the BEA response parse to valid Indicator variants.
+- Added `check_indicators` to unit tests.
+- Data download tests temporarily refocued on ITA for active development.
+
+### ⚙️ Miscellaneous Tasks
+
+- Incremental version to 0.1.4 in Cargo.toml.
+- Patch updates to `jiff` and `reqwest` dependencies.
+- Noise trimmed from tracing logs.
+- `mod.rs` updated to include added types.
+- ITA variant for `Dataset` added to path generation handling in `App::destination` method.
+- Loading benchmark added to test parallel loading with `rayon`.
+- Update to convenience commands in the `justfile`.
+
 ## [0.1.4] - 2025-03-15
 
 ### 🚀 Features
@@ -40,6 +84,7 @@ All notable changes to this project will be documented in this file.
 - Benchmarks updated to use the 'Style' type.
 - *(dependency)* Patch update applied to `tokio`.  Minor update applied to `uuid`.  No changes required to code.
 - Deletion of dead legacy code.
+- Changelog updated for version 0.1.4.
 
 ## [0.1.3] - 2025-03-03
 
