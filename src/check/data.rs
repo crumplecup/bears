@@ -124,8 +124,9 @@ pub async fn datasets_download_initial() -> Result<(), BeaErr> {
     //     Dataset::NIUnderlyingDetail,
     //     Dataset::FixedAssets,
     //     Dataset::Mne,
+    //     Dataset::GDPbyIndustry,
     // ];
-    let datasets = vec![Dataset::GDPbyIndustry];
+    let datasets = vec![Dataset::Ita];
     for dataset in datasets {
         dataset.initial_download().await?;
     }
@@ -144,6 +145,7 @@ pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
     //     Dataset::NIUnderlyingDetail,
     //     Dataset::FixedAssets,
     //     Dataset::Mne,
+    //     Dataset::GDPbyIndustry,
     // ];
     let datasets = vec![Dataset::Mne];
     for dataset in datasets {
@@ -161,8 +163,9 @@ pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     //     Dataset::NIUnderlyingDetail,
     //     Dataset::FixedAssets,
     //     Dataset::Mne,
+    //     Dataset::GDPbyIndustry,
     // ];
-    let datasets = vec![Dataset::GDPbyIndustry];
+    let datasets = vec![Dataset::Ita];
     for dataset in datasets {
         let result = dataset.initial_load(None).await?;
         tracing::info!("{} datasets loaded.", result.len());
@@ -190,10 +193,11 @@ pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
 }
 
 /// Attempts to reload errors in the load [`History`].
+/// Run on `TRACE` level to gather more data on specific a specific file.
 #[tracing::instrument(skip_all)]
 pub async fn datasets_retry_load() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::Mne];
+    let datasets = vec![Dataset::Ita];
     for dataset in datasets {
         let result = dataset.retry_load().await?;
         tracing::info!("{} datasets loaded.", result.len());
