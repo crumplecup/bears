@@ -35,10 +35,13 @@ pub fn datasets_from_file() -> Result<(), BeaErr> {
 
 /// Checks that each dataset returned from the call matches an enum variant in Dataset
 /// Returns an error if the datasets do not match.
+///
+/// Does not test that all variants in `Dataset` are in active use.
 #[tracing::instrument]
 pub fn check_datasets() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
+    // Load `datasets.json` into a `BeaResponse` type.
     let path = bea_data()?;
     let path = path.join("datasets.json");
     let file =
@@ -48,14 +51,21 @@ pub fn check_datasets() -> Result<(), BeaErr> {
         .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
     let data = BeaResponse::try_from(&json)?;
     tracing::trace!("Response: {data:#?}");
+    // Create vector of dataset variants.
     let sets: Vec<String> = Dataset::iter().map(|d| d.lower()).collect();
     tracing::info!("Sets: {:#?}", sets);
 
+    // extract `Datasets` variant from `BeaResponse`
     if let Some(datasets) = data.datasets() {
+        // for each element, is the name in the set of known datasets?
         for dataset in datasets.iter() {
+            // converting both to lowercase avoids the need for special-casing around
+            // heterogeneity in capitalization
             let name = dataset.dataset_name().to_lowercase();
+            // if not a known name
             if !sets.contains(&name) {
                 tracing::warn!("{} not in datasets.", dataset.dataset_name());
+                // report the error
                 let error = DatasetMissing::new(
                     dataset.dataset_name().to_string(),
                     line!(),
@@ -67,5 +77,6 @@ pub fn check_datasets() -> Result<(), BeaErr> {
             }
         }
     }
+    // all datasets accounted for
     Ok(())
 }
