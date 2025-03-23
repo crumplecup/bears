@@ -69,6 +69,25 @@ impl_bea_err!(
     YearInvalid,
 );
 
+macro_rules! impl_json_to_bea_err {
+    ( $( $name:ident),* ) => {
+        $(
+            impl From<$name> for BeaErr {
+                fn from(value: $name) -> Self {
+                    let kind = JsonParseError::from(value);
+                    let kind = BeaErrorKind::from(kind).into();
+                    Self { kind }
+                }
+            }
+        )*
+    };
+    ( $( $name:ident),+ ,) => {
+       impl_json_to_bea_err![ $( $name ),* ];
+    };
+}
+
+impl_json_to_bea_err!(NotArray, NotObject, KeyMissing);
+
 #[derive(Debug, derive_more::From)]
 pub enum BeaErrorKind {
     #[from(AnnotationMissing)]
