@@ -132,8 +132,14 @@ impl Frequencies {
     }
 
     pub fn params(&self) -> (String, String) {
-        let key = "Frequency".to_string();
+        let key = "Frequency".to_owned();
         let value = self.value();
+        (key, value)
+    }
+
+    pub fn all(&self) -> (String, String) {
+        let key = "Frequency".to_owned();
+        let value = "All".to_owned();
         (key, value)
     }
 }
