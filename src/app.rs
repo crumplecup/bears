@@ -384,6 +384,10 @@ impl App {
                         title.push_str(".json");
                         Ok(path.join(title))
                     }
+                    Dataset::Ita => {
+                        let aoc = query["AreaOrCountry"].clone();
+                        Ok(path.join(format!("{aoc}.json")))
+                    }
                     _ => {
                         tracing::info!("{dataset} not yet implemented.");
                         Ok(path)
