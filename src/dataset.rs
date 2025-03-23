@@ -249,6 +249,32 @@ impl Dataset {
     /// If the user provides a `load_history`, the method will exclude previously loaded files in
     /// the provided [`History`].
     #[tracing::instrument(skip_all)]
+    pub fn initial_load_par(&self, load_history: Option<&History>) -> Result<Vec<Data>, BeaErr> {
+        let mut queue = self.queue()?;
+        tracing::info!("Queue length: {}", queue.len());
+
+        // A fresh queue has been downloaded, try loading the successes
+        let downloads = History::try_from((*self, Mode::Download))?;
+        // only download successes in history
+        // strict = true set to include no others in queue.
+        queue.successes(&downloads, true)?;
+        tracing::info!("Files downloaded: {}", queue.len());
+
+        if let Some(loads) = load_history {
+            // exclude previously loaded files in load history
+            queue.exclude(loads)?;
+            tracing::info!("Files left to load: {}", queue.len());
+        }
+
+        let data = queue.load_par()?;
+        tracing::info!("{} datasets loaded.", data.len());
+        Ok(data)
+    }
+
+    /// Load all successfully downloaded files in the download [`History`] for the `Dataset`.
+    /// If the user provides a `load_history`, the method will exclude previously loaded files in
+    /// the provided [`History`].
+    #[tracing::instrument(skip_all)]
     pub async fn initial_load(&self, load_history: Option<&History>) -> Result<Vec<Data>, BeaErr> {
         let mut queue = self.queue()?;
         tracing::info!("Queue length: {}", queue.len());
@@ -701,9 +727,10 @@ impl Dataset {
             Self::FixedAssets => FixedAssets::queue(),
             Self::Mne => Mne::queue(),
             Self::GDPbyIndustry => GdpByIndustry::queue(),
+            Self::Ita => Ita::queue(),
             _ => {
                 let error = DatasetMissing::new(
-                    "Nipa, NIUnderlyingDetail, FixedAssets, Mne or GDPbyIndustry variants required"
+                    "Nipa, NIUnderlyingDetail, FixedAssets, Mne, Ita or GDPbyIndustry variants required"
                         .to_string(),
                     line!(),
                     file!().to_string(),
