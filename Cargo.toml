@@ -65,3 +65,7 @@ lto = "thin"
 [[bench]]
 name = "with_event"
 harness = false
+
+[[bench]]
+name = "loading"
+harness = false
