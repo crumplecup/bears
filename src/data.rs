@@ -1,7 +1,7 @@
 use crate::{
     date_by_period, map_to_float, map_to_int, map_to_string, parse_year, roman_numeral_quarter,
-    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, Frequency, IoError, JsonParseError,
-    KeyMissing, Naics, NotArray, NotObject, RowCode, SerdeJson, VariantMissing,
+    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, Frequency, IoError, ItaData,
+    JsonParseError, KeyMissing, Naics, NotArray, NotObject, RowCode, SerdeJson, VariantMissing,
 };
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize, derive_more::From,
@@ -16,6 +16,8 @@ pub enum Data {
     MneDi(MneDiData),
     #[from(GdpData)]
     GdpData(GdpData),
+    #[from(ItaData)]
+    ItaData(ItaData),
 }
 
 #[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
@@ -150,52 +152,76 @@ impl TryFrom<&std::path::PathBuf> for NipaData {
     }
 }
 
+pub fn result_to_data(result: &serde_json::Value) -> Result<&serde_json::Value, BeaErr> {
+    tracing::trace!("Reading results to data.");
+    match result {
+        serde_json::Value::Object(m) => {
+            let key = "Data".to_string();
+            if let Some(data) = m.get(&key) {
+                Ok(data)
+            } else {
+                tracing::trace!("Parameter Value Table missing.");
+                let error = KeyMissing::new(key, line!(), file!().to_string());
+                Err(error.into())
+            }
+        }
+        serde_json::Value::Array(v) => {
+            tracing::trace!("Array detected: {} records.", v.len());
+            if let Some(item) = v.first() {
+                match item {
+                    serde_json::Value::Object(m) => {
+                        let key = "Data".to_string();
+                        tracing::trace!("Object detected in array.");
+                        if let Some(data) = m.get(&key) {
+                            Ok(data)
+                        } else {
+                            let error = KeyMissing::new(key, line!(), file!().to_owned());
+                            Err(error.into())
+                        }
+                    }
+                    _ => {
+                        let error = NotObject::new(line!(), file!().to_string());
+                        Err(error.into())
+                    }
+                }
+            } else {
+                tracing::error!("Array should not be empty.");
+                let error = KeyMissing::new("empty array".to_owned(), line!(), file!().to_owned());
+                Err(error.into())
+            }
+        }
+        _ => {
+            tracing::trace!("Wrong Value type: {result:#?}");
+            let error = NotObject::new(line!(), file!().to_string());
+            Err(error.into())
+        }
+    }
+}
+
 impl TryFrom<&serde_json::Value> for NipaData {
     type Error = BeaErr;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading NipaData");
-        match value {
-            serde_json::Value::Object(m) => {
-                let key = "Data".to_string();
-                if let Some(data) = m.get(&key) {
-                    match data {
-                        serde_json::Value::Array(v) => {
-                            tracing::trace!("Array found for {key}.");
-                            let mut data = Vec::new();
-                            for val in v {
-                                match val {
-                                    serde_json::Value::Object(m) => {
-                                        let datum = NipaDatum::read_json(m)?;
-                                        data.push(datum);
-                                    }
-                                    _ => {
-                                        let error = NotObject::new(line!(), file!().to_string());
-                                        let error = JsonParseError::from(error);
-                                        return Err(error.into());
-                                    }
-                                }
-                            }
-                            tracing::trace!("Data found: {} records.", data.len());
-                            Ok(Self(data))
+        match result_to_data(value)? {
+            serde_json::Value::Array(v) => {
+                let mut data = Vec::new();
+                for val in v {
+                    match val {
+                        serde_json::Value::Object(m) => {
+                            let datum = NipaDatum::read_json(m)?;
+                            data.push(datum);
                         }
                         _ => {
-                            tracing::trace!("Unexpected content: {m:#?}");
-                            let error = NotArray::new(line!(), file!().to_string());
-                            let error = JsonParseError::from(error);
-                            Err(error.into())
+                            let error = NotObject::new(line!(), file!().to_string());
+                            return Err(error.into());
                         }
                     }
-                } else {
-                    tracing::trace!("Parameter Value Table missing.");
-                    let error = KeyMissing::new(key, line!(), file!().to_string());
-                    let error = JsonParseError::from(error);
-                    Err(error.into())
                 }
+                tracing::trace!("Data found: {} records.", data.len());
+                Ok(Self(data))
             }
             _ => {
-                tracing::trace!("Wrong Value type: {value:#?}");
-                let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseError::from(error);
+                let error = NotArray::new(line!(), file!().to_string());
                 Err(error.into())
             }
         }
@@ -324,48 +350,26 @@ impl TryFrom<&serde_json::Value> for FixedAssetData {
     type Error = BeaErr;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading FixedAssetData");
-        match value {
-            serde_json::Value::Object(m) => {
-                let key = "Data".to_string();
-                if let Some(data) = m.get(&key) {
-                    match data {
-                        serde_json::Value::Array(v) => {
-                            tracing::trace!("Array found for {key}.");
-                            let mut data = Vec::new();
-                            for val in v {
-                                match val {
-                                    serde_json::Value::Object(m) => {
-                                        let datum = FixedAssetDatum::read_json(m)?;
-                                        data.push(datum);
-                                    }
-                                    _ => {
-                                        let error = NotObject::new(line!(), file!().to_string());
-                                        let error = JsonParseError::from(error);
-                                        return Err(error.into());
-                                    }
-                                }
-                            }
-                            tracing::trace!("Data found: {} records.", data.len());
-                            Ok(Self(data))
+        match result_to_data(value)? {
+            serde_json::Value::Array(v) => {
+                let mut data = Vec::new();
+                for val in v {
+                    match val {
+                        serde_json::Value::Object(m) => {
+                            let datum = FixedAssetDatum::read_json(m)?;
+                            data.push(datum);
                         }
                         _ => {
-                            tracing::trace!("Unexpected content: {m:#?}");
-                            let error = NotArray::new(line!(), file!().to_string());
-                            let error = JsonParseError::from(error);
-                            Err(error.into())
+                            let error = NotObject::new(line!(), file!().to_string());
+                            return Err(error.into());
                         }
                     }
-                } else {
-                    tracing::trace!("Parameter Value Table missing.");
-                    let error = KeyMissing::new(key, line!(), file!().to_string());
-                    let error = JsonParseError::from(error);
-                    Err(error.into())
                 }
+                tracing::trace!("Data found: {} records.", data.len());
+                Ok(Self(data))
             }
             _ => {
-                tracing::trace!("Wrong Value type: {value:#?}");
-                let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseError::from(error);
+                let error = NotArray::new(line!(), file!().to_string());
                 Err(error.into())
             }
         }
@@ -507,49 +511,26 @@ impl TryFrom<&serde_json::Value> for MneDiData {
         tracing::trace!("Reading MneDiData");
         // use naics code to determine missing row codes from the row title
         let naics = Naics::from_csv("data/naics_codes.csv")?;
-        match value {
-            serde_json::Value::Object(m) => {
-                let key = "Data".to_string();
-                if let Some(data) = m.get(&key) {
-                    tracing::trace!("{key} found.");
-                    match data {
-                        serde_json::Value::Array(v) => {
-                            tracing::trace!("Array found for {key}.");
-                            let mut data = Vec::new();
-                            for val in v {
-                                match val {
-                                    serde_json::Value::Object(m) => {
-                                        let datum = MneDiDatum::read_json(m, &naics)?;
-                                        data.push(datum);
-                                    }
-                                    _ => {
-                                        let error = NotObject::new(line!(), file!().to_string());
-                                        let error = JsonParseError::from(error);
-                                        return Err(error.into());
-                                    }
-                                }
-                            }
-                            tracing::trace!("Data found: {} records.", data.len());
-                            Ok(Self(data))
+        match result_to_data(value)? {
+            serde_json::Value::Array(v) => {
+                let mut data = Vec::new();
+                for val in v {
+                    match val {
+                        serde_json::Value::Object(m) => {
+                            let datum = MneDiDatum::read_json(m, &naics)?;
+                            data.push(datum);
                         }
                         _ => {
-                            tracing::trace!("Unexpected content: {m:#?}");
-                            let error = NotArray::new(line!(), file!().to_string());
-                            let error = JsonParseError::from(error);
-                            Err(error.into())
+                            let error = NotObject::new(line!(), file!().to_string());
+                            return Err(error.into());
                         }
                     }
-                } else {
-                    tracing::trace!("Parameter Value Table missing.");
-                    let error = KeyMissing::new(key, line!(), file!().to_string());
-                    let error = JsonParseError::from(error);
-                    Err(error.into())
                 }
+                tracing::trace!("Data found: {} records.", data.len());
+                Ok(Self(data))
             }
             _ => {
-                tracing::trace!("Wrong Value type: {value:#?}");
-                let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseError::from(error);
+                let error = NotArray::new(line!(), file!().to_string());
                 Err(error.into())
             }
         }
@@ -687,69 +668,26 @@ impl TryFrom<&serde_json::Value> for GdpData {
     type Error = BeaErr;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading GdpData");
-        match value {
+        match result_to_data(value)? {
             serde_json::Value::Array(v) => {
-                tracing::trace!("Array detected: {} records.", v.len());
-                if let Some(item) = v.first() {
-                    match item {
+                let mut data = Vec::new();
+                for val in v {
+                    match val {
                         serde_json::Value::Object(m) => {
-                            let key = "Data".to_string();
-                            tracing::trace!("Object detected in array.");
-                            if let Some(data) = m.get(&key) {
-                                tracing::trace!("{key} found.");
-                                match data {
-                                    serde_json::Value::Array(v) => {
-                                        tracing::trace!("Array found for {key}.");
-                                        let mut data = Vec::new();
-                                        for val in v {
-                                            match val {
-                                                serde_json::Value::Object(m) => {
-                                                    let datum = GdpDatum::read_json(m)?;
-                                                    data.push(datum);
-                                                }
-                                                _ => {
-                                                    let error = NotObject::new(
-                                                        line!(),
-                                                        file!().to_string(),
-                                                    );
-                                                    let error = JsonParseError::from(error);
-                                                    return Err(error.into());
-                                                }
-                                            }
-                                        }
-                                        tracing::trace!("Data found: {} records.", data.len());
-                                        Ok(Self(data))
-                                    }
-                                    _ => {
-                                        let error = NotArray::new(line!(), file!().to_string());
-                                        let error = JsonParseError::from(error);
-                                        Err(error.into())
-                                    }
-                                }
-                            } else {
-                                let error = KeyMissing::new(key, line!(), file!().to_owned());
-                                let error = JsonParseError::from(error);
-                                Err(error.into())
-                            }
+                            let datum = GdpDatum::read_json(m)?;
+                            data.push(datum);
                         }
                         _ => {
-                            let error = NotArray::new(line!(), file!().to_string());
-                            let error = JsonParseError::from(error);
-                            Err(error.into())
+                            let error = NotObject::new(line!(), file!().to_string());
+                            return Err(error.into());
                         }
                     }
-                } else {
-                    tracing::error!("Array should not be empty.");
-                    let error =
-                        KeyMissing::new("empty array".to_owned(), line!(), file!().to_owned());
-                    let error = JsonParseError::from(error);
-                    Err(error.into())
                 }
+                tracing::trace!("Data found: {} records.", data.len());
+                Ok(Self(data))
             }
             _ => {
-                // tracing::trace!("Wrong Value type: {value:#?}");
-                let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseError::from(error);
+                let error = NotArray::new(line!(), file!().to_string());
                 Err(error.into())
             }
         }
