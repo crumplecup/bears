@@ -11,6 +11,7 @@ pub fn download_summary() -> Result<(), BeaErr> {
         Dataset::FixedAssets,
         Dataset::Mne,
         Dataset::GDPbyIndustry,
+        Dataset::Ita,
     ];
     for dataset in datasets {
         tracing::info!("Dataset: {dataset}");
