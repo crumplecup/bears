@@ -4,7 +4,7 @@ use crate::{
 };
 use indicatif::ProgressIterator;
 use jiff::ToSpan;
-use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
+use rayon::prelude::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
 use std::str::FromStr;
 
 // Cannot exceed 30 errors per minute.
@@ -281,7 +281,7 @@ impl Queue {
         tracker: std::sync::Arc<tokio::sync::Mutex<Tracker>>,
     ) -> Result<Vec<tokio::task::JoinHandle<()>>, BeaErr> {
         let style = indicatif::ProgressStyle::with_template(
-            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} 'Loading files in queue.'",
+            "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Loading files in queue.'}",
         )
         .unwrap();
         let mut handles = Vec::new();
@@ -351,6 +351,17 @@ impl Queue {
             tracing::warn!("Probelm with tracking: {blame}");
             return Err(blame);
         }
+        Ok(data)
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn load_par(&self) -> Result<Vec<Data>, BeaErr> {
+        let data = self
+            .par_iter()
+            .map(|app| app.load())
+            .filter_map(|r| r.map_err(|_| {}).ok())
+            .filter_map(|res| res.data())
+            .collect::<Vec<Data>>();
         Ok(data)
     }
 }
