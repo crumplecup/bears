@@ -51,11 +51,12 @@ pub use request::{Request, RequestParameter, RequestParameters};
 pub use results::{BeaResponse, Results};
 pub use value::{
     date_by_period, parse_year, roman_numeral_quarter, AffiliateKind, AffiliateLevel,
-    AnnotatedInteger, Annotation, ApiMetadata, BoolOptions, DirectionOfInvestment, FixedAssets,
-    Footnotes, Frequencies, Frequency, FrequencyOptions, GdpByIndustry, Iip, InputOutput, Integer,
-    IntegerKind, IntegerOptions, IntlServSta, IntlServTrade, InvestmentKind, Ita, Millions,
+    AnnotatedInteger, Annotation, ApiMetadata, AreaOrCountry, BoolOptions, DirectionOfInvestment,
+    FixedAssets, Footnotes, Frequencies, Frequency, FrequencyOptions, GdpByIndustry, Iip,
+    Indicator, InputOutput, Integer, IntegerKind, IntegerOptions, IntlServSta, IntlServTrade,
+    InvestmentKind, Ita, ItaData, ItaDatum, ItaFrequencies, ItaFrequency, Millions,
     MillionsOptions, Mne, NiUnderlyingDetail, Nipa, NipaIterator, NipaRange, NipaRangeIterator,
-    NipaRanges, OwnershipKind, OwnershipLevel, Regional, RowCode, SelectionKind, State, StateKind,
-    TableName, UnderlyingGdpByIndustry, ValueSet, ValueSets, Year, YearKind, YearOptions,
-    YearRange,
+    NipaRanges, OwnershipKind, OwnershipLevel, Regional, RowCode, SelectionKind, SelectionSet,
+    State, StateKind, TableName, UnderlyingGdpByIndustry, ValueSet, ValueSets, Year, YearKind,
+    YearOptions, YearRange,
 };
