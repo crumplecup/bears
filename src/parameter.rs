@@ -1,6 +1,6 @@
 use crate::{
     json_str, map_to_bool, map_to_string, FromStrError, JsonParseError, JsonParseErrorKind,
-    KeyMissing, NotArray, NotObject, NotParameterName,
+    KeyMissing, NotArray, NotObject,
 };
 use serde::de::Deserializer;
 use serde::{Deserialize, Serialize};
@@ -254,7 +254,7 @@ impl ParameterName {
             Ok(p)
         } else {
             tracing::trace!("Paramater Variant missing.");
-            let error = NotParameterName::new(name);
+            let error = NotParameterName::new(name, line!(), file!().to_owned());
             let error: JsonParseErrorKind = error.into();
             Err(error.into())
         }
@@ -295,5 +295,19 @@ impl TryFrom<&serde_json::Value> for ParameterName {
                 Err(error.into())
             }
         }
+    }
+}
+
+#[derive(Debug, derive_new::new, derive_more::Display)]
+#[display("{value} is not a ParameterName at line {line} of {file}")]
+pub struct NotParameterName {
+    value: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for NotParameterName {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
     }
 }
