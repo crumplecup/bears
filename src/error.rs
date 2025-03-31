@@ -1,4 +1,8 @@
-use crate::Progress;
+use crate::{
+    AnnotationMissing, BTreeKeyMissing, BoolInvalid, Csv, EnvError, IntegerInvalid, Nom, NotFloat,
+    NotInteger, NotParameterName, NotQuarter, OwnershipInvalid, ParseFloat, ParseInteger, Progress,
+    RateLimit, RowCodeMissing, UrlParseError, YearInvalid,
+};
 
 #[derive(Debug, derive_more::Deref, derive_more::DerefMut)]
 pub struct BeaErr {
@@ -355,21 +359,6 @@ impl std::error::Error for JsonParseError {
 }
 
 #[derive(Debug, derive_new::new)]
-pub struct NotParameterName(String);
-
-impl std::fmt::Display for NotParameterName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} is not a parameter name", self.0)
-    }
-}
-
-impl std::error::Error for NotParameterName {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(Debug, derive_new::new)]
 #[non_exhaustive]
 pub struct FromStrError {
     value: String,
@@ -447,40 +436,6 @@ impl std::error::Error for ReqwestError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         Some(self.source())
     }
-}
-
-#[derive(
-    Debug,
-    derive_getters::Getters,
-    derive_setters::Setters,
-    derive_more::Display,
-    derive_new::new,
-    derive_more::Error,
-)]
-#[display(".env file missing {target} at line {line} in {file}")]
-#[setters(prefix = "with_", borrow_self)]
-pub struct EnvError {
-    target: String,
-    source: std::env::VarError,
-    line: u32,
-    file: String,
-}
-
-#[derive(
-    Debug,
-    derive_getters::Getters,
-    derive_setters::Setters,
-    derive_more::Display,
-    derive_more::Error,
-    derive_new::new,
-)]
-#[display("{target} failed to parse to a valid url at line {line} in {file}")]
-#[setters(prefix = "with_", borrow_self)]
-pub struct UrlParseError {
-    pub target: String,
-    pub source: url::ParseError,
-    line: u32,
-    file: String,
 }
 
 #[derive(
@@ -658,70 +613,6 @@ impl std::error::Error for VariantMissing {
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
 )]
-#[display("{input} is not a valid Year at line {line} in file {file}")]
-pub struct YearInvalid {
-    input: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for YearInvalid {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
-)]
-#[display("{input} is not a valid Integer at line {line} in file {file}")]
-pub struct IntegerInvalid {
-    input: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for IntegerInvalid {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
-)]
-#[display("{input} is not a valid Ownership at line {line} in file {file}")]
-pub struct OwnershipInvalid {
-    input: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for OwnershipInvalid {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
-)]
-#[display("{input} is not a valid bool at line {line} in file {file}")]
-pub struct BoolInvalid {
-    input: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for BoolInvalid {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display, derive_new::new,
-)]
 #[display("{input} is not a valid Investment at line {line} in file {file}")]
 pub struct InvestmentInvalid {
     input: String,
@@ -730,64 +621,6 @@ pub struct InvestmentInvalid {
 }
 
 impl std::error::Error for InvestmentInvalid {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("could not parse {input} to float at line {line} in file {file}")]
-pub struct ParseFloat {
-    input: String,
-    source: std::num::ParseFloatError,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for ParseFloat {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(&self.source)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("could not parse {input} to integer at line {line} in file {file}")]
-pub struct ParseInteger {
-    input: String,
-    source: std::num::ParseIntError,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for ParseInteger {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(&self.source)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("could not parse {input} to float at line {line} in file {file}")]
-pub struct NotFloat {
-    input: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for NotFloat {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("could not parse {input} to integer at line {line} in file {file}")]
-pub struct NotInteger {
-    input: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for NotInteger {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }
@@ -828,101 +661,6 @@ pub struct KeyMissing {
 }
 
 impl std::error::Error for KeyMissing {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("Not Quarter error: {clue} at line {line} in {file}")]
-pub struct NotQuarter {
-    clue: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for NotQuarter {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("Annotation missing for {input} at line {line} in {file}")]
-pub struct AnnotationMissing {
-    input: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for AnnotationMissing {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("Nom choked on {input} with message {source} at line {line} in {file}")]
-pub struct Nom {
-    input: String,
-    source: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for Nom {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-/// The `Csv` struct contains error information associated with the `csv` crate.
-#[derive(Debug, derive_more::Display, derive_more::Error, derive_new::new)]
-#[display("csv error at path {path:?} in line {line} of {file}")]
-pub struct Csv {
-    path: std::path::PathBuf,
-    source: csv::Error,
-    line: u32,
-    file: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("MNE RowCode missing for {row} at line {line} in {file}")]
-pub struct RowCodeMissing {
-    row: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for RowCodeMissing {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("rate limit hit: {clue} at line {line} in {file}")]
-pub struct RateLimit {
-    clue: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for RateLimit {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
-#[display("BTree Key Missing: {key} at line {line} in {file}")]
-pub struct BTreeKeyMissing {
-    key: String,
-    line: u32,
-    file: String,
-}
-
-impl std::error::Error for BTreeKeyMissing {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }
