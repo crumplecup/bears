@@ -147,7 +147,7 @@ pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
     //     Dataset::Mne,
     //     Dataset::GDPbyIndustry,
     // ];
-    let datasets = vec![Dataset::Mne];
+    let datasets = vec![Dataset::FixedAssets];
     for dataset in datasets {
         dataset.download_with_history(style.clone()).await?;
     }
@@ -165,7 +165,7 @@ pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     //     Dataset::Mne,
     //     Dataset::GDPbyIndustry,
     // ];
-    let datasets = vec![Dataset::Ita];
+    let datasets = vec![Dataset::FixedAssets];
     for dataset in datasets {
         let result = dataset.initial_load(None).await?;
         tracing::info!("{} datasets loaded.", result.len());
