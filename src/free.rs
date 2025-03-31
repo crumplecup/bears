@@ -1,6 +1,5 @@
 use crate::{
-    App, BeaErr, Csv, EnvError, FromStrError, IoError, JsonParseError, JsonParseErrorKind,
-    KeyMissing, NotFloat, NotInteger, Options, ParseFloat, ParseInteger, UrlParseError,
+    App, BeaErr, FromStrError, IoError, JsonParseError, JsonParseErrorKind, KeyMissing, Options,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
@@ -380,4 +379,106 @@ pub fn file_size<P: AsRef<std::path::Path>>(path: P) -> Option<u64> {
     } else {
         None
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("could not parse {input} to integer at line {line} in file {file}")]
+pub struct NotInteger {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for NotInteger {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("could not parse {input} to float at line {line} in file {file}")]
+pub struct NotFloat {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for NotFloat {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("could not parse {input} to integer at line {line} in file {file}")]
+pub struct ParseInteger {
+    input: String,
+    source: std::num::ParseIntError,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for ParseInteger {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.source)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("could not parse {input} to float at line {line} in file {file}")]
+pub struct ParseFloat {
+    input: String,
+    source: std::num::ParseFloatError,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for ParseFloat {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.source)
+    }
+}
+
+#[derive(
+    Debug,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    derive_more::Display,
+    derive_more::Error,
+    derive_new::new,
+)]
+#[display("{target} failed to parse to a valid url at line {line} in {file}")]
+#[setters(prefix = "with_", borrow_self)]
+pub struct UrlParseError {
+    pub target: String,
+    pub source: url::ParseError,
+    line: u32,
+    file: String,
+}
+
+#[derive(
+    Debug,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    derive_more::Display,
+    derive_new::new,
+    derive_more::Error,
+)]
+#[display(".env file missing {target} at line {line} in {file}")]
+#[setters(prefix = "with_", borrow_self)]
+pub struct EnvError {
+    target: String,
+    source: std::env::VarError,
+    line: u32,
+    file: String,
+}
+
+/// The `Csv` struct contains error information associated with the `csv` crate.
+#[derive(Debug, derive_more::Display, derive_more::Error, derive_new::new)]
+#[display("csv error at path {path:?} in line {line} of {file}")]
+pub struct Csv {
+    path: std::path::PathBuf,
+    source: csv::Error,
+    line: u32,
+    file: String,
 }
