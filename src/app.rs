@@ -1,7 +1,7 @@
 use crate::{
-    bea_data, BTreeKeyMissing, BeaErr, BeaResponse, Dataset, DeriveFromStr, IoError,
-    JsonParseError, JsonParseErrorKind, KeyMissing, Method, MillionsOptions, Options,
-    ParameterKind, ParameterName, RateLimit, ReqwestError, Results, SerdeJson, VariantMissing,
+    bea_data, BeaErr, BeaResponse, Dataset, DeriveFromStr, IoError, JsonParseError,
+    JsonParseErrorKind, KeyMissing, Method, MillionsOptions, Options, ParameterKind, ParameterName,
+    ReqwestError, Results, SerdeJson, VariantMissing,
 };
 use std::collections::BTreeMap;
 use std::str::FromStr;
@@ -582,5 +582,33 @@ impl FromStr for ResultStatus {
             }
         };
         Ok(status)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("rate limit hit: {clue} at line {line} in {file}")]
+pub struct RateLimit {
+    clue: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for RateLimit {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("BTree Key Missing: {key} at line {line} in {file}")]
+pub struct BTreeKeyMissing {
+    key: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for BTreeKeyMissing {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
     }
 }
