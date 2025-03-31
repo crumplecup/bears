@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] - 2025-03-31
+
+### 🚀 Features
+
+- `ParameterNameMissing` error moved to error location, some metrics added to the type.
+- `NipaTableName` enum added with variants for NIPA table name keys.
+
+### 🚜 Refactor
+
+- Location of dataset keys moved from `value` folder to `keys` and `key_sets`.
+- Local errors moved from `error` module to the location of origin.
+- Local errors moved from the `error` module to the `free` module.
+- Local errors moved from the `error` module to the `app` module.
+- Dataset key types moved to the `keys` module.
+- Dataset key sets moved to the `key_sets` module.
+- `lib.rs` updated to reflect name and module changes.
+
+### 🧪 Testing
+
+- Refactor for changes to Nipa key set.
+
+### ⚙️ Miscellaneous Tasks
+
+- Patch update to the `clap` dependency.
+- Justfile updated for publishing workflow.
+- Version incremented to 0.1.6.
+
 ## [0.1.5] - 2025-03-23
 
 ### 🚀 Features
@@ -45,6 +72,7 @@ All notable changes to this project will be documented in this file.
 - ITA variant for `Dataset` added to path generation handling in `App::destination` method.
 - Loading benchmark added to test parallel loading with `rayon`.
 - Update to convenience commands in the `justfile`.
+- Changelog updated for version 0.1.5.
 
 ## [0.1.4] - 2025-03-15
 
