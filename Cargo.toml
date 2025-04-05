@@ -1,5 +1,8 @@
-[package]
-name = "bears"
+[workspace]
+resolver = "2"
+members = ["bears_ecology", "bears_health", "bears", "bears_species"]
+
+[workspace.package]
 version = "0.1.7"
 edition = "2024"
 authors = ["Erik Rose <erik.w.rose@gmail.com>"]
@@ -10,17 +13,11 @@ license = "Apache-2.0"
 keywords = ["economics", "finance", "rest"]
 categories = ["asynchronous", "finance"]
 
-[lib]
-path = "src/lib.rs"
-
-[[bin]]
-path = "src/main.rs"
-name = "bears"
-
-[features]
-api = []
-
-[dependencies]
+[workspace.dependencies]
+bears_ecology = { path = "./bears_ecology" }
+bears_health = { path = "./bears_health" }
+bears = { path = "./bears" }
+bears_species = { path = "./bears_species" }
 assert-json-diff = "2.0.2"
 bytesize = { version = "2.0.1", features = ["serde"] }
 clap = { version = "4.5.35", features = ["derive"] }
@@ -53,19 +50,7 @@ tracing-subscriber = { version = "0.3.19", features = [
 url = { version = "2.5.4", features = ["serde"] }
 uuid = { version = "1.16.0", features = ["serde", "v4"] }
 
-[dev-dependencies]
-anyhow = "1.0.97"
-criterion = "0.5.1"
-
 # The profile that 'dist' will build with
 [profile.dist]
 inherits = "release"
 lto = "thin"
-
-[[bench]]
-name = "with_event"
-harness = false
-
-[[bench]]
-name = "loading"
-harness = false
