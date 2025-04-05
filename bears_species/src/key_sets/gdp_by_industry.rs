@@ -1,7 +1,6 @@
 use crate::{
-    bea_data, BeaErr, BeaResponse, Dataset, Frequencies, Frequency, Integer, IoError,
-    ParameterFields, ParameterName, ParameterValueTable, Queue, Request, SelectionKind, SerdeJson,
-    Set, Year,
+    BeaErr, BeaResponse, Dataset, Frequencies, Frequency, Integer, IoError, ParameterFields,
+    ParameterName, ParameterValueTable, SelectionKind, SerdeJson, Set, Year,
 };
 
 #[derive(
@@ -40,22 +39,22 @@ impl GdpByIndustry {
         GdpByIndustryIterator::new(self)
     }
 
-    pub fn queue() -> Result<Queue, BeaErr> {
-        let req = Request::Data;
-        let mut app = req.init()?;
-        let dataset = Dataset::GDPbyIndustry;
-        app.with_dataset(dataset);
-        dotenvy::dotenv().ok();
-        let path = bea_data()?;
-        let data = GdpByIndustry::try_from(&path)?;
-        let mut queue = Vec::new();
-        for params in data.iter() {
-            tracing::trace!("{params:#?}");
-            app.with_params(params.clone());
-            queue.push(app.clone());
-        }
-        Ok(Queue::new(queue))
-    }
+    // pub fn queue() -> Result<Queue, BeaErr> {
+    //     let req = Request::Data;
+    //     let mut app = req.init()?;
+    //     let dataset = Dataset::GDPbyIndustry;
+    //     app.with_dataset(dataset);
+    //     dotenvy::dotenv().ok();
+    //     let path = bea_data()?;
+    //     let data = GdpByIndustry::try_from(&path)?;
+    //     let mut queue = Vec::new();
+    //     for params in data.iter() {
+    //         tracing::trace!("{params:#?}");
+    //         app.with_params(params.clone());
+    //         queue.push(app.clone());
+    //     }
+    //     Ok(Queue::new(queue))
+    // }
 
     pub fn read_industry<P: AsRef<std::path::Path>>(
         path: P,
@@ -378,5 +377,160 @@ impl Iterator for GdpByIndustryIterator<'_> {
             SelectionKind::Multiple => {}
         }
         Some(params)
+    }
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    serde::Serialize,
+    serde::Deserialize,
+    derive_getters::Getters,
+    derive_new::new,
+)]
+pub struct UnderlyingGdpByIndustry {
+    frequency: Frequencies,
+    industry: std::collections::HashMap<Integer, Vec<ParameterFields>>,
+    table_id: Vec<Integer>,
+    year: std::collections::HashMap<Integer, Vec<Year>>,
+}
+
+impl UnderlyingGdpByIndustry {
+    pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Self, BeaErr> {
+        let frequency = Self::frequencies();
+        let industry = Self::read_industry(&path)?;
+        let table_id = Self::read_table_id(&path)?;
+        let year = Self::read_year(&path)?;
+        Ok(Self::new(frequency, industry, table_id, year))
+    }
+
+    pub fn frequencies() -> Frequencies {
+        vec![Frequency::Annual].into()
+    }
+
+    pub fn read_industry<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<std::collections::HashMap<Integer, Vec<ParameterFields>>, BeaErr> {
+        let path = path.as_ref();
+        let table_id = Self::read_table_id(path)?;
+        let dataset = Dataset::UnderlyingGDPbyIndustry;
+        // start with table_id because it is a precondition for other parameter values
+        let name = ParameterName::Industry;
+        // year values vary by table id
+        let path = path.join(format!("parameter_values/{dataset}_{name}"));
+        let mut industries = std::collections::HashMap::new();
+        for id in table_id {
+            // open the file at the expected storage location, error if missing
+            let path = path.join(format!(
+                "{dataset}_{name}_byTableId_{}_values.json",
+                id.value()
+            ));
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
+            // read the file to json
+            let rdr = std::io::BufReader::new(file);
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
+            // parse to internal bea response format
+            let data = BeaResponse::try_from(&res)?;
+            let results = data.results();
+            let mut industry = Vec::new();
+            // access parameter values from response
+            if let Some(pv) = results.into_parameter_values() {
+                for table in pv.iter() {
+                    match table {
+                        ParameterValueTable::ParameterFields(pf) => {
+                            industry.push(pf.clone());
+                        }
+                        _ => {
+                            return Err(Set::ParameterFieldsMissing.into());
+                        }
+                    }
+                }
+                tracing::info!("{dataset} contains {} {name} values.", industry.len());
+                industries.insert(id, industry);
+            } else {
+                tracing::warn!("Results must be of type ParameterValues");
+                return Err(Set::ParameterValuesMissing.into());
+            }
+        }
+        Ok(industries)
+    }
+
+    pub fn read_table_id<P: AsRef<std::path::Path>>(path: P) -> Result<Vec<Integer>, BeaErr> {
+        let path = path.as_ref();
+        let dataset = Dataset::UnderlyingGDPbyIndustry;
+        // start with table_id because it is a precondition for other parameter values
+        let name = ParameterName::TableID;
+        // open the file at the expected storage location, error if missing
+        let path = path.join(format!(
+            "parameter_values/{dataset}_{name}_parameter_values.json"
+        ));
+        let file = std::fs::File::open(&path)
+            .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
+        // read the file to json
+        let rdr = std::io::BufReader::new(file);
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
+        // parse to internal bea response format
+        let data = BeaResponse::try_from(&res)?;
+        let results = data.results();
+
+        let mut table_id = Vec::new();
+        // access parameter values from response
+        if let Some(pv) = results.into_parameter_values() {
+            for table in pv.iter() {
+                table_id.push(Integer::try_from(table)?);
+            }
+            tracing::info!("{dataset} contains {} {name} values.", table_id.len());
+            Ok(table_id)
+        } else {
+            tracing::warn!("Results must be of type ParameterValues");
+            Err(Set::ParameterValuesMissing.into())
+        }
+    }
+
+    pub fn read_year<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<std::collections::HashMap<Integer, Vec<Year>>, BeaErr> {
+        let path = path.as_ref();
+        let table_id = Self::read_table_id(path)?;
+        let dataset = Dataset::UnderlyingGDPbyIndustry;
+        // start with table_id because it is a precondition for other parameter values
+        let name = ParameterName::Year;
+        // year values vary by table id
+        let path = path.join(format!("parameter_values/{dataset}_{name}"));
+        let mut years = std::collections::HashMap::new();
+        for id in table_id {
+            // open the file at the expected storage location, error if missing
+            let path = path.join(format!(
+                "{dataset}_{name}_byTableId_{}_values.json",
+                id.value()
+            ));
+            let file = std::fs::File::open(&path)
+                .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
+            // read the file to json
+            let rdr = std::io::BufReader::new(file);
+            let res: serde_json::Value = serde_json::from_reader(rdr)
+                .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
+            // parse to internal bea response format
+            let data = BeaResponse::try_from(&res)?;
+            let results = data.results();
+            let mut year = Vec::new();
+            // access parameter values from response
+            if let Some(pv) = results.into_parameter_values() {
+                for table in pv.iter() {
+                    year.push(Year::try_from(table)?);
+                }
+                tracing::info!("{dataset} contains {} {name} values.", year.len());
+                years.insert(id, year);
+            } else {
+                tracing::warn!("Results must be of type ParameterValues");
+                return Err(Set::ParameterValuesMissing.into());
+            }
+        }
+        Ok(years)
     }
 }

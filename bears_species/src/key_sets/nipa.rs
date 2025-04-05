@@ -1,7 +1,7 @@
 use crate::{
-    bea_data, BeaErr, BeaResponse, Dataset, Frequencies, Frequency, IoError, Millions,
-    MillionsOptions, NipaRange, NipaRanges, NipaTableName, ParameterName, ParameterValueTable,
-    ParameterValueTableVariant, Queue, Request, SelectionKind, SerdeJson, Set, TableName,
+    BeaErr, BeaResponse, Dataset, Frequencies, Frequency, IoError, Millions, MillionsOptions,
+    NipaRange, NipaRanges, NipaTableName, ParameterName, ParameterValueTable,
+    ParameterValueTableVariant, SelectionKind, SerdeJson, Set, TableName,
 };
 use strum::IntoEnumIterator;
 
@@ -24,21 +24,21 @@ impl Nipa {
         NipaIterator::new(self)
     }
 
-    pub fn queue() -> Result<Queue, BeaErr> {
-        let req = Request::Data;
-        let mut app = req.init()?;
-        let dataset = Dataset::Nipa;
-        app.with_dataset(dataset);
-        dotenvy::dotenv().ok();
-        let path = bea_data()?;
-        let data = Nipa::try_from(&path)?;
-        let mut queue = Vec::new();
-        for params in data.iter() {
-            app.with_params(params.clone());
-            queue.push(app.clone());
-        }
-        Ok(Queue::new(queue))
-    }
+    // pub fn queue() -> Result<Queue, BeaErr> {
+    //     let req = Request::Data;
+    //     let mut app = req.init()?;
+    //     let dataset = Dataset::Nipa;
+    //     app.with_dataset(dataset);
+    //     dotenvy::dotenv().ok();
+    //     let path = bea_data()?;
+    //     let data = Nipa::try_from(&path)?;
+    //     let mut queue = Vec::new();
+    //     for params in data.iter() {
+    //         app.with_params(params.clone());
+    //         queue.push(app.clone());
+    //     }
+    //     Ok(Queue::new(queue))
+    // }
 }
 
 impl TryFrom<&std::path::PathBuf> for Nipa {
@@ -379,22 +379,22 @@ impl NiUnderlyingDetail {
         NiUnderlyingDetailIterator::new(self)
     }
 
-    pub fn queue() -> Result<Queue, BeaErr> {
-        let req = Request::Data;
-        let mut app = req.init()?;
-        let dataset = Dataset::NIUnderlyingDetail;
-        app.with_dataset(dataset);
-        dotenvy::dotenv().ok();
-        let path = bea_data()?;
-        let data = NiUnderlyingDetail::try_from(&path)?;
-        let mut queue = Vec::new();
-        for params in data.iter() {
-            tracing::trace!("{params:#?}");
-            app.with_params(params.clone());
-            queue.push(app.clone());
-        }
-        Ok(Queue::new(queue))
-    }
+    // pub fn queue() -> Result<Queue, BeaErr> {
+    //     let req = Request::Data;
+    //     let mut app = req.init()?;
+    //     let dataset = Dataset::NIUnderlyingDetail;
+    //     app.with_dataset(dataset);
+    //     dotenvy::dotenv().ok();
+    //     let path = bea_data()?;
+    //     let data = NiUnderlyingDetail::try_from(&path)?;
+    //     let mut queue = Vec::new();
+    //     for params in data.iter() {
+    //         tracing::trace!("{params:#?}");
+    //         app.with_params(params.clone());
+    //         queue.push(app.clone());
+    //     }
+    //     Ok(Queue::new(queue))
+    // }
 }
 
 impl TryFrom<&std::path::PathBuf> for NiUnderlyingDetail {

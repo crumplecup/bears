@@ -1,7 +1,6 @@
 use crate::{
-    bea_data, BeaErr, BeaResponse, Dataset, IoError, NipaRange, NipaRanges, ParameterName,
-    ParameterValueTable, ParameterValueTableVariant, Queue, Request, SelectionKind, SerdeJson, Set,
-    TableName,
+    BeaErr, BeaResponse, Dataset, IoError, NipaRange, NipaRanges, ParameterName,
+    ParameterValueTable, ParameterValueTableVariant, SelectionKind, SerdeJson, Set, TableName,
 };
 
 #[derive(
@@ -17,21 +16,21 @@ impl FixedAssets {
         FixedAssetsIterator::new(self)
     }
 
-    pub fn queue() -> Result<Queue, BeaErr> {
-        let req = Request::Data;
-        let mut app = req.init()?;
-        let dataset = Dataset::FixedAssets;
-        app.with_dataset(dataset);
-        dotenvy::dotenv().ok();
-        let path = bea_data()?;
-        let data = FixedAssets::try_from(&path)?;
-        let mut queue = Vec::new();
-        for params in data.iter() {
-            app.with_params(params.clone());
-            queue.push(app.clone());
-        }
-        Ok(Queue::new(queue))
-    }
+    // pub fn queue() -> Result<Queue, BeaErr> {
+    //     let req = Request::Data;
+    //     let mut app = req.init()?;
+    //     let dataset = Dataset::FixedAssets;
+    //     app.with_dataset(dataset);
+    //     dotenvy::dotenv().ok();
+    //     let path = bea_data()?;
+    //     let data = FixedAssets::try_from(&path)?;
+    //     let mut queue = Vec::new();
+    //     for params in data.iter() {
+    //         app.with_params(params.clone());
+    //         queue.push(app.clone());
+    //     }
+    //     Ok(Queue::new(queue))
+    // }
 }
 
 impl TryFrom<&std::path::PathBuf> for FixedAssets {

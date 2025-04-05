@@ -1,8 +1,7 @@
-use crate::{bea_data, SerdeJson};
-pub use crate::{
+use crate::{
     AffiliateLevel, BeaErr, BeaResponse, BoolOptions, Dataset, DirectionOfInvestment, Footnotes,
     Integer, IntegerKind, IntegerOptions, IoError, MneDoi, OwnershipLevel, ParameterName,
-    ParameterValueTable, ParameterValueTableVariant, Queue, Request, SelectionKind, Set, State,
+    ParameterValueTable, ParameterValueTableVariant, SelectionKind, SerdeJson, Set, State,
     YearKind, YearOptions,
 };
 use strum::IntoEnumIterator;
@@ -51,22 +50,22 @@ impl Mne {
         )
     }
 
-    pub fn queue() -> Result<Queue, BeaErr> {
-        let req = Request::Data;
-        let mut app = req.init()?;
-        let dataset = Dataset::Mne;
-        app.with_dataset(dataset);
-        dotenvy::dotenv().ok();
-        let path = bea_data()?;
-        let data = Mne::try_from(&path)?;
-        let mut queue = Vec::new();
-        for params in data.iter() {
-            tracing::trace!("{params:#?}");
-            app.with_params(params.clone());
-            queue.push(app.clone());
-        }
-        Ok(Queue::new(queue))
-    }
+    // pub fn queue() -> Result<Queue, BeaErr> {
+    //     let req = Request::Data;
+    //     let mut app = req.init()?;
+    //     let dataset = Dataset::Mne;
+    //     app.with_dataset(dataset);
+    //     dotenvy::dotenv().ok();
+    //     let path = bea_data()?;
+    //     let data = Mne::try_from(&path)?;
+    //     let mut queue = Vec::new();
+    //     for params in data.iter() {
+    //         tracing::trace!("{params:#?}");
+    //         app.with_params(params.clone());
+    //         queue.push(app.clone());
+    //     }
+    //     Ok(Queue::new(queue))
+    // }
 }
 
 impl TryFrom<&std::path::PathBuf> for Mne {

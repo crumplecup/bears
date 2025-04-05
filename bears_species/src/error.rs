@@ -1,7 +1,7 @@
 use crate::{
-    AnnotationMissing, BTreeKeyMissing, BoolInvalid, Csv, EnvError, IntegerInvalid, Nom, NotFloat,
-    NotInteger, NotParameterName, NotQuarter, OwnershipInvalid, ParseFloat, ParseInteger, Progress,
-    RateLimit, RowCodeMissing, UrlParseError, YearInvalid,
+    AnnotationMissing, BoolInvalid, IntegerInvalid, Nom, NotFloat, NotInteger, NotParameterName,
+    NotQuarter, OwnershipInvalid, ParseFloat, ParseInteger, RowCodeMissing, UrlParseError,
+    YearInvalid,
 };
 
 #[derive(Debug, derive_more::Deref, derive_more::DerefMut)]
@@ -661,6 +661,70 @@ pub struct KeyMissing {
 }
 
 impl std::error::Error for KeyMissing {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(
+    Debug,
+    derive_getters::Getters,
+    derive_setters::Setters,
+    derive_more::Display,
+    derive_new::new,
+    derive_more::Error,
+)]
+#[display(".env file missing {target} at line {line} in {file}")]
+#[setters(prefix = "with_", borrow_self)]
+pub struct EnvError {
+    target: String,
+    source: std::env::VarError,
+    line: u32,
+    file: String,
+}
+
+/// The `Csv` struct contains error information associated with the `csv` crate.
+#[derive(Debug, derive_more::Display, derive_more::Error, derive_new::new)]
+#[display("csv error at path {path:?} in line {line} of {file}")]
+pub struct Csv {
+    path: std::path::PathBuf,
+    source: csv::Error,
+    line: u32,
+    file: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("BTree Key Missing: {key} at line {line} in {file}")]
+pub struct BTreeKeyMissing {
+    key: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for BTreeKeyMissing {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, derive_more::Display, derive_more::Error, derive_new::new)]
+#[display("indicatif style template error for {key} in line {line} of {file}")]
+pub struct Progress {
+    key: String,
+    source: indicatif::style::TemplateError,
+    line: u32,
+    file: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("rate limit hit: {clue} at line {line} in {file}")]
+pub struct RateLimit {
+    clue: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for RateLimit {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }

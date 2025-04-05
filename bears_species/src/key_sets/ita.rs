@@ -1,8 +1,7 @@
 use crate::{
-    bea_data, date_by_period, map_to_int, map_to_string, parse_year, AreaOrCountry, BeaErr,
-    BeaResponse, Dataset, DeriveFromStr, Indicator, IoError, ItaFrequencies, ItaFrequency,
-    KeyMissing, NotArray, NotObject, ParameterName, ParameterValueTable, Queue, Request, SerdeJson,
-    Set, Year,
+    date_by_period, map_to_int, map_to_string, parse_year, AreaOrCountry, BeaErr, BeaResponse,
+    Dataset, DeriveFromStr, Indicator, IoError, ItaFrequencies, ItaFrequency, KeyMissing, NotArray,
+    NotObject, ParameterName, ParameterValueTable, SerdeJson, Set, Year,
 };
 use std::str::FromStr;
 
@@ -30,21 +29,21 @@ impl Ita {
         ItaIterator::new(self)
     }
 
-    pub fn queue() -> Result<Queue, BeaErr> {
-        let req = Request::Data;
-        let mut app = req.init()?;
-        let dataset = Dataset::Ita;
-        app.with_dataset(dataset);
-        dotenvy::dotenv().ok();
-        let path = bea_data()?;
-        let data = Ita::try_from(&path)?;
-        let mut queue = Vec::new();
-        for params in data.iter() {
-            app.with_params(params.clone());
-            queue.push(app.clone());
-        }
-        Ok(Queue::new(queue))
-    }
+    // pub fn queue() -> Result<Queue, BeaErr> {
+    //     let req = Request::Data;
+    //     let mut app = req.init()?;
+    //     let dataset = Dataset::Ita;
+    //     app.with_dataset(dataset);
+    //     dotenvy::dotenv().ok();
+    //     let path = bea_data()?;
+    //     let data = Ita::try_from(&path)?;
+    //     let mut queue = Vec::new();
+    //     for params in data.iter() {
+    //         app.with_params(params.clone());
+    //         queue.push(app.clone());
+    //     }
+    //     Ok(Queue::new(queue))
+    // }
 }
 
 impl TryFrom<&std::path::PathBuf> for Ita {

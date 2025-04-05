@@ -1,6 +1,6 @@
 use crate::{
-    init, map_to_string, App, BeaErr, BeaErrorKind, Dataset, DeriveFromStr, JsonParseError,
-    JsonParseErrorKind, KeyMissing, Method, NotObject, Options, ParameterName,
+    map_to_string, BeaErr, BeaErrorKind, Dataset, DeriveFromStr, JsonParseError,
+    JsonParseErrorKind, KeyMissing, Method, NotObject, ParameterName,
 };
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -286,87 +286,6 @@ impl TryFrom<&serde_json::Value> for RequestParameters {
                 let error = NotObject::new(line!(), file!().to_string());
                 let error = JsonParseErrorKind::from(error);
                 Err(error.into())
-            }
-        }
-    }
-}
-
-#[derive(
-    Debug,
-    Default,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    serde::Serialize,
-    serde::Deserialize,
-    strum::EnumIter,
-)]
-pub enum Request {
-    #[default]
-    Data,
-    Dataset,
-    Parameter,
-    ParameterValue,
-    ParameterValueFilter,
-}
-
-impl Request {
-    #[tracing::instrument(skip_all)]
-    pub fn init(&self) -> Result<App, BeaErr> {
-        match self {
-            Self::Data => {
-                let mut app = init()?;
-                tracing::info!("App initialized.");
-                let mut options = Options::default();
-                let method = Method::GetData;
-                options.with_method(method);
-                app.with_options(options);
-                tracing::info!("App configured for {method}.");
-                Ok(app)
-            }
-            Self::Dataset => {
-                let mut app = init()?;
-                tracing::info!("App initialized.");
-                let mut options = Options::default();
-                let method = Method::GetDataSetList;
-                options.with_method(method);
-                app.with_options(options);
-                tracing::info!("App configured for {method}.");
-                Ok(app)
-            }
-            Self::Parameter => {
-                let mut app = init()?;
-                tracing::info!("App initialized.");
-                let mut options = Options::default();
-                let method = Method::GetParameterList;
-                options.with_method(method);
-                app.with_options(options);
-                tracing::info!("App configured for {method}.");
-                Ok(app)
-            }
-            Self::ParameterValue => {
-                let mut app = init()?;
-                tracing::info!("App initialized.");
-                let mut options = Options::default();
-                let method = Method::GetParameterValues;
-                options.with_method(method);
-                app.with_options(options);
-                tracing::info!("App configured for {method}.");
-                Ok(app)
-            }
-            Self::ParameterValueFilter => {
-                let mut app = init()?;
-                tracing::info!("App initialized.");
-                let mut options = Options::default();
-                let method = Method::GetParameterValuesFiltered;
-                options.with_method(method);
-                app.with_options(options);
-                tracing::info!("App configured for {method}.");
-                Ok(app)
             }
         }
     }
