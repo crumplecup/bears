@@ -26,8 +26,9 @@ pub use free::{
     NotFloat, NotInteger, ParseFloat, ParseInteger, UrlParseError,
 };
 pub use key_sets::{
-    ApiMetadata, FixedAssets, GdpByIndustry, Iip, InputOutput, Ita, ItaData, ItaDatum, Mne,
-    NiUnderlyingDetail, Nipa, NipaIterator, UnderlyingGdpByIndustry,
+    ApiMetadata, FixedAssets, GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, Ita,
+    ItaData, ItaDatum, Mne, NiUnderlyingDetail, Nipa, NipaIterator, Regional,
+    UnderlyingGdpByIndustry,
 };
 pub use keys::{
     date_by_period, parse_year, roman_numeral_quarter, AffiliateKind, AffiliateLevel,
