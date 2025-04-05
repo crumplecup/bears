@@ -1,4 +1,4 @@
-use bears_ecology::{bea_data, parameters, trace_init, Json};
+use bears_ecology::{bea_data, parameters, trace_init};
 use bears_species::{BeaErr, BeaResponse, Dataset, IoError, ParameterName, SerdeJson};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
@@ -39,16 +39,6 @@ pub fn parameters_from_file() -> Result<(), BeaErr> {
     for dataset in datasets {
         let res = path.join(format!("{dataset}_parameters.json"));
         parameter_from_json(res)?;
-    }
-    Ok(())
-}
-
-#[tracing::instrument]
-pub fn diff_parameters() -> Result<(), BeaErr> {
-    trace_init()?;
-    let datasets: Vec<Dataset> = Dataset::iter().collect();
-    for dataset in datasets {
-        Json::diff_parameters(dataset)?;
     }
     Ok(())
 }

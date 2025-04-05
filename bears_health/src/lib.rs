@@ -187,7 +187,7 @@ pub use parameter_values::{
     parameter_value_filtered, parameter_value_from_json, parameter_values_from_file,
     parameter_values_to_json,
 };
-pub use parameters::{diff_parameters, parameter_names, parameters_from_file, parameters_to_json};
+pub use parameters::{parameter_names, parameters_from_file, parameters_to_json};
 pub use queues::inspect_queues;
 pub use values::{
     api_error, requests_exceeded, values_filtered, values_filtered_subset, values_gdp_filtered,
