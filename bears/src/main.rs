@@ -1,4 +1,5 @@
-use bears::{trace_init, BeaErr};
+use bears_ecology::trace_init;
+use bears_species::BeaErr;
 use clap::Parser;
 // use indicatif::ProgressBar;
 use tracing::{info, trace};
