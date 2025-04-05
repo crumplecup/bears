@@ -31,13 +31,7 @@ impl TryFrom<&MneDoi> for InvestmentKind {
     type Error = DeriveFromStr;
     fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
         let key = value.key().to_case(convert_case::Case::Title);
-        match Self::from_str(&key) {
-            Ok(kind) => Ok(kind),
-            Err(source) => {
-                let error = DeriveFromStr::new(key, source, line!(), file!().to_string());
-                Err(error)
-            }
-        }
+        Self::from_str(&key).map_err(|e| DeriveFromStr::new(key, e, line!(), file!().to_owned()))
     }
 }
 

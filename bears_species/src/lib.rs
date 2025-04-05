@@ -26,18 +26,18 @@ pub use free::{
     NotFloat, NotInteger, ParseFloat, ParseInteger, UrlParseError,
 };
 pub use key_sets::{
-    FixedAssets, GdpByIndustry, Ita, ItaData, ItaDatum, Mne, NiUnderlyingDetail, Nipa,
+    FixedAssets, GdpByIndustry, Iip, Ita, ItaData, ItaDatum, Mne, NiUnderlyingDetail, Nipa,
     NipaIterator, UnderlyingGdpByIndustry,
 };
 pub use keys::{
     date_by_period, parse_year, roman_numeral_quarter, AffiliateKind, AffiliateLevel,
     AnnotatedInteger, Annotation, AnnotationMissing, AreaOrCountry, BoolInvalid, BoolOptions,
-    DirectionOfInvestment, Footnotes, Frequencies, Frequency, FrequencyOptions, Indicator, Integer,
-    IntegerInvalid, IntegerKind, IntegerOptions, InvestmentKind, ItaFrequencies, ItaFrequency,
-    Millions, MillionsOptions, NipaRange, NipaRangeIterator, NipaRanges, NipaTableName, Nom,
-    NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode, RowCodeMissing,
-    SelectionKind, SelectionSet, State, StateKind, TableName, Year, YearInvalid, YearKind,
-    YearOptions, YearRange,
+    Component, DirectionOfInvestment, Footnotes, Frequencies, Frequency, FrequencyOptions,
+    Indicator, Integer, IntegerInvalid, IntegerKind, IntegerOptions, InvestmentKind,
+    ItaFrequencies, ItaFrequency, Millions, MillionsOptions, NipaRange, NipaRangeIterator,
+    NipaRanges, NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel,
+    RowCode, RowCodeMissing, SelectionKind, SelectionSet, State, StateKind, TableName, Year,
+    YearInvalid, YearKind, YearOptions, YearRange,
 };
 pub use method::Method;
 pub use naics::Naics;
