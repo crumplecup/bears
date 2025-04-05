@@ -1,6 +1,6 @@
-use crate::{
-    bea_data, trace_init, BeaErr, BeaResponse, Dataset, IoError, ParameterName, Request,
-    ReqwestError, SerdeJson,
+use bears_ecology::{bea_data, parameter_values, trace_init, Request};
+use bears_species::{
+    BeaErr, BeaResponse, Dataset, IoError, ParameterName, ReqwestError, SerdeJson,
 };
 use strum::IntoEnumIterator;
 
@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 /// `GetParameterValues` method into the `parameter_values` folder of the `BEA_DATA` directory.
 #[tracing::instrument]
 pub async fn parameter_values_to_json() -> Result<(), BeaErr> {
-    Dataset::parameter_values().await
+    parameter_values().await
 }
 
 /// Load parameter values from the file at `path` and parse into the

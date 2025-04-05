@@ -1,4 +1,5 @@
-use crate::{bea_data, trace_init, BeaErr, BeaResponse, Indicator, IoError, KeyMissing, SerdeJson};
+use bears_ecology::{bea_data, trace_init};
+use bears_species::{BeaErr, BeaResponse, Indicator, IoError, KeyMissing, SerdeJson};
 use strum::IntoEnumIterator;
 
 /// Checks that each "Indicator" parameter value matches an enum variant in

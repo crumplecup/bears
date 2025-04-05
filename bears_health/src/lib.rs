@@ -190,6 +190,6 @@ pub use parameter_values::{
 pub use parameters::{diff_parameters, parameter_names, parameters_from_file, parameters_to_json};
 pub use queues::inspect_queues;
 pub use values::{
-    api_error, requests_exceeded, value_sets, values_filtered, values_filtered_subset,
-    values_gdp_filtered, values_ugdp_filtered,
+    api_error, requests_exceeded, values_filtered, values_filtered_subset, values_gdp_filtered,
+    values_ugdp_filtered,
 };

@@ -1,6 +1,5 @@
-use crate::{
-    bea_data, trace_init, BeaErr, BeaResponse, Dataset, DatasetMissing, IoError, SerdeJson,
-};
+use bears_ecology::{bea_data, get_datasets, trace_init};
+use bears_species::{BeaErr, BeaResponse, Dataset, DatasetMissing, IoError, SerdeJson};
 use strum::IntoEnumIterator;
 
 /// Queries valid parameter values for the dataset parameter.
@@ -9,7 +8,7 @@ use strum::IntoEnumIterator;
 /// Pings the BEA API.
 #[tracing::instrument]
 pub async fn datasets_to_json() -> Result<(), BeaErr> {
-    Dataset::get().await
+    get_datasets().await
 }
 
 /// reads response and native format from file

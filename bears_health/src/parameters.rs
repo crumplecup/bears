@@ -1,6 +1,5 @@
-use crate::{
-    bea_data, trace_init, BeaErr, BeaResponse, Dataset, IoError, Json, ParameterName, SerdeJson,
-};
+use bears_ecology::{bea_data, parameters, trace_init, Json};
+use bears_species::{BeaErr, BeaResponse, Dataset, IoError, ParameterName, SerdeJson};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 
@@ -8,7 +7,7 @@ use strum::IntoEnumIterator;
 /// Write the results in JSON format to the BEA_DATA directory.
 #[tracing::instrument]
 pub async fn parameters_to_json() -> Result<(), BeaErr> {
-    Dataset::parameters().await
+    parameters().await
 }
 
 /// Attempts to parse a [`BeaResponse`] from the file at `path`.

@@ -1,4 +1,5 @@
-use crate::{trace_init, BeaErr, Dataset, History, Mode};
+use bears_ecology::{trace_init, History, Mode};
+use bears_species::{BeaErr, Dataset};
 
 #[tracing::instrument]
 /// Prints summary data from the Load [`History`] of the currently implemented datasets.

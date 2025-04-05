@@ -1,4 +1,8 @@
-use crate::{trace_init, BeaErr, Dataset, GdpData, History, Mode, Naics, Style};
+use bears_ecology::{
+    download_with_history, init_queue, initial_download, initial_load, retry_load, trace_init,
+    History, Mode, Style,
+};
+use bears_species::{BeaErr, Dataset, GdpData, Naics};
 
 /// Pings the BEA API.
 #[tracing::instrument]
@@ -7,7 +11,7 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
     let datasets = vec![Dataset::GDPbyIndustry];
     for dataset in datasets {
         // let queue = dataset.queue()?;
-        let mut queue = dataset.queue()?;
+        let mut queue = init_queue(dataset)?;
         tracing::info!("Queue is length {}", queue.len());
         //
         // queue.retain(|app| {
@@ -51,7 +55,7 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
     let datasets = vec![Dataset::Mne];
     for dataset in datasets {
         // let queue = dataset.queue()?;
-        let mut queue = dataset.queue()?;
+        let mut queue = init_queue(dataset)?;
         // queue.retain(|app| &app.query()["Country"] == "400");
         // queue.retain(|app| &app.query()["DirectionOfInvestment"] == "outward");
         // queue.retain(|app| &app.query()["Classification"] == "Industry");
@@ -128,7 +132,7 @@ pub async fn datasets_download_initial() -> Result<(), BeaErr> {
     // ];
     let datasets = vec![Dataset::Ita];
     for dataset in datasets {
-        dataset.initial_download().await?;
+        initial_download(dataset).await?;
     }
     Ok(())
 }
@@ -149,7 +153,7 @@ pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
     // ];
     let datasets = vec![Dataset::FixedAssets];
     for dataset in datasets {
-        dataset.download_with_history(style.clone()).await?;
+        download_with_history(dataset, style.clone()).await?;
     }
     Ok(())
 }
@@ -167,7 +171,7 @@ pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     // ];
     let datasets = vec![Dataset::FixedAssets];
     for dataset in datasets {
-        let result = dataset.initial_load(None).await?;
+        let result = initial_load(dataset, None).await?;
         tracing::info!("{} datasets loaded.", result.len());
     }
     Ok(())
@@ -186,7 +190,7 @@ pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
     // let datasets = vec![Dataset::Mne];
     for dataset in datasets {
         let loads = History::try_from((dataset, Mode::Load))?;
-        let result = dataset.initial_load(Some(&loads)).await?;
+        let result = initial_load(dataset, Some(&loads)).await?;
         tracing::info!("{} datasets loaded.", result.len());
     }
     Ok(())
@@ -199,7 +203,7 @@ pub async fn datasets_retry_load() -> Result<(), BeaErr> {
     trace_init()?;
     let datasets = vec![Dataset::Ita];
     for dataset in datasets {
-        let result = dataset.retry_load().await?;
+        let result = retry_load(dataset).await?;
         tracing::info!("{} datasets loaded.", result.len());
     }
     Ok(())

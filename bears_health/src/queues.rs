@@ -1,4 +1,5 @@
-use crate::{trace_init, BeaErr, Dataset};
+use bears_ecology::{init_queue, trace_init};
+use bears_species::{BeaErr, Dataset};
 
 #[tracing::instrument(skip_all)]
 pub async fn inspect_queues() -> Result<(), BeaErr> {
@@ -11,7 +12,7 @@ pub async fn inspect_queues() -> Result<(), BeaErr> {
     // ];
     let datasets = vec![Dataset::NIUnderlyingDetail];
     for dataset in datasets {
-        let queue = dataset.queue()?;
+        let queue = init_queue(dataset)?;
         tracing::info!("Queue length: {}", queue.len());
     }
     Ok(())
