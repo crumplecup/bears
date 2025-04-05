@@ -1,5 +1,5 @@
-use crate::{BeaErr, Dataset, IoError};
 use assert_json_diff::assert_json_include;
+use bears_species::{BeaErr, Dataset, IoError};
 use std::io::BufRead;
 
 pub struct Json;

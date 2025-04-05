@@ -1,6 +1,5 @@
-use crate::{
-    bea_data, App, BeaErr, Data, Dataset, Event, IoError, Mode, Queue, ResultStatus, SerdeJson,
-};
+use crate::{bea_data, App, Event, Mode, Queue, ResultStatus};
+use bears_species::{BeaErr, Data, Dataset, IoError, SerdeJson};
 use indicatif::{ParallelProgressIterator, ProgressIterator};
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 

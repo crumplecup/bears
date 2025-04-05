@@ -1,4 +1,4 @@
-use crate::{Dataset, Method, ParameterName};
+use bears_species::{Dataset, Method, ParameterName};
 use std::collections::BTreeMap;
 
 /// The `Options` struct holds values for parameters in a BEA request.

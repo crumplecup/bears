@@ -1,3 +1,5 @@
+use bears_species::Progress;
+
 #[derive(
     Clone, derive_more::Deref, derive_more::DerefMut, derive_more::AsRef, derive_more::AsMut,
 )]
@@ -27,16 +29,6 @@ impl Style {
         )
         .map_err(|e| Progress::new(key.clone(), e, line!(), file!().to_owned()))?;
         styles.insert(key, style);
-
         Ok(Self(styles))
     }
-}
-
-#[derive(Debug, derive_more::Display, derive_more::Error, derive_new::new)]
-#[display("indicatif style template error for {key} in line {line} of {file}")]
-pub struct Progress {
-    key: String,
-    source: indicatif::style::TemplateError,
-    line: u32,
-    file: String,
 }

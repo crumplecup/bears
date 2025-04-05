@@ -1,6 +1,7 @@
-use crate::{
-    file_size, map_to_string, App, BeaErr, Data, DeriveFromStr, History, Jiff, JsonParseError,
-    JsonParseErrorKind, KeyMissing, NotObject, ParseInt, ResultStatus,
+use crate::{file_size, App, History, ResultStatus};
+use bears_species::{
+    map_to_string, BeaErr, Data, DeriveFromStr, Jiff, JsonParseError, JsonParseErrorKind,
+    KeyMissing, NotObject, ParseInt,
 };
 use indicatif::ProgressIterator;
 use jiff::ToSpan;

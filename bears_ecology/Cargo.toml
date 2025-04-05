@@ -1,0 +1,36 @@
+[package]
+name = "bears_ecology"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+description.workspace = true
+repository.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme = "../README.md"
+# homepage.workspace = true
+# rust-version.workspace = true
+
+[dependencies]
+assert-json-diff = { workspace = true }
+bears_species = { workspace = true }
+bytesize = { workspace = true }
+console = { workspace = true }
+derive-getters = { workspace = true }
+derive-new = { workspace = true }
+derive_more = { workspace = true }
+derive_setters = { workspace = true }
+dotenvy = { workspace = true }
+indicatif = { workspace = true }
+jiff = { workspace = true }
+rayon = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+similar = { workspace = true }
+strum = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+url = { workspace = true }
+uuid = { workspace = true }
