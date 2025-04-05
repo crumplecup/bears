@@ -4,6 +4,7 @@ mod component;
 mod footnote;
 mod frequency;
 mod indicator;
+mod input_output_table;
 mod investment;
 mod millions;
 mod numeric;
@@ -20,6 +21,7 @@ pub use component::Component;
 pub use footnote::Footnotes;
 pub use frequency::{Frequencies, Frequency, FrequencyOptions, ItaFrequencies, ItaFrequency};
 pub use indicator::Indicator;
+pub use input_output_table::InputOutputTable;
 pub use investment::{DirectionOfInvestment, InvestmentKind};
 pub use millions::{Millions, MillionsOptions};
 pub use numeric::{
