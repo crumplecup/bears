@@ -1,7 +1,8 @@
 use crate::{
-    AocSta, BeaErr, BeaResponse, Dataset, IoError, ParameterFields, ParameterName,
-    ParameterValueTable, SerdeJson, Set, Year,
+    AocSta, BeaErr, BeaResponse, Channel, Dataset, DeriveFromStr, IoError, ParameterFields,
+    ParameterName, ParameterValueTable, SerdeJson, Set, Year,
 };
+use std::str::FromStr;
 
 #[derive(
     Debug,
@@ -17,7 +18,7 @@ use crate::{
 )]
 pub struct IntlServSta {
     area_or_country: Vec<AocSta>,
-    channel: Vec<ParameterFields>,
+    channel: Vec<Channel>,
     destination: Vec<ParameterFields>,
     industry: Vec<ParameterFields>,
     year: Vec<Year>,
@@ -68,7 +69,15 @@ impl TryFrom<&std::path::PathBuf> for IntlServSta {
                         for table in pf.iter() {
                             match table {
                                 ParameterValueTable::ParameterFields(pf) => {
-                                    channel.push(pf.clone());
+                                    let value = Channel::from_str(pf.key()).map_err(|e| {
+                                        DeriveFromStr::new(
+                                            pf.key().to_owned(),
+                                            e,
+                                            line!(),
+                                            file!().to_owned(),
+                                        )
+                                    })?;
+                                    channel.push(value);
                                 }
                                 _ => {
                                     return Err(Set::ParameterFieldsMissing.into());
