@@ -166,6 +166,8 @@
 //!
 //! * [`download_summary`] prints summary statistics from the download history for each dataset.
 //!   Used to generate the numbers for the progress report in the `readme.md` file.
+mod aocs;
+mod components;
 mod data;
 mod datasets;
 mod histories;
@@ -175,6 +177,8 @@ mod parameters;
 mod queues;
 mod values;
 
+pub use aocs::check_aoc_sta;
+pub use components::check_components;
 pub use data::{
     data_from_json, data_to_json, datasets_download_initial, datasets_download_with_history,
     datasets_initial_load, datasets_initial_load_continued, datasets_retry_load,

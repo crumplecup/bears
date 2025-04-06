@@ -71,6 +71,18 @@ fn check_indicators() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[test]
+fn check_components() -> anyhow::Result<()> {
+    bears_health::check_components()?;
+    Ok(())
+}
+
+#[test]
+fn check_aoc_sta() -> anyhow::Result<()> {
+    bears_health::check_aoc_sta()?;
+    Ok(())
+}
+
 #[tokio::test]
 async fn api_error() -> anyhow::Result<()> {
     bears_health::api_error()?;

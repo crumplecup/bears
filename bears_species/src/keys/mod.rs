@@ -1,4 +1,5 @@
 mod annotation;
+mod aoc_sta;
 mod area_or_country;
 mod component;
 mod footnote;
@@ -16,6 +17,7 @@ mod table_name;
 mod year;
 
 pub use annotation::{Annotation, AnnotationMissing};
+pub use aoc_sta::AocSta;
 pub use area_or_country::AreaOrCountry;
 pub use component::Component;
 pub use footnote::Footnotes;
