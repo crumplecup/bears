@@ -33,12 +33,13 @@ pub use key_sets::{
 pub use keys::{
     date_by_period, parse_year, roman_numeral_quarter, AffiliateKind, AffiliateLevel,
     AnnotatedInteger, Annotation, AnnotationMissing, AocSta, AreaOrCountry, BoolInvalid,
-    BoolOptions, Component, DirectionOfInvestment, Footnotes, Frequencies, Frequency,
+    BoolOptions, Channel, Component, DirectionOfInvestment, Footnotes, Frequencies, Frequency,
     FrequencyOptions, Indicator, InputOutputTable, Integer, IntegerInvalid, IntegerKind,
     IntegerOptions, InvestmentKind, ItaFrequencies, ItaFrequency, Millions, MillionsOptions,
-    NipaRange, NipaRangeIterator, NipaRanges, NipaTableName, Nom, NotQuarter, OwnershipInvalid,
-    OwnershipKind, OwnershipLevel, RowCode, RowCodeMissing, SelectionKind, SelectionSet, State,
-    StateKind, TableName, Year, YearInvalid, YearKind, YearOptions, YearRange,
+    NaicsCategory, NaicsSector, NaicsSubsector, NipaRange, NipaRangeIterator, NipaRanges,
+    NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode,
+    RowCodeMissing, SelectionKind, SelectionSet, State, StateKind, TableName, Year, YearInvalid,
+    YearKind, YearOptions, YearRange,
 };
 pub use method::Method;
 pub use naics::Naics;
