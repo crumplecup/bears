@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - Added the `IipIndustry` enum to represent valid keys for the Industry parameter of the IntlServSTA dataset.
 - Added the `NaicsSector`, `NaicsSubsector` and `NaicsCategory` enums to represent different levels of NAICS code categories.
 
+### 🐛 Bug Fixes
+
+- Explicit version numbers added to workspace members.
+
 ### 🚜 Refactor
 
 - Library structure changed from crate to workspace.
