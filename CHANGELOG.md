@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7] - 2025-04-07
+
+### 🚀 Features
+
+- Component enum added for the IIP dataset.
+- InputOutputTable type added to keys module of bears_species to provide variants for keys in the InputOutput dataset.
+- `AocSta` type added for AreaOrCountry keys in the IntlServSTA dataset.
+- Added the `Channel` enum to represent valid keys for the Channel parameter of the IntlServSTA dataset.
+- Added the `IipIndustry` enum to represent valid keys for the Industry parameter of the IntlServSTA dataset.
+- Added the `NaicsSector`, `NaicsSubsector` and `NaicsCategory` enums to represent different levels of NAICS code categories.
+
+### 🚜 Refactor
+
+- Library structure changed from crate to workspace.
+- Library types moved to bears_species crate.
+- Core library functionality moved to the bears_ecology crate.
+- Tests moved to the bears_health crate.
+- Stub cli moved to the eponymous bears crate.
+- Tracker type moved from queue to tracker module.
+- Iip key set moved to the key_sets module of the bears_species crate.
+- ApiMetada moved to the key_sets module of the bears_species crate.
+- InputOutput key set moved to the key_sets module of the bears_ecology crate.
+- `IntlServSta`, `IntlServTrade` and `Regional` key sets moved to the key_sets module of the bears_species crate.
+
+### 📚 Documentation
+
+- Descriptions added for member crates.
+
+### 🧪 Testing
+
+- Unused tests for json removed.
+- Tests added for `Component` and `AocSta` types validating enum variants against the BEA response.
+
+### ⚙️ Miscellaneous Tasks
+
+- Version incremented to 0.1.7.
+- Patch update to the `clap` dependency.
+- Unused json and validate modules removed.
+- Patch update to the `tokio` dependency.
+
 ## [0.1.6] - 2025-03-31
 
 ### 🚀 Features
