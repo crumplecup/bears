@@ -14,6 +14,7 @@ dist:
   dist build
   dist plan
 
+# Revamp for workspace
 prepare version: tool_up dist
   cargo release {{version}}
 
