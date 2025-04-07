@@ -14,10 +14,10 @@ keywords = ["economics", "finance", "rest"]
 categories = ["asynchronous", "finance"]
 
 [workspace.dependencies]
-bears_ecology = { path = "./bears_ecology" }
-bears_health = { path = "./bears_health" }
-bears = { path = "./bears" }
-bears_species = { path = "./bears_species" }
+bears_ecology = { version = "0.1.7", path = "./bears_ecology" }
+bears_health = { version = "0.1.7", path = "./bears_health" }
+bears = { version = "0.1.7", path = "./bears" }
+bears_species = { version = "0.1.7", path = "./bears_species" }
 assert-json-diff = "2.0.2"
 bytesize = { version = "2.0.1", features = ["serde"] }
 clap = { version = "4.5.35", features = ["derive"] }
