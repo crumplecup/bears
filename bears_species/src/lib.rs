@@ -5,7 +5,6 @@ mod free;
 mod key_sets;
 mod keys;
 mod method;
-mod naics;
 mod parameter;
 mod parameter_value;
 mod request;
@@ -34,15 +33,14 @@ pub use keys::{
     date_by_period, parse_year, roman_numeral_quarter, AffiliateKind, AffiliateLevel,
     AnnotatedInteger, Annotation, AnnotationMissing, AocSta, AreaOrCountry, BoolInvalid,
     BoolOptions, Channel, Component, DirectionOfInvestment, Footnotes, Frequencies, Frequency,
-    FrequencyOptions, Indicator, InputOutputTable, Integer, IntegerInvalid, IntegerKind,
-    IntegerOptions, InvestmentKind, ItaFrequencies, ItaFrequency, Millions, MillionsOptions,
-    NaicsCategory, NaicsSector, NaicsSubsector, NipaRange, NipaRangeIterator, NipaRanges,
-    NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode,
-    RowCodeMissing, SelectionKind, SelectionSet, State, StateKind, TableName, Year, YearInvalid,
-    YearKind, YearOptions, YearRange,
+    FrequencyOptions, IipIndustry, Indicator, InputOutputTable, Integer, IntegerInvalid,
+    IntegerKind, IntegerOptions, InvestmentKind, ItaFrequencies, ItaFrequency, Millions,
+    MillionsOptions, NaicsCategory, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
+    NaicsSubsector, NipaRange, NipaRangeIterator, NipaRanges, NipaTableName, Nom, NotQuarter,
+    OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode, RowCodeMissing, SelectionKind,
+    SelectionSet, State, StateKind, TableName, Year, YearInvalid, YearKind, YearOptions, YearRange,
 };
 pub use method::Method;
-pub use naics::Naics;
 pub use parameter::{deserialize_bool, NotParameterName, Parameter, ParameterName, Parameters};
 pub use parameter_value::{
     Metadata, MneDoi, NipaFrequency, NipaShowMillions, NipaTable, NipaYear, ParameterFields,
