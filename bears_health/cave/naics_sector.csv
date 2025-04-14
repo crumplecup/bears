@@ -1,0 +1,21 @@
+naics_code,naics_title,name
+11,"Agriculture, Forestry, Fishing and Hunting",AgricultureForestryFishingHunting
+21,"Mining, Quarrying, and Oil and Gas Extraction",MiningQuarryingOilGasExtraction
+22,Utilities,Utilities
+23,Construction,Construction
+31-33,Manufacturing,Manufacturing
+42,Wholesale Trade,WholesaleTrade
+44-45,Retail Trade,RetailTrade
+51,Information,Information
+52,Finance and Insurance,FinanceInsurance
+53,Real Estate and Rental and Leasing,RealEstateRentalLeasing
+54,"Professional, Scientific, and Technical Services",ProfessionalScientificTechnicalServices
+55,Management of Companies and Enterprises,ManagementOfCompaniesAndEnterprises
+56,Administrative and Support and Waste Management and Remediation Services,AdministrativeSupportWasteManagementRemediationServices
+61,Educational Services,EducationalServices
+62,Health Care and Social Assistance,HealthCareSocialAssistance
+71,"Arts, Entertainment, and Recreation",ArtsEntertainmentRecreation
+72,Accommodation and Food Services,AccommodationFoodServices
+81,Other Services (except Public Administration),OtherServicesExceptPublicAdministration
+92,Public Administration,PublicAdministration
+99,Unclassified Establishments,UnclassifiedEstablishments
