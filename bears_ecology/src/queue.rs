@@ -1,4 +1,4 @@
-use crate::{file_size, App, Event, History, ResultStatus, SizeEvent, Tracker};
+use crate::{App, Event, History, ResultStatus, SizeEvent, Tracker, file_size};
 use bears_species::{BeaErr, Data};
 use indicatif::ProgressIterator;
 use rayon::prelude::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};

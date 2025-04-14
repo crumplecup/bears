@@ -1,6 +1,6 @@
 use crate::{
-    map_to_string, BeaErr, Dataset, DeriveFromStr, Jiff, JsonParseError, JsonParseErrorKind,
-    KeyMissing, NotArray, NotObject,
+    BeaErr, Dataset, DeriveFromStr, Jiff, JsonParseError, JsonParseErrorKind, KeyMissing, NotArray,
+    NotObject, map_to_string,
 };
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;

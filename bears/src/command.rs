@@ -1,5 +1,5 @@
-use nom::character::complete::alphanumeric1;
 use nom::IResult;
+use nom::character::complete::alphanumeric1;
 
 /// Variants of the `Action` enum encapsulate the different actions a user can select, exposing the
 /// different capabilities of the library.

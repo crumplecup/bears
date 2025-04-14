@@ -1,5 +1,5 @@
 use crate::{
-    parameter_value::MneDoi, BeaErr, DeriveFromStr, ParameterValueTable, ParameterValueTableVariant,
+    BeaErr, DeriveFromStr, ParameterValueTable, ParameterValueTableVariant, parameter_value::MneDoi,
 };
 use convert_case::Casing;
 use std::str::FromStr;

@@ -1,4 +1,4 @@
-use bears_ecology::{bea_data, parameter_values, trace_init, Request};
+use bears_ecology::{Request, bea_data, parameter_values, trace_init};
 use bears_species::{
     BeaErr, BeaResponse, Dataset, IoError, ParameterName, ReqwestError, SerdeJson,
 };

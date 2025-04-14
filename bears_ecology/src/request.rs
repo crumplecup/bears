@@ -1,4 +1,4 @@
-use crate::{bea_data, init, App, History, Mode, Options, Queue};
+use crate::{App, History, Mode, Options, Queue, bea_data, init};
 use bears_species::{
     BeaErr, BeaResponse, Data, Dataset, DatasetMissing, FixedAssets, GdpByIndustry, IoError, Ita,
     Method, Mne, NiUnderlyingDetail, Nipa, ParameterName, ReqwestError, Results, SerdeJson,

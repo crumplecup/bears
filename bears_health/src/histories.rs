@@ -1,4 +1,4 @@
-use bears_ecology::{trace_init, History, Mode};
+use bears_ecology::{History, Mode, trace_init};
 use bears_species::{BeaErr, Dataset};
 
 #[tracing::instrument]
