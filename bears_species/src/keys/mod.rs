@@ -27,10 +27,13 @@ pub use component::Component;
 pub use footnote::Footnotes;
 pub use frequency::{Frequencies, Frequency, FrequencyOptions, ItaFrequencies, ItaFrequency};
 pub use indicator::Indicator;
+pub use industry::IipIndustry;
 pub use input_output_table::InputOutputTable;
 pub use investment::{DirectionOfInvestment, InvestmentKind};
 pub use millions::{Millions, MillionsOptions};
-pub use naics::{NaicsCategory, NaicsSector, NaicsSubsector};
+pub use naics::{
+    NaicsCategory, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory, NaicsSubsector,
+};
 pub use numeric::{
     AnnotatedInteger, BoolInvalid, BoolOptions, Integer, IntegerInvalid, IntegerKind,
     IntegerOptions, Nom,

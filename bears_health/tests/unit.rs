@@ -83,6 +83,15 @@ fn check_aoc_sta() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[test]
+fn check_naics() -> anyhow::Result<()> {
+    bears_health::check_naics_sectors()?;
+    bears_health::check_naics_subsectors()?;
+    bears_health::check_naics_category()?;
+    bears_health::check_naics_subcategory()?;
+    Ok(())
+}
+
 #[tokio::test]
 async fn api_error() -> anyhow::Result<()> {
     bears_health::api_error()?;
@@ -144,12 +153,6 @@ async fn data_to_json() -> anyhow::Result<()> {
 #[tokio::test]
 async fn data_from_json() -> anyhow::Result<()> {
     bears_health::data_from_json().await?;
-    Ok(())
-}
-
-#[test]
-fn naics() -> anyhow::Result<()> {
-    bears_health::naics()?;
     Ok(())
 }
 

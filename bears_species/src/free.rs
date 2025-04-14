@@ -110,11 +110,7 @@ pub fn json_bool(json: &serde_json::Value) -> Result<bool, JsonParseError> {
         }
         serde_json::Value::String(s) => {
             tracing::trace!("String detected: {s}");
-            if s == "1" {
-                Ok(true)
-            } else {
-                Ok(false)
-            }
+            if s == "1" { Ok(true) } else { Ok(false) }
         }
         _ => {
             tracing::warn!("Unexpected value.");

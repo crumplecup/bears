@@ -35,10 +35,7 @@ impl Parameter {
     pub fn read_json(
         m: &serde_json::Map<String, serde_json::Value>,
     ) -> Result<Self, JsonParseError> {
-        let all_value = match map_to_string("AllValue", m) {
-            Ok(value) => Some(value),
-            Err(_) => None,
-        };
+        let all_value = map_to_string("AllValue", m).ok();
         let multiple_accepted_flag = map_to_bool("MultipleAcceptedFlag", m)?;
         let parameter_data_type = map_to_string("ParameterDataType", m)?;
         let parameter_default_value = if let Some(value) = m.get("ParameterDefaultValue") {

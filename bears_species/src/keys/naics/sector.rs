@@ -126,7 +126,7 @@ impl NaicsSector {
     ///
     /// Returns Some(NaicsSector) if the string can be parsed to a valid NAICS sector code,
     /// or None if the string is not a valid NAICS code or cannot be parsed.
-    pub fn from_key(key: &str) -> Option<Self> {
+    pub fn from_code(key: &str) -> Option<Self> {
         let code = match key.parse::<i64>() {
             Ok(num) => num,
             Err(_) => return None,

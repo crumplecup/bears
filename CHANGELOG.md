@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.7] - 2025-04-07
+## [0.1.8] - 2025-04-14
 
 ### 🚀 Features
 
@@ -12,10 +12,14 @@ All notable changes to this project will be documented in this file.
 - Added the `Channel` enum to represent valid keys for the Channel parameter of the IntlServSTA dataset.
 - Added the `IipIndustry` enum to represent valid keys for the Industry parameter of the IntlServSTA dataset.
 - Added the `NaicsSector`, `NaicsSubsector` and `NaicsCategory` enums to represent different levels of NAICS code categories.
+- The NaicsSector::from_key method is now NaicsSector::from_code.
+- Added the `NaicsSubcategory` type to represent Naics industry codes with a length of five digits.
 
 ### 🐛 Bug Fixes
 
 - Explicit version numbers added to workspace members.
+- NaicsSubcategory variants and method values corrected in response to unit testing.
+- `NaicsCategory` variants and methods corrected in response to unit testing.
 
 ### 🚜 Refactor
 
@@ -29,6 +33,10 @@ All notable changes to this project will be documented in this file.
 - ApiMetada moved to the key_sets module of the bears_species crate.
 - InputOutput key set moved to the key_sets module of the bears_ecology crate.
 - `IntlServSta`, `IntlServTrade` and `Regional` key sets moved to the key_sets module of the bears_species crate.
+- Naics.rs and naics_codes.csv removed.
+- Naics codes by classification added to the `cave` directory of `bears_health`.
+- NaicsItem moved to the `keys` module of `bears_species`.
+- Data module updated to use the new name for NaicsItems.
 
 ### 📚 Documentation
 
@@ -38,6 +46,7 @@ All notable changes to this project will be documented in this file.
 
 - Unused tests for json removed.
 - Tests added for `Component` and `AocSta` types validating enum variants against the BEA response.
+- Verification testings for Naics types added validating variant names, description and codes against the .csv files in the cave.
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -45,6 +54,10 @@ All notable changes to this project will be documented in this file.
 - Patch update to the `clap` dependency.
 - Unused json and validate modules removed.
 - Patch update to the `tokio` dependency.
+- Increment version to 0.1.8.
+- Rust fmt changes.
+- Naics types added to mod and lib files.
+- Clippy corrected `manual implementation of ok` corrected to use the ok method.
 
 ## [0.1.6] - 2025-03-31
 
@@ -122,50 +135,16 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- Methods `initial_load`, `initial_load_continued`, `retry_load` and `download_with_history` added to the `Dataset` type.
+- Method variants for `with_events` added to the Queue and History types to facilitate benchmarking.
+- GdpDatum type added to represent return values for the `Dataset::GDPbyIndustry` variant.
+- Download support added to GdpByIndustry via the GdpByIndustryIterator type.
 - 'Style' type added to facilitate progress bars drawn to the console.
 - Method `from_value` added to `Frequency` to provide a canonical means of interpreting BEA parameter values.
 - Added the `roman_numeral_quarter` function mapping Roman Numeral values in the `Quarter` field to the `jiff::civil::Date` type.
 - `GdpData` type added for the GDPbyIndustry dataset.  Companion variant `Data::GdpData` added.
 - Progress bar added to `Queue` file loading.
 - Progress bars added to `History` load and download methods.
-
-### 🚜 Refactor
-
-- Various console logs lowered from Info to Trace, now that the functions of interest are more stable.
-- `MneDiData` and `FixedAssetsData` added to the root namespace following the library convention.
-
-### 📚 Documentation
-
-- Description added for the `roman_numeral_quarter` function.
-- Descriptions added to `Frequency` methods.
-- Module and function level descriptions added the `check` module.
-- Progress statistics updated in the root `README.md`.
-
-### 🧪 Testing
-
-- Additional troubleshooting tests added for loading GDPbyIndustry files.
-- Duplicate test removed.
-
-### ⚙️ Miscellaneous Tasks
-
-- Changelog updated for version 0.1.3.
-- Version incremented to 0.1.4 in Cargo.toml.
-- Changelog action added to justfile.
-- *(dependency)* Patch updates for dependencies.  Bincode dependency removed.
-- Bincode removed from internal tests.
-- Benchmarks updated to use the 'Style' type.
-- *(dependency)* Patch update applied to `tokio`.  Minor update applied to `uuid`.  No changes required to code.
-- Deletion of dead legacy code.
-- Changelog updated for version 0.1.4.
-
-## [0.1.3] - 2025-03-03
-
-### 🚀 Features
-
-- Methods `initial_load`, `initial_load_continued`, `retry_load` and `download_with_history` added to the `Dataset` type.
-- Method variants for `with_events` added to the Queue and History types to facilitate benchmarking.
-- GdpDatum type added to represent return values for the `Dataset::GDPbyIndustry` variant.
-- Download support added to GdpByIndustry via the GdpByIndustryIterator type.
 
 ### 🐛 Bug Fixes
 
@@ -180,20 +159,37 @@ All notable changes to this project will be documented in this file.
 - The Error cap has been raised to 29, and the Call cap to 89, since size tracking is now enabled.
 - The History::contains method has been removed in favor of calling `contains_key` directly on the inner BTreeMap.
 - Streamlined error handling for JsonParseError variants.
+- Various console logs lowered from Info to Trace, now that the functions of interest are more stable.
+- `MneDiData` and `FixedAssetsData` added to the root namespace following the library convention.
 
 ### 📚 Documentation
 
 - Method descriptions added to the `dataset` module.
 - Descriptions added for `History` methods.
+- Description added for the `roman_numeral_quarter` function.
+- Descriptions added to `Frequency` methods.
+- Module and function level descriptions added the `check` module.
+- Progress statistics updated in the root `README.md`.
 
 ### 🧪 Testing
 
 - Coverage added for the `History` methods `initial_load`, `initial_load_continued`, `retry_load` and `download_with_history`.
 - Benchmarking added to the `with_event` family of methods for the Queue and Chunks types.
+- Additional troubleshooting tests added for loading GDPbyIndustry files.
+- Duplicate test removed.
 
 ### ⚙️ Miscellaneous Tasks
 
 - Increment version to 0.1.3 in Cargo.toml.
+- Changelog updated for version 0.1.3.
+- Version incremented to 0.1.4 in Cargo.toml.
+- Changelog action added to justfile.
+- *(dependency)* Patch updates for dependencies.  Bincode dependency removed.
+- Bincode removed from internal tests.
+- Benchmarks updated to use the 'Style' type.
+- *(dependency)* Patch update applied to `tokio`.  Minor update applied to `uuid`.  No changes required to code.
+- Deletion of dead legacy code.
+- Changelog updated for version 0.1.4.
 
 ## [0.1.2] - 2025-02-23
 

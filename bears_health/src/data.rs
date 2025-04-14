@@ -2,7 +2,7 @@ use bears_ecology::{
     download_with_history, init_queue, initial_download, initial_load, retry_load, trace_init,
     History, Mode, Style,
 };
-use bears_species::{BeaErr, Dataset, GdpData, Naics};
+use bears_species::{BeaErr, Dataset, GdpData};
 
 /// Pings the BEA API.
 #[tracing::instrument]
@@ -206,18 +206,6 @@ pub async fn datasets_retry_load() -> Result<(), BeaErr> {
         let result = retry_load(dataset).await?;
         tracing::info!("{} datasets loaded.", result.len());
     }
-    Ok(())
-}
-
-/// Load the NAICS codes from file and print them to the console.
-///
-/// Used for updates to the NAICS file and confirm deserialization.
-#[tracing::instrument]
-pub fn naics() -> Result<(), BeaErr> {
-    trace_init()?;
-    let path = "data/naics_codes.csv";
-    let naics = Naics::from_csv(path)?;
-    tracing::info!("{naics:?}");
     Ok(())
 }
 

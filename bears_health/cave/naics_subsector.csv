@@ -1,0 +1,98 @@
+naics_code,naics_title,name
+111,Crop Production,CropProduction
+112,Animal Production and Aquaculture,AnimalProductionAndAquaculture
+113,Forestry and Logging,ForestryAndLogging
+114,"Fishing, Hunting and Trapping",FishingHuntingAndTrapping
+115,Support Activities for Agriculture and Forestry,SupportActivitiesForAgricultureAndForestry
+211,Oil and Gas Extraction,OilAndGasExtraction
+212,Mining (except Oil and Gas),MiningExceptOilAndGas
+213,Support Activities for Mining,SupportActivitiesForMining
+221,Utilities,Utilities
+236,Construction of Buildings,ConstructionOfBuildings
+237,Heavy and Civil Engineering Construction,HeavyAndCivilEngineeringConstruction
+238,Specialty Trade Contractors,SpecialtyTradeContractors
+311,Food Manufacturing,FoodManufacturing
+312,Beverage and Tobacco Product Manufacturing,BeverageAndTobaccoProductManufacturing
+313,Textile Mills,TextileMills
+314,Textile Product Mills,TextileProductMills
+315,Apparel Manufacturing,ApparelManufacturing
+316,Leather and Allied Product Manufacturing,LeatherAndAlliedProductManufacturing
+321,Wood Product Manufacturing,WoodProductManufacturing
+322,Paper Manufacturing,PaperManufacturing
+323,Printing and Related Support Activities,PrintingAndRelatedSupportActivities
+324,Petroleum and Coal Products Manufacturing,PetroleumAndCoalProductsManufacturing
+325,Chemical Manufacturing,ChemicalManufacturing
+326,Plastics and Rubber Products Manufacturing,PlasticsAndRubberProductsManufacturing
+327,Nonmetallic Mineral Product Manufacturing,NonmetallicMineralProductManufacturing
+331,Primary Metal Manufacturing,PrimaryMetalManufacturing
+332,Fabricated Metal Product Manufacturing,FabricatedMetalProductManufacturing
+333,Machinery Manufacturing,MachineryManufacturing
+334,Computer and Electronic Product Manufacturing,ComputerAndElectronicProductManufacturing
+335,"Electrical Equipment, Appliance, and Component Manufacturing",ElectricalEquipmentApplianceAndComponentManufacturing
+336,Transportation Equipment Manufacturing,TransportationEquipmentManufacturing
+337,Furniture and Related Product Manufacturing,FurnitureAndRelatedProductManufacturing
+339,Miscellaneous Manufacturing,MiscellaneousManufacturing
+423,"Merchant Wholesalers, Durable Goods",MerchantWholesalersDurableGoods
+424,"Merchant Wholesalers, Nondurable Goods",MerchantWholesalersNondurableGoods
+425,Wholesale Trade Agents and Brokers,WholesaleTradeAgentsAndBrokers
+441,Motor Vehicle and Parts Dealers,MotorVehicleAndPartsDealers
+444,Building Material and Garden Equipment and Supplies Dealers,BuildingMaterialAndGardenEquipmentAndSuppliesDealers
+445,Food and Beverage Retailers,FoodAndBeverageRetailers
+449,"Furniture, Home Furnishings, Electronics, and Appliance Retailers",FurnitureHomeFurnishingsElectronicsAndApplianceRetailers
+455,General Merchandise Retailers,GeneralMerchandiseRetailers
+456,Health and Personal Care Retailers,HealthAndPersonalCareRetailers
+457,Gasoline Stations and Fuel Dealers,GasolineStationsAndFuelDealers
+458,"Clothing, Clothing Accessories, Shoe, and Jewelry Retailers",ClothingClothingAccessoriesShoeAndJewelryRetailers
+459,"Sporting Goods, Hobby, Musical Instrument, Book, and Miscellaneous Retailers",SportingGoodsHobbyMusicalInstrumentBookAndMiscellaneousRetailers
+481,Air Transportation,AirTransportation
+482,Rail Transportation,RailTransportation
+483,Water Transportation,WaterTransportation
+484,Truck Transportation,TruckTransportation
+485,Transit and Ground Passenger Transportation,TransitAndGroundPassengerTransportation
+486,Pipeline Transportation,PipelineTransportation
+487,Scenic and Sightseeing Transportation,ScenicAndSightseeingTransportation
+488,Support Activities for Transportation,SupportActivitiesForTransportation
+491,Postal Service,PostalService
+492,Couriers and Messengers,CouriersAndMessengers
+493,Warehousing and Storage,WarehousingAndStorage
+511,Publishing Industries (except Internet),PublishingIndustriesExceptInternet
+512,Motion Picture and Sound Recording Industries,MotionPictureAndSoundRecordingIndustries
+515,Broadcasting (except Internet),BroadcastingExceptInternet
+517,Telecommunications,Telecommunications
+518,"Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services",ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices
+519,Other Information Services,OtherInformationServices
+521,Monetary Authorities-Central Bank,MonetaryAuthoritiesCentralBank
+522,Credit Intermediation and Related Activities,CreditIntermediationAndRelatedActivities
+523,"Securities, Commodity Contracts, and Other Financial Investments and Related Activities",SecuritiesCommodityContractsAndOtherFinancialInvestmentsAndRelatedActivities
+524,Insurance Carriers and Related Activities,InsuranceCarriersAndRelatedActivities
+525,"Funds, Trusts, and Other Financial Vehicles",FundsTrustsAndOtherFinancialVehicles
+531,Real Estate,RealEstate
+532,Rental and Leasing Services,RentalAndLeasingServices
+533,Lessors of Nonfinancial Intangible Assets (except Copyrighted Works),LessorsOfNonfinancialIntangibleAssetsExceptCopyrightedWorks
+541,"Professional, Scientific, and Technical Services",ProfessionalScientificAndTechnicalServices
+551,Management of Companies and Enterprises,ManagementOfCompaniesAndEnterprises
+561,Administrative and Support Services,AdministrativeAndSupportServices
+562,Waste Management and Remediation Services,WasteManagementAndRemediationServices
+611,Educational Services,EducationalServices
+621,Ambulatory Health Care Services,AmbulatoryHealthCareServices
+622,Hospitals,Hospitals
+623,Nursing and Residential Care Facilities,NursingAndResidentialCareFacilities
+624,Social Assistance,SocialAssistance
+711,"Performing Arts, Spectator Sports, and Related Industries",PerformingArtsSpectatorSportsAndRelatedIndustries
+712,"Museums, Historical Sites, and Similar Institutions",MuseumsHistoricalSitesAndSimilarInstitutions
+713,"Amusement, Gambling, and Recreation Industries",AmusementGamblingAndRecreationIndustries
+721,Accommodation,Accommodation
+722,Food Services and Drinking Places,FoodServicesAndDrinkingPlaces
+811,Repair and Maintenance,RepairAndMaintenance
+812,Personal and Laundry Services,PersonalAndLaundryServices
+813,"Religious, Grantmaking, Civic, Professional, and Similar Organizations",ReligiousGrantmakingCivicProfessionalAndSimilarOrganizations
+814,Private Households,PrivateHouseholds
+921,"Executive, Legislative, and Other General Government Support",ExecutiveLegislativeAndOtherGeneralGovernmentSupport
+922,"Justice, Public Order, and Safety Activities",JusticePublicOrderAndSafetyActivities
+923,Administration of Human Resource Programs,AdministrationOfHumanResourcePrograms
+924,Administration of Environmental Quality Programs,AdministrationOfEnvironmentalQualityPrograms
+925,"Administration of Housing Programs, Urban Planning, and Community Development",AdministrationOfHousingProgramsUrbanPlanningAndCommunityDevelopment
+926,Administration of Economic Programs,AdministrationOfEconomicPrograms
+927,Space Research and Technology,SpaceResearchAndTechnology
+928,National Security and International Affairs,NationalSecurityAndInternationalAffairs
+999,Unclassified Establishments,UnclassifiedEstablishments

@@ -1,4 +1,4 @@
-use crate::{map_to_int, Naics};
+use crate::{NaicsItems, map_to_int};
 
 #[derive(
     Debug,
@@ -29,7 +29,7 @@ impl RowCode {
     pub fn from_value(
         value: &serde_json::Map<String, serde_json::Value>,
         title: &str,
-        naics: &Naics,
+        naics: &NaicsItems,
     ) -> Result<Self, RowCodeMissing> {
         match map_to_int("RowCode", value) {
             // Code is present.

@@ -1,4 +1,4 @@
-use crate::{bea_data, Options, ParameterKind};
+use crate::{Options, ParameterKind, bea_data};
 use bears_species::{
     BTreeKeyMissing, BeaErr, BeaResponse, Dataset, DeriveFromStr, IoError, JsonParseError,
     JsonParseErrorKind, KeyMissing, Method, MillionsOptions, ParameterName, RateLimit,

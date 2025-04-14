@@ -1,6 +1,6 @@
 use crate::{App, Options};
 use bears_species::{BeaErr, EnvError, IoError, UrlParseError};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
+use tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt};
 
 pub fn bea_data() -> Result<std::path::PathBuf, EnvError> {
     let key = "BEA_DATA".to_string();

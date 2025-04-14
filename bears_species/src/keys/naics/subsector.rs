@@ -87,8 +87,8 @@ pub enum NaicsSubsector {
     MerchantWholesalersDurableGoods,
     /// Merchant Wholesalers, Nondurable Goods
     MerchantWholesalersNondurableGoods,
-    /// Wholesale Electronic Markets and Agents and Brokers
-    WholesaleElectronicMarketsAndAgentsAndBrokers,
+    /// Wholesale Trade Agents and Brokers
+    WholesaleTradeAgentsAndBrokers,
     /// Motor Vehicle and Parts Dealers
     MotorVehicleAndPartsDealers,
     /// Furniture and Home Furnishings Stores
@@ -97,22 +97,20 @@ pub enum NaicsSubsector {
     ElectronicsAndApplianceStores,
     /// Building Material and Garden Equipment and Supplies Dealers
     BuildingMaterialAndGardenEquipmentAndSuppliesDealers,
-    /// Food and Beverage Stores
-    FoodAndBeverageStores,
-    /// Health and Personal Care Stores
-    HealthAndPersonalCareStores,
-    /// Gasoline Stations
-    GasolineStations,
-    /// Clothing and Clothing Accessories Stores
-    ClothingAndClothingAccessoriesStores,
-    /// Sporting Goods, Hobby, Musical Instrument, and Book Stores
-    SportingGoodsHobbyMusicalInstrumentAndBookStores,
-    /// General Merchandise Stores
-    GeneralMerchandiseStores,
-    /// Miscellaneous Store Retailers
-    MiscellaneousStoreRetailers,
-    /// Nonstore Retailers
-    NonstoreRetailers,
+    /// Food and Beverage Retailers
+    FoodAndBeverageRetailers,
+    /// Furniture, Home Furnishings, Electronics, and Appliance Retailers
+    FurnitureHomeFurnishingsElectronicsAndApplianceRetailers,
+    /// General Merchandise Retailers
+    GeneralMerchandiseRetailers,
+    /// Health and Personal Care Retailers
+    HealthAndPersonalCareRetailers,
+    /// Gasoline Stations and Fuel Dealers
+    GasolineStationsAndFuelDealers,
+    /// Clothing, Clothing Accessories, Shoe, and Jewelry Retailers
+    ClothingClothingAccessoriesShoeAndJewelryRetailers,
+    /// Sporting Goods, Hobby, Musical Instrument, Book, and Miscellaneous Retailers
+    SportingGoodsHobbyMusicalInstrumentBookAndMiscellaneousRetailers,
     /// Air Transportation
     AirTransportation,
     /// Rail Transportation
@@ -143,8 +141,8 @@ pub enum NaicsSubsector {
     BroadcastingExceptInternet,
     /// Telecommunications
     Telecommunications,
-    /// Data Processing, Hosting, and Related Services
-    DataProcessingHostingAndRelatedServices,
+    /// Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services
+    ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices,
     /// Other Information Services
     OtherInformationServices,
     /// Monetary Authorities-Central Bank
@@ -215,6 +213,8 @@ pub enum NaicsSubsector {
     SpaceResearchAndTechnology,
     /// National Security and International Affairs
     NationalSecurityAndInternationalAffairs,
+    /// Unclassified Establishments
+    UnclassifiedEstablishments,
 }
 
 impl NaicsSubsector {
@@ -279,27 +279,26 @@ impl NaicsSubsector {
             Self::MiscellaneousManufacturing => "Miscellaneous Manufacturing",
             Self::MerchantWholesalersDurableGoods => "Merchant Wholesalers, Durable Goods",
             Self::MerchantWholesalersNondurableGoods => "Merchant Wholesalers, Nondurable Goods",
-            Self::WholesaleElectronicMarketsAndAgentsAndBrokers => {
-                "Wholesale Electronic Markets and Agents and Brokers"
-            }
+            Self::WholesaleTradeAgentsAndBrokers => "Wholesale Trade Agents and Brokers",
             Self::MotorVehicleAndPartsDealers => "Motor Vehicle and Parts Dealers",
             Self::FurnitureAndHomeFurnishingsStores => "Furniture and Home Furnishings Stores",
             Self::ElectronicsAndApplianceStores => "Electronics and Appliance Stores",
             Self::BuildingMaterialAndGardenEquipmentAndSuppliesDealers => {
                 "Building Material and Garden Equipment and Supplies Dealers"
             }
-            Self::FoodAndBeverageStores => "Food and Beverage Stores",
-            Self::HealthAndPersonalCareStores => "Health and Personal Care Stores",
-            Self::GasolineStations => "Gasoline Stations",
-            Self::ClothingAndClothingAccessoriesStores => {
-                "Clothing and Clothing Accessories Stores"
+            Self::FoodAndBeverageRetailers => "Food and Beverage Retailers",
+            Self::FurnitureHomeFurnishingsElectronicsAndApplianceRetailers => {
+                "Furniture, Home Furnishings, Electronics, and Appliance Retailers"
             }
-            Self::SportingGoodsHobbyMusicalInstrumentAndBookStores => {
-                "Sporting Goods, Hobby, Musical Instrument, and Book Stores"
+            Self::GeneralMerchandiseRetailers => "General Merchandise Retailers",
+            Self::HealthAndPersonalCareRetailers => "Health and Personal Care Retailers",
+            Self::GasolineStationsAndFuelDealers => "Gasoline Stations and Fuel Dealers",
+            Self::ClothingClothingAccessoriesShoeAndJewelryRetailers => {
+                "Clothing, Clothing Accessories, Shoe, and Jewelry Retailers"
             }
-            Self::GeneralMerchandiseStores => "General Merchandise Stores",
-            Self::MiscellaneousStoreRetailers => "Miscellaneous Store Retailers",
-            Self::NonstoreRetailers => "Nonstore Retailers",
+            Self::SportingGoodsHobbyMusicalInstrumentBookAndMiscellaneousRetailers => {
+                "Sporting Goods, Hobby, Musical Instrument, Book, and Miscellaneous Retailers"
+            }
             Self::AirTransportation => "Air Transportation",
             Self::RailTransportation => "Rail Transportation",
             Self::WaterTransportation => "Water Transportation",
@@ -319,8 +318,8 @@ impl NaicsSubsector {
             }
             Self::BroadcastingExceptInternet => "Broadcasting (except Internet)",
             Self::Telecommunications => "Telecommunications",
-            Self::DataProcessingHostingAndRelatedServices => {
-                "Data Processing, Hosting, and Related Services"
+            Self::ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices => {
+                "Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services"
             }
             Self::OtherInformationServices => "Other Information Services",
             Self::MonetaryAuthoritiesCentralBank => "Monetary Authorities-Central Bank",
@@ -391,6 +390,7 @@ impl NaicsSubsector {
             Self::NationalSecurityAndInternationalAffairs => {
                 "National Security and International Affairs"
             }
+            Self::UnclassifiedEstablishments => "Unclassified Establishments",
         }
     }
 
@@ -435,19 +435,18 @@ impl NaicsSubsector {
             Self::MiscellaneousManufacturing => 339,
             Self::MerchantWholesalersDurableGoods => 423,
             Self::MerchantWholesalersNondurableGoods => 424,
-            Self::WholesaleElectronicMarketsAndAgentsAndBrokers => 425,
+            Self::WholesaleTradeAgentsAndBrokers => 425,
             Self::MotorVehicleAndPartsDealers => 441,
             Self::FurnitureAndHomeFurnishingsStores => 442,
             Self::ElectronicsAndApplianceStores => 443,
             Self::BuildingMaterialAndGardenEquipmentAndSuppliesDealers => 444,
-            Self::FoodAndBeverageStores => 445,
-            Self::HealthAndPersonalCareStores => 446,
-            Self::GasolineStations => 447,
-            Self::ClothingAndClothingAccessoriesStores => 448,
-            Self::SportingGoodsHobbyMusicalInstrumentAndBookStores => 451,
-            Self::GeneralMerchandiseStores => 452,
-            Self::MiscellaneousStoreRetailers => 453,
-            Self::NonstoreRetailers => 454,
+            Self::FoodAndBeverageRetailers => 445,
+            Self::FurnitureHomeFurnishingsElectronicsAndApplianceRetailers => 449,
+            Self::GeneralMerchandiseRetailers => 455,
+            Self::HealthAndPersonalCareRetailers => 456,
+            Self::GasolineStationsAndFuelDealers => 457,
+            Self::ClothingClothingAccessoriesShoeAndJewelryRetailers => 458,
+            Self::SportingGoodsHobbyMusicalInstrumentBookAndMiscellaneousRetailers => 459,
             Self::AirTransportation => 481,
             Self::RailTransportation => 482,
             Self::WaterTransportation => 483,
@@ -463,7 +462,7 @@ impl NaicsSubsector {
             Self::MotionPictureAndSoundRecordingIndustries => 512,
             Self::BroadcastingExceptInternet => 515,
             Self::Telecommunications => 517,
-            Self::DataProcessingHostingAndRelatedServices => 518,
+            Self::ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices => 518,
             Self::OtherInformationServices => 519,
             Self::MonetaryAuthoritiesCentralBank => 521,
             Self::CreditIntermediationAndRelatedActivities => 522,
@@ -501,6 +500,7 @@ impl NaicsSubsector {
             Self::AdministrationOfEconomicPrograms => 926,
             Self::SpaceResearchAndTechnology => 927,
             Self::NationalSecurityAndInternationalAffairs => 928,
+            Self::UnclassifiedEstablishments => 999,
         }
     }
 
@@ -511,7 +511,7 @@ impl NaicsSubsector {
     ///
     /// # Returns
     /// `Some(NaicsSubsector)` if a matching code is found, `None` otherwise
-    pub fn from_key(key: &str) -> Option<Self> {
+    pub fn from_code(key: &str) -> Option<Self> {
         let code = key.parse::<i64>().ok()?;
 
         let result = match code {
@@ -550,19 +550,18 @@ impl NaicsSubsector {
             339 => Self::MiscellaneousManufacturing,
             423 => Self::MerchantWholesalersDurableGoods,
             424 => Self::MerchantWholesalersNondurableGoods,
-            425 => Self::WholesaleElectronicMarketsAndAgentsAndBrokers,
+            425 => Self::WholesaleTradeAgentsAndBrokers,
             441 => Self::MotorVehicleAndPartsDealers,
             442 => Self::FurnitureAndHomeFurnishingsStores,
             443 => Self::ElectronicsAndApplianceStores,
             444 => Self::BuildingMaterialAndGardenEquipmentAndSuppliesDealers,
-            445 => Self::FoodAndBeverageStores,
-            446 => Self::HealthAndPersonalCareStores,
-            447 => Self::GasolineStations,
-            448 => Self::ClothingAndClothingAccessoriesStores,
-            451 => Self::SportingGoodsHobbyMusicalInstrumentAndBookStores,
-            452 => Self::GeneralMerchandiseStores,
-            453 => Self::MiscellaneousStoreRetailers,
-            454 => Self::NonstoreRetailers,
+            445 => Self::FoodAndBeverageRetailers,
+            449 => Self::FurnitureHomeFurnishingsElectronicsAndApplianceRetailers,
+            455 => Self::GeneralMerchandiseRetailers,
+            456 => Self::HealthAndPersonalCareRetailers,
+            457 => Self::GasolineStationsAndFuelDealers,
+            458 => Self::ClothingClothingAccessoriesShoeAndJewelryRetailers,
+            459 => Self::SportingGoodsHobbyMusicalInstrumentBookAndMiscellaneousRetailers,
             481 => Self::AirTransportation,
             482 => Self::RailTransportation,
             483 => Self::WaterTransportation,
@@ -578,7 +577,7 @@ impl NaicsSubsector {
             512 => Self::MotionPictureAndSoundRecordingIndustries,
             515 => Self::BroadcastingExceptInternet,
             517 => Self::Telecommunications,
-            518 => Self::DataProcessingHostingAndRelatedServices,
+            518 => Self::ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices,
             519 => Self::OtherInformationServices,
             521 => Self::MonetaryAuthoritiesCentralBank,
             522 => Self::CreditIntermediationAndRelatedActivities,
@@ -616,6 +615,7 @@ impl NaicsSubsector {
             926 => Self::AdministrationOfEconomicPrograms,
             927 => Self::SpaceResearchAndTechnology,
             928 => Self::NationalSecurityAndInternationalAffairs,
+            999 => Self::UnclassifiedEstablishments,
             _ => return None,
         };
 

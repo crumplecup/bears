@@ -1,4 +1,4 @@
-use crate::{from_csv, IoError};
+use crate::{IoError, from_csv};
 
 #[derive(
     Debug,
@@ -18,6 +18,7 @@ pub struct NaicsItem {
     code: i64,
     #[serde(rename = "naics_title")]
     title: String,
+    name: String,
 }
 
 #[derive(
@@ -36,9 +37,9 @@ pub struct NaicsItem {
     derive_more::DerefMut,
 )]
 #[from(Vec<NaicsItem>)]
-pub struct Naics(Vec<NaicsItem>);
+pub struct NaicsItems(Vec<NaicsItem>);
 
-impl Naics {
+impl NaicsItems {
     pub fn from_csv<P: AsRef<std::path::Path>>(path: P) -> Result<Self, IoError> {
         let naics = from_csv(path)?;
         Ok(Self::from(naics))

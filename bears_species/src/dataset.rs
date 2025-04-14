@@ -1,4 +1,4 @@
-use crate::{map_to_string, BeaErr, JsonParseError, KeyMissing, NotObject, ParameterName};
+use crate::{BeaErr, JsonParseError, KeyMissing, NotObject, ParameterName, map_to_string};
 use convert_case::Casing;
 use serde::{Deserialize, Serialize};
 

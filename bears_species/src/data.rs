@@ -1,7 +1,8 @@
 use crate::{
-    date_by_period, map_to_float, map_to_int, map_to_string, parse_year, roman_numeral_quarter,
     AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, Frequency, IoError, ItaData,
-    JsonParseError, KeyMissing, Naics, NotArray, NotObject, RowCode, SerdeJson, VariantMissing,
+    JsonParseError, KeyMissing, NaicsItems, NotArray, NotObject, RowCode, SerdeJson,
+    VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string, parse_year,
+    roman_numeral_quarter,
 };
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize, derive_more::From,
@@ -399,7 +400,7 @@ pub struct MneDiDatum {
 impl MneDiDatum {
     pub fn read_json(
         m: &serde_json::Map<String, serde_json::Value>,
-        naics: &Naics,
+        naics: &NaicsItems,
     ) -> Result<Self, BeaErr> {
         tracing::trace!("Reading MneDiDatum.");
         let column = map_to_string("Column", m)?;
@@ -510,7 +511,7 @@ impl TryFrom<&serde_json::Value> for MneDiData {
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading MneDiData");
         // use naics code to determine missing row codes from the row title
-        let naics = Naics::from_csv("data/naics_codes.csv")?;
+        let naics = NaicsItems::from_csv("data/naics_codes.csv")?;
         match result_to_data(value)? {
             serde_json::Value::Array(v) => {
                 let mut data = Vec::new();

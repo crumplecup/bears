@@ -1,7 +1,7 @@
 use crate::{Mode, ResultStatus};
 use bears_species::{
-    map_to_string, BeaErr, DeriveFromStr, Jiff, JsonParseError, JsonParseErrorKind, KeyMissing,
-    NotObject, ParseInt,
+    BeaErr, DeriveFromStr, Jiff, JsonParseError, JsonParseErrorKind, KeyMissing, NotObject,
+    ParseInt, map_to_string,
 };
 use jiff::ToSpan;
 use std::str::FromStr;
