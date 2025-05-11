@@ -1,6 +1,7 @@
 use bears_ecology::trace_init;
 use bears_species::{
-    BeaErr, KeyMissing, NaicsCategory, NaicsItems, NaicsSector, NaicsSubcategory, NaicsSubsector,
+    BeaErr, KeyMissing, NaicsCategory, NaicsIndustry, NaicsItems, NaicsSector, NaicsSubcategory,
+    NaicsSubsector,
 };
 use std::str::FromStr;
 use strum::IntoEnumIterator;
@@ -264,6 +265,75 @@ pub fn check_naics_subcategory() -> Result<(), BeaErr> {
                 return Err(error.into());
             }
             if let Some(comp) = NaicsSubcategory::from_code(&code.to_string()) {
+                if variant != comp {
+                    tracing::error!("Code {code} parses to variant {comp}, expected {variant}.");
+                    let error = KeyMissing::new(variant.to_string(), line!(), file!().to_string());
+                    return Err(error.into());
+                }
+            } else {
+                tracing::error!("Code {code} fails to parse to variant {variant}.");
+                let error =
+                    KeyMissing::new(variant.code().to_string(), line!(), file!().to_string());
+                return Err(error.into());
+            }
+        }
+    }
+    // all variants accounted for
+    Ok(())
+}
+
+/// Checks that each Naics industry code matches a variant of
+/// [`NaicsIndustry`]. The industry code is the full six-digit naics industry code.
+/// Returns an error if a value does not match a known variant.
+///
+/// Does not test that all variants in `NaicsIndustry` are in active use.
+#[tracing::instrument]
+pub fn check_naics_industry() -> Result<(), BeaErr> {
+    trace_init()?;
+    let path = "cave/naics_industry.csv";
+    let naics = NaicsItems::from_csv(path)?;
+    // Create vector of variants.
+    let sets: Vec<String> = NaicsIndustry::iter()
+        .map(|d| d.to_string())
+        // .map(|d| d.to_string().to_lowercase())
+        .collect();
+    tracing::trace!("Sets: {:#?}", sets);
+
+    for (index, item) in naics.iter().enumerate() {
+        let name = item.name();
+        if !sets.contains(name) {
+            tracing::warn!("Row {index}: {} not a variant of NaicsIndustry.", name);
+            let error = KeyMissing::new(name.to_owned(), line!(), file!().to_string());
+            return Err(error.into());
+        } else {
+            // Ok to unwrap because name is in sets
+            let variant = NaicsIndustry::from_str(name).unwrap();
+            // check that the description matches the record for this variant
+            let desc = variant.description();
+            if desc.trim() != item.title().trim() {
+                tracing::warn!(
+                    "{desc} not the description of {variant}, expected {}.",
+                    item.title().trim()
+                );
+                let error = KeyMissing::new(
+                    variant.description().to_owned(),
+                    line!(),
+                    file!().to_string(),
+                );
+                return Err(error.into());
+            }
+            // check that the code matches the record for this variant
+            let code = variant.code();
+            if code != *item.code() {
+                tracing::warn!(
+                    "{code} not the code of {variant}, expected {}.",
+                    item.code()
+                );
+                let error =
+                    KeyMissing::new(variant.code().to_string(), line!(), file!().to_string());
+                return Err(error.into());
+            }
+            if let Some(comp) = NaicsIndustry::from_code(&code.to_string()) {
                 if variant != comp {
                     tracing::error!("Code {code} parses to variant {comp}, expected {variant}.");
                     let error = KeyMissing::new(variant.to_string(), line!(), file!().to_string());
