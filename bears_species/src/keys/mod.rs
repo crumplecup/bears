@@ -32,7 +32,8 @@ pub use input_output_table::InputOutputTable;
 pub use investment::{DirectionOfInvestment, InvestmentKind};
 pub use millions::{Millions, MillionsOptions};
 pub use naics::{
-    NaicsCategory, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory, NaicsSubsector,
+    NaicsCategory, NaicsIndustry, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
+    NaicsSubsector,
 };
 pub use numeric::{
     AnnotatedInteger, BoolInvalid, BoolOptions, Integer, IntegerInvalid, IntegerKind,
@@ -44,6 +45,6 @@ pub use selection::{SelectionKind, SelectionSet};
 pub use state::{State, StateKind};
 pub use table_name::{NipaTableName, TableName};
 pub use year::{
-    date_by_period, parse_year, roman_numeral_quarter, NipaRange, NipaRangeIterator, NipaRanges,
-    NotQuarter, Year, YearInvalid, YearKind, YearOptions, YearRange,
+    NipaRange, NipaRangeIterator, NipaRanges, NotQuarter, Year, YearInvalid, YearKind, YearOptions,
+    YearRange, date_by_period, parse_year, roman_numeral_quarter,
 };
