@@ -181,7 +181,6 @@ naics_code,naics_title,name
 312230,Tobacco Manufacturing ,TobaccoManufacturing
 313110,"Fiber, Yarn, and Thread Mills ",FiberYarnAndThreadMills
 313210,Broadwoven Fabric Mills,BroadwovenFabricMills
-313220,Narrow Fabric Mills and Schiffli,
 313220,Narrow Fabric Mills and Schiffli Machine Embroidery,NarrowFabricMillsAndSchiffliMachineEmbroidery
 313230,Nonwoven Fabric Mills,NonwovenFabricMills
 313240,Knit Fabric Mills,KnitFabricMills
@@ -748,7 +747,7 @@ naics_code,naics_title,name
 532210,Consumer Electronics and Appliances Rental,ConsumerElectronicsAndAppliancesRental
 532220,Formal Wear and Costume Rental,FormalWearAndCostumeRental
 532230,Video Tape and Disc Rental,VideoTapeAndDiscRental
-532281,Recreational Goods Rental,RecreationalGoodsRental
+532281,Recreational Goods Rental Parent,RecreationalGoodsRentalParent
 532282,Medical Equipment and Supplies Rental,MedicalEquipmentAndSuppliesRental
 532283,Home Health Equipment and Supplies Rental,HomeHealthEquipmentAndSuppliesRental
 532284,Recreational Goods Rental,RecreationalGoodsRental
@@ -810,7 +809,7 @@ naics_code,naics_title,name
 541990,"All Other Professional, Scientific, and Technical Services",AllOtherProfessionalScientificAndTechnicalServices
 551111,Offices of Bank Holding Companies,OfficesOfBankHoldingCompanies
 551112,Offices of Other Holding Companies,OfficesOfOtherHoldingCompanies
-551113,"Corporate, Subsidiary, and Regional Managing Offices",CorporateSubsidiaryAndRegionalManagingOffices
+551113,"Corporate, Subsidiary, and Regional Managing Offices Parent",CorporateSubsidiaryAndRegionalManagingOfficesParent
 551114,"Corporate, Subsidiary, and Regional Managing Offices",CorporateSubsidiaryAndRegionalManagingOffices
 561110,Office Administrative Services,OfficeAdministrativeServices
 561210,Facilities Support Services,FacilitiesSupportServices
@@ -973,7 +972,6 @@ naics_code,naics_title,name
 811490,Other Personal and Household Goods Repair and Maintenance,OtherPersonalAndHouseholdGoodsRepairAndMaintenance
 812111,Barber Shops,BarberShops
 812112,Beauty Salons,BeautySalons
-812113,Nail Salons,NailSalons
 812113,Nail Salons,NailSalons
 812191,Diet and Weight Reducing Centers,DietAndWeightReducingCenters
 812199,Other Personal Care Services,OtherPersonalCareServices
