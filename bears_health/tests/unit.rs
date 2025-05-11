@@ -89,6 +89,7 @@ fn check_naics() -> anyhow::Result<()> {
     bears_health::check_naics_subsectors()?;
     bears_health::check_naics_category()?;
     bears_health::check_naics_subcategory()?;
+    bears_health::check_naics_industry()?;
     Ok(())
 }
 

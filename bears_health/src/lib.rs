@@ -189,7 +189,8 @@ pub use datasets::{check_datasets, datasets_from_file, datasets_to_json};
 pub use histories::download_summary;
 pub use indicators::check_indicators;
 pub use naics::{
-    check_naics_category, check_naics_sectors, check_naics_subcategory, check_naics_subsectors,
+    check_naics_category, check_naics_industry, check_naics_sectors, check_naics_subcategory,
+    check_naics_subsectors,
 };
 pub use parameter_values::{
     parameter_value_filtered, parameter_value_from_json, parameter_values_from_file,
