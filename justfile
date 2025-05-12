@@ -4,7 +4,7 @@ cliff version:
   git commit -m "CHANGELOG.md updated for version {{version}}"
 
 tool_up:
-  cargo install just cargo-audit cargo-auditable omnibor-cli
+  cargo install just git-cliff cargo-audit cargo-auditable omnibor-cli
   cargo install cargo-dist cargo-release --locked
 
 dist:
