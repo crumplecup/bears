@@ -1,10 +1,12 @@
 mod category;
+mod industry;
 mod item;
 mod sector;
 mod subcategory;
 mod subsector;
 
 pub use category::NaicsCategory;
+pub use industry::NaicsIndustry;
 pub use item::{NaicsItem, NaicsItems};
 pub use sector::NaicsSector;
 pub use subcategory::NaicsSubcategory;
