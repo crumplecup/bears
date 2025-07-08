@@ -62,7 +62,7 @@ fn init_method(method: Method) -> Result<App, BeaErr> {
     let mut app = init()?;
     tracing::info!("App initialized.");
     let mut options = Options::default();
-    options.with_method(method);
+    let _ = options.with_method(method);
     app.with_options(options);
     tracing::info!("App configured for {method}.");
     Ok(app)
@@ -283,7 +283,7 @@ async fn parameter(dataset: Dataset, app: &mut App) -> Result<(), BeaErr> {
             let method = "get".to_string();
             let body = app.params().into_iter().collect::<Vec<(String, String)>>();
             let mut error = ReqwestError::new(url, method, source, line!(), file!().to_string());
-            error.with_body(body);
+            let _ = error.with_body(body);
             Err(error.into())
         }
     }
@@ -313,8 +313,8 @@ async fn parameter_value(
     name: ParameterName,
 ) -> Result<(), BeaErr> {
     let mut opts = app.options().clone();
-    opts.with_dataset(dataset);
-    opts.with_param_name(name);
+    let _ = opts.with_dataset(dataset);
+    let _ = opts.with_param_name(name);
     app.with_options(opts);
     let data = app.get().await?;
     match data.json::<serde_json::Value>().await {
@@ -339,7 +339,7 @@ async fn parameter_value(
             let method = "get".to_string();
             let body = app.params().into_iter().collect::<Vec<(String, String)>>();
             let mut error = ReqwestError::new(url, method, source, line!(), file!().to_string());
-            error.with_body(body);
+            let _ = error.with_body(body);
             Err(error.into())
         }
     }
@@ -380,8 +380,8 @@ pub async fn parameter_values() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 async fn value(dataset: Dataset, app: &mut App, name: ParameterName) -> Result<(), BeaErr> {
     let mut options = app.options().clone();
-    options.with_dataset(dataset);
-    options.with_target(name);
+    let _ = options.with_dataset(dataset);
+    let _ = options.with_target(name);
     app.with_options(options.clone());
     let data = app.get().await?;
     tracing::info!("{data:#?}");
@@ -420,7 +420,7 @@ async fn value(dataset: Dataset, app: &mut App, name: ParameterName) -> Result<(
             let method = "get".to_string();
             let body = app.params().into_iter().collect::<Vec<(String, String)>>();
             let mut error = ReqwestError::new(url, method, source, line!(), file!().to_string());
-            error.with_body(body);
+            let _ = error.with_body(body);
             return Err(error.into());
         }
     }
@@ -498,8 +498,8 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
     };
     // Add dataset and target parameter to options
     let mut options = app.options().clone();
-    options.with_dataset(dataset);
-    options.with_target(name);
+    let _ = options.with_dataset(dataset);
+    let _ = options.with_target(name);
     // navigate to parameter_values directory
     let path = bea_data.join("parameter_values");
     // create the folder if it does not exist
@@ -521,7 +521,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
         ParameterName::Industry => {
             for id in table_id {
                 // add table id to options
-                options.with_table_id(*id.value());
+                let _ = options.with_table_id(*id.value());
                 // update app with modified options
                 app.with_options(options.clone());
                 // fire off the get request using the configured app
@@ -550,7 +550,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
                         let body = app.params().into_iter().collect::<Vec<(String, String)>>();
                         let mut error =
                             ReqwestError::new(url, method, source, line!(), file!().to_string());
-                        error.with_body(body);
+                        let _ = error.with_body(body);
                         return Err(error.into());
                     }
                 }
@@ -559,7 +559,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
         // TODO: Test this branch
         ParameterName::Year => {
             for id in table_id {
-                options.with_table_id(*id.value());
+                let _ = options.with_table_id(*id.value());
                 app.with_options(options.clone());
                 let data = app.get().await?;
                 tracing::info!("{data:#?}");
@@ -582,7 +582,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
                         let body = app.params().into_iter().collect::<Vec<(String, String)>>();
                         let mut error =
                             ReqwestError::new(url, method, source, line!(), file!().to_string());
-                        error.with_body(body);
+                        let _ = error.with_body(body);
                         return Err(error.into());
                     }
                 }

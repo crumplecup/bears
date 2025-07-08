@@ -59,8 +59,8 @@ pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
         for name in names {
             if *dataset == Dataset::Nipa && name == ParameterName::Frequency {
                 let mut options = app.options().clone();
-                options.with_dataset(*dataset);
-                options.with_target(name);
+                let _ = options.with_dataset(*dataset);
+                let _ = options.with_target(name);
                 app.with_options(options.clone());
                 let data = app.get().await?;
                 tracing::info!("{data:#?}");
@@ -81,7 +81,7 @@ pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
                         let body = app.params().into_iter().collect::<Vec<(String, String)>>();
                         let mut error =
                             ReqwestError::new(url, method, source, line!(), file!().to_string());
-                        error.with_body(body);
+                        let _ = error.with_body(body);
                         return Err(error.into());
                     }
                 }

@@ -1,5 +1,5 @@
 use crate::{App, Event, History, ResultStatus, SizeEvent, Tracker, file_size};
-use bears_species::{BeaErr, Data};
+use bears_species::{BeaErr, BeaErrorKind, Data};
 use indicatif::ProgressIterator;
 use rayon::prelude::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
 
@@ -100,7 +100,7 @@ impl Queue {
             .collect::<Vec<std::path::PathBuf>>();
         let index = paths.binary_search(event.path()).unwrap();
         // Update the `size_hint` field of the app to the event length.
-        self[ids[index]].with_size_hint(*event.length());
+        let _ = self[ids[index]].with_size_hint(*event.length());
     }
 
     #[tracing::instrument(skip_all)]
@@ -128,7 +128,7 @@ impl Queue {
             // get the app associated with the path index
             let mut app = self[ids[index]].clone();
             // Update the `size_hint` field of the app to the event length.
-            app.with_size_hint(*event.length());
+            let _ = app.with_size_hint(*event.length());
             // add to results vector
             apps.push(app);
         }
@@ -141,6 +141,19 @@ impl Queue {
         let (tx, mut rx) = tokio::sync::mpsc::channel(29);
         let download = self.downloader(tx, tracker.clone(), overwrite);
         let listen = Self::listen(&mut rx, tracker.clone(), Mode::Download);
+        // let join = tokio::try_join!(download, listen);
+        // if let Err(blame) = join {
+        //     match *blame.as_ref() {
+        //         BeaErrorKind::RateLimit(_) => {
+        //             tracing::error!("Limit rate exceeded, pausing for one hour.");
+        //             tokio::time::sleep(std::time::Duration::from_millis(3600000)).await;
+        //         }
+        //         _ => {
+        //             tracing::error!("Unexpected error: {blame}");
+        //             return Err(blame);
+        //         }
+        //     }
+        // }
         let (download_res, listen_res) = tokio::join!(download, listen);
         // listen_res?;
         if let Err(blame) = download_res {
@@ -148,7 +161,13 @@ impl Queue {
         }
         if let Err(blame) = listen_res {
             tracing::warn!("Probelm with tracking: {blame}");
-            return Err(blame);
+            match *blame.as_ref() {
+                BeaErrorKind::RateLimit(_) => {
+                    tracing::error!("Limit rate exceeded, pausing for one hour.");
+                    tokio::time::sleep(std::time::Duration::from_millis(3600000)).await;
+                }
+                _ => return Err(blame),
+            }
         }
         Ok(())
     }
@@ -168,13 +187,15 @@ impl Queue {
                 }
                 ResultStatus::Pass(_) | ResultStatus::Pending => {}
                 ResultStatus::Abort => {
-                    tracing::info!("Abort detected.");
+                    // tracing::error!("Limit rate exceeded, pausing for one hour.");
+                    // tokio::time::sleep(std::time::Duration::from_millis(3600000)).await;
                     // let error = RateLimit::new(
                     //     "RequestsExceeded".to_string(),
                     //     line!(),
                     //     file!().to_string(),
                     // );
                     // return Err(error.into());
+                    tracing::error!("Abort detected.");
                     panic!("Limit rate exceeded.")
                 }
             }
