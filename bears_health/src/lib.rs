@@ -181,9 +181,9 @@ mod values;
 pub use aocs::check_aoc_sta;
 pub use components::check_components;
 pub use data::{
-    data_from_json, data_to_json, datasets_download_initial, datasets_download_with_history,
-    datasets_initial_load, datasets_initial_load_continued, datasets_retry_load,
-    debug_gdpbyindustry, download_history,
+    data_from_json, data_to_json, datasets_download_initial, datasets_download_mne_initial,
+    datasets_download_with_history, datasets_initial_load, datasets_initial_load_continued,
+    datasets_retry_load, debug_gdpbyindustry, download_history,
 };
 pub use datasets::{check_datasets, datasets_from_file, datasets_to_json};
 pub use histories::download_summary;

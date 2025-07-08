@@ -1,6 +1,6 @@
 use bears_ecology::{
-    download_with_history, init_queue, initial_download, initial_load, retry_load, trace_init,
-    History, Mode, Style,
+    History, Mode, Queue, Style, download_with_history, init_queue, initial_download, initial_load,
+    retry_load, trace_init,
 };
 use bears_species::{BeaErr, Dataset, GdpData};
 
@@ -123,16 +123,33 @@ pub fn debug_gdpbyindustry() -> Result<(), BeaErr> {
 #[tracing::instrument]
 pub async fn datasets_download_initial() -> Result<(), BeaErr> {
     trace_init()?;
-    // let datasets = vec![
-    //     Dataset::Nipa,
-    //     Dataset::NIUnderlyingDetail,
-    //     Dataset::FixedAssets,
-    //     Dataset::Mne,
-    //     Dataset::GDPbyIndustry,
-    // ];
-    let datasets = vec![Dataset::Ita];
+    let datasets = vec![
+        // Dataset::Nipa,
+        // Dataset::NIUnderlyingDetail,
+        // Dataset::FixedAssets,
+        Dataset::Mne,
+        // Dataset::GDPbyIndustry,
+        // Dataset::Ita,
+    ];
+    // let datasets = vec![Dataset::Ita];
     for dataset in datasets {
         initial_download(dataset).await?;
+    }
+    Ok(())
+}
+
+#[tracing::instrument]
+pub async fn datasets_download_mne_initial() -> Result<(), BeaErr> {
+    trace_init()?;
+    let dataset = Dataset::Mne;
+    // let datasets = vec![Dataset::Ita];
+    let queue = init_queue(dataset)?;
+    tracing::info!("Queue length: {}", queue.len());
+    let chunks = queue.chunks(100);
+    for (i, chunk) in chunks.enumerate().skip(47) {
+        let queue = Queue::new(chunk.to_vec());
+        queue.download(false).await?;
+        tracing::info!("Chunk {} complete.", i + 1);
     }
     Ok(())
 }
@@ -162,14 +179,14 @@ pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     trace_init()?;
-    // let datasets = vec![
-    //     Dataset::Nipa,
-    //     Dataset::NIUnderlyingDetail,
-    //     Dataset::FixedAssets,
-    //     Dataset::Mne,
-    //     Dataset::GDPbyIndustry,
-    // ];
-    let datasets = vec![Dataset::FixedAssets];
+    let datasets = vec![
+        Dataset::Nipa,
+        //     Dataset::NIUnderlyingDetail,
+        //     Dataset::FixedAssets,
+        //     Dataset::Mne,
+        //     Dataset::GDPbyIndustry,
+    ];
+    // let datasets = vec![Dataset::FixedAssets];
     for dataset in datasets {
         let result = initial_load(dataset, None).await?;
         tracing::info!("{} datasets loaded.", result.len());
