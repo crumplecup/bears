@@ -43,7 +43,7 @@ impl std::fmt::Display for FromStrError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{} does not match variant of {}",
+            "FromStrError: {} does not match variant of {}",
             self.input, self.target
         )
     }
