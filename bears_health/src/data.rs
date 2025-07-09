@@ -146,7 +146,7 @@ pub async fn datasets_download_mne_initial() -> Result<(), BeaErr> {
     let queue = init_queue(dataset)?;
     tracing::info!("Queue length: {}", queue.len());
     let chunks = queue.chunks(100);
-    for (i, chunk) in chunks.enumerate().skip(47) {
+    for (i, chunk) in chunks.enumerate().skip(48) {
         let queue = Queue::new(chunk.to_vec());
         queue.download(false).await?;
         tracing::info!("Chunk {} complete.", i + 1);
@@ -180,9 +180,9 @@ pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
 pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     trace_init()?;
     let datasets = vec![
-        Dataset::Nipa,
-        //     Dataset::NIUnderlyingDetail,
-        //     Dataset::FixedAssets,
+        // Dataset::Nipa,
+        // Dataset::NIUnderlyingDetail,
+        Dataset::FixedAssets,
         //     Dataset::Mne,
         //     Dataset::GDPbyIndustry,
     ];
