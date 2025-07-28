@@ -355,7 +355,6 @@ naics_code,naics_title,name
 44921,Electronics and Appliance Retailers,ElectronicsAndApplianceRetailers
 45511,Department Stores,DepartmentStores
 45521,Warehouse Clubs and Supercenters,WarehouseClubsAndSupercenters
-45522,All Other General Merchandise Retailers,AllOtherGeneralMerchandiseRetailers
 45611,Pharmacies and Drug Retailers,PharmaciesAndDrugRetailers
 45612,"Cosmetics, Beauty Supplies, and Perfume Retailers",CosmeticsBeautySuppliesAndPerfumeRetailers
 45613,Optical Goods Retailers,OpticalGoodsRetailers
@@ -363,8 +362,7 @@ naics_code,naics_title,name
 45711,Gasoline Stations with Convenience Stores,GasolineStationsWithConvenienceStores
 45712,Other Gasoline Stations,OtherGasolineStations
 45721,Fuel Dealers,FuelDealers
-45811,Clothing Retailers,ClothingRetailers
-45812,Clothing Accessories Retailers,ClothingAccessoriesRetailers
+45811,Clothing and Clothing Accessories Retailers,ClothingAndClothingAccessoriesRetailers
 45821,Shoe Retailers,ShoeRetailers
 45831,Jewelry Retailers,JewelryRetailers
 45832,Luggage and Leather Goods Retailers,LuggageAndLeatherGoodsRetailers
@@ -423,12 +421,6 @@ naics_code,naics_title,name
 49312,Refrigerated Warehousing and Storage,RefrigeratedWarehousingAndStorage
 49313,Farm Product Warehousing and Storage,FarmProductWarehousingAndStorage
 49319,Other Warehousing and Storage,OtherWarehousingAndStorage
-51111,Newspaper Publishers,NewspaperPublishers
-51112,Periodical Publishers,PeriodicalPublishers
-51113,Book Publishers,BookPublishers
-51114,Directory and Mailing List Publishers,DirectoryAndMailingListPublishers
-51119,Other Publishers,OtherPublishers
-51121,Software Publishers,SoftwarePublishers
 51211,Motion Picture and Video Production,MotionPictureAndVideoProduction
 51212,Motion Picture and Video Distribution,MotionPictureAndVideoDistribution
 51213,Motion Picture and Video Exhibition,MotionPictureAndVideoExhibition
@@ -437,36 +429,37 @@ naics_code,naics_title,name
 51224,Sound Recording Studios,SoundRecordingStudios
 51225,Record Production and Distribution,RecordProductionAndDistribution
 51229,Other Sound Recording Industries,OtherSoundRecordingIndustries
-51511,Radio Broadcasting,RadioBroadcasting
-51512,Television Broadcasting,TelevisionBroadcasting
-51521,Cable and Other Subscription Programming,CableAndOtherSubscriptionProgramming
-51731,Wired and Wireless Telecommunications Carriers,WiredAndWirelessTelecommunicationsCarriers
+51311,Newspaper Publishers,NewspaperPublishers
+51312,Periodical Publishers,PeriodicalPublishers
+51313,Book Publishers,BookPublishers
+51314,Directory and Mailing List Publishers,DirectoryAndMailingListPublishers
+51319,Other Publishers,OtherPublishers
+51321,Software Publishers,SoftwarePublishers
+51611,Radio Broadcasting,RadioBroadcasting
+51612,Television Broadcasting,TelevisionBroadcasting
+51621,Cable and Other Subscription Programming,CableAndOtherSubscriptionProgramming
+51711,Wired and Wireless Telecommunications Carriers,WiredAndWirelessTelecommunicationsCarriers
+51712,Telecommunications Resellers and Agents for Wireless Telecommunication Services,TelecommunicationsResellersAndAgentsForWirelessTelecommunicationServices
 51741,Satellite Telecommunications,SatelliteTelecommunications
-51791,Other Telecommunications,OtherTelecommunications
+51781,Other Telecommunications,OtherTelecommunications
 51821,"Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services",ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices
-51911,News Syndicates,NewsSyndicates
-51912,Libraries and Archives,LibrariesAndArchives
-51913,Internet Publishing and Broadcasting and Web Search Portals,InternetPublishingAndBroadcastingAndWebSearchPortals
-51919,All Other Information Services,AllOtherInformationServices
+51921,Libraries and Archives,LibrariesAndArchives
+51929,Web Search Portals and All Other Information Services,WebSearchPortalsAndAllOtherInformationServices
 52111,Monetary Authorities-Central Bank,MonetaryAuthoritiesCentralBank
 52211,Commercial Banking,CommercialBanking
-52212,Savings Institutions,SavingsInstitutions
 52213,Credit Unions,CreditUnions
-52219,Other Depository Credit Intermediation,OtherDepositoryCreditIntermediation
+52218,Savings Institutions and Other Depository Credit Intermediation,SavingsInstitutionsAndOtherDepositoryCreditIntermediation
 52221,Credit Card Issuing,CreditCardIssuing
 52222,Sales Financing,SalesFinancing
 52229,Other Nondepository Credit Intermediation,OtherNondepositoryCreditIntermediation
 52231,Mortgage and Nonmortgage Loan Brokers,MortgageAndNonmortgageLoanBrokers
 52232,"Financial Transactions Processing, Reserve, and Clearinghouse Activities",FinancialTransactionsProcessingReserveAndClearinghouseActivities
 52239,Other Activities Related to Credit Intermediation,OtherActivitiesRelatedToCreditIntermediation
-52311,Investment Banking and Securities Dealing,InvestmentBankingAndSecuritiesDealing
-52312,Securities Brokerage,SecuritiesBrokerage
-52313,Commodity Contracts Dealing,CommodityContractsDealing
-52314,Commodity Contracts Brokerage,CommodityContractsBrokerage
+52315,Investment Banking and Securities Dealing,InvestmentBankingAndSecuritiesDealing
+52316,Commodity Contracts Intermediation,CommodityContractsIntermediation
 52321,Securities and Commodity Exchanges,SecuritiesAndCommodityExchanges
 52391,Miscellaneous Intermediation,MiscellaneousIntermediation
-52392,Portfolio Management,PortfolioManagement
-52393,Investment Advice,InvestmentAdvice
+52394,Portfolio Management,PortfolioManagement
 52399,All Other Financial Investment Activities,AllOtherFinancialInvestmentActivities
 52411,"Direct Life, Health, and Medical Insurance Carriers",DirectLifeHealthAndMedicalInsuranceCarriers
 52412,"Direct Insurance (except Life, Health, and Medical) Carriers",DirectInsuranceExceptLifeHealthAndMedicalCarriers
@@ -478,7 +471,6 @@ naics_code,naics_title,name
 52519,Other Insurance Funds,OtherInsuranceFunds
 52591,Open-End Investment Funds,OpenEndInvestmentFunds
 52592,"Trusts, Estates, and Agency Accounts",TrustsEstatesAndAgencyAccounts
-52593,Real Estate Investment Trusts,RealEstateInvestmentTrusts
 52599,Other Financial Vehicles,OtherFinancialVehicles
 53111,Lessors of Residential Buildings and Dwellings,LessorsOfResidentialBuildingsAndDwellings
 53112,Lessors of Nonresidential Buildings (except Miniwarehouses),LessorsOfNonresidentialBuildingsExceptMiniwarehouses
@@ -491,9 +483,7 @@ naics_code,naics_title,name
 53211,Passenger Car Rental and Leasing,PassengerCarRentalAndLeasing
 53212,"Truck, Utility Trailer, and RV (Recreational Vehicle) Rental and Leasing",TruckUtilityTrailerAndRvRecreationalVehicleRentalAndLeasing
 53221,Consumer Electronics and Appliances Rental,ConsumerElectronicsAndAppliancesRental
-53222,Formal Wear and Costume Rental,FormalWearAndCostumeRental
-53223,Video Tape and Disc Rental,VideoTapeAndDiscRental
-53229,Other Consumer Goods Rental,OtherConsumerGoodsRental
+53228,Other Consumer Goods Rental,OtherConsumerGoodsRental
 53231,General Rental Centers,GeneralRentalCenters
 53241,"Construction, Transportation, Mining, and Forestry Machinery and Equipment Rental and Leasing",ConstructionTransportationMiningAndForestryMachineryAndEquipmentRentalAndLeasing
 53242,Office Machinery and Equipment Rental and Leasing,OfficeMachineryAndEquipmentRentalAndLeasing
@@ -525,7 +515,7 @@ naics_code,naics_title,name
 54182,Public Relations Agencies,PublicRelationsAgencies
 54183,Media Buying Agencies,MediaBuyingAgencies
 54184,Media Representatives,MediaRepresentatives
-54185,Outdoor Advertising,OutdoorAdvertising
+54185,Indoor and Outdoor Display Advertising,IndoorAndOutdoorDisplayAdvertising
 54186,Direct Mail Advertising,DirectMailAdvertising
 54187,Advertising Material Distribution Services,AdvertisingMaterialDistributionServices
 54189,Other Services Related to Advertising,OtherServicesRelatedToAdvertising
@@ -679,7 +669,6 @@ naics_code,naics_title,name
 92212,Police Protection,PoliceProtection
 92213,Legal Counsel and Prosecution,LegalCounselAndProsecution
 92214,Correctional Institutions,CorrectionalInstitutions
-92214,Correctional Institutions,CorrectionalInstitutions
 92215,Parole Offices and Probation Offices,ParoleOfficesAndProbationOffices
 92216,Fire Protection,FireProtection
 92219,"Other Justice, Public Order, and Safety Activities",OtherJusticePublicOrderAndSafetyActivities
@@ -699,4 +688,3 @@ naics_code,naics_title,name
 92711,Space Research and Technology,SpaceResearchAndTechnology
 92811,National Security,NationalSecurity
 92812,International Affairs,InternationalAffairs
-99999,Unclassified Establishments,UnclassifiedEstablishments
