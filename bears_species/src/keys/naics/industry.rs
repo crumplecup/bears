@@ -1183,10 +1183,8 @@ pub enum NaicsIndustry {
     OtherGasolineStations,
     /// Fuel Dealers
     FuelDealers,
-    /// Clothing Retailers
-    ClothingRetailers,
-    /// Clothing Accessories Retailers
-    ClothingAccessoriesRetailers,
+    /// Clothing and Clothing Accessories Retailers
+    ClothingAndClothingAccessoriesRetailers,
     /// Shoe Retailers
     ShoeRetailers,
     /// Jewelry Retailers
@@ -1265,16 +1263,12 @@ pub enum NaicsIndustry {
     CommuterRailSystems,
     /// Bus and Other Motor Vehicle Transit Systems
     BusAndOtherMotorVehicleTransitSystems,
-    /// Street Railroads
-    StreetRailroads,
-    /// Light Rail Transit Systems
-    LightRailTransitSystems,
     /// Other Urban Transit Systems
     OtherUrbanTransitSystems,
     /// Interurban and Rural Bus Transportation
     InterurbanAndRuralBusTransportation,
-    /// Taxi Service
-    TaxiService,
+    /// Taxi and Ridesharing Services
+    TaxiAndRidesharingServices,
     /// Limousine Service
     LimousineService,
     /// School and Employee Bus Transportation
@@ -1339,20 +1333,6 @@ pub enum NaicsIndustry {
     FarmProductWarehousingAndStorage,
     /// Other Warehousing and Storage
     OtherWarehousingAndStorage,
-    /// Newspaper Publishers
-    NewspaperPublishers,
-    /// Periodical Publishers
-    PeriodicalPublishers,
-    /// Book Publishers
-    BookPublishers,
-    /// Directory and Mailing List Publishers
-    DirectoryAndMailingListPublishers,
-    /// Greeting Card Publishers
-    GreetingCardPublishers,
-    /// All Other Publishers
-    AllOtherPublishers,
-    /// Software Publishers
-    SoftwarePublishers,
     /// Motion Picture and Video Production
     MotionPictureAndVideoProduction,
     /// Motion Picture and Video Distribution
@@ -1373,44 +1353,52 @@ pub enum NaicsIndustry {
     RecordProductionAndDistribution,
     /// Other Sound Recording Industries
     OtherSoundRecordingIndustries,
-    /// Radio Networks
-    RadioNetworks,
-    /// Radio Stations
-    RadioStations,
+    /// Newspaper Publishers
+    NewspaperPublishers,
+    /// Periodical Publishers
+    PeriodicalPublishers,
+    /// Book Publishers
+    BookPublishers,
+    /// Directory and Mailing List Publishers
+    DirectoryAndMailingListPublishers,
+    /// Greeting Card Publishers
+    GreetingCardPublishers,
+    /// All Other Publishers
+    AllOtherPublishers,
+    /// Software Publishers
+    SoftwarePublishers,
+    /// Radio Broadcasting Stations
+    RadioBroadcastingStations,
     /// Television Broadcasting
     TelevisionBroadcasting,
-    /// Cable and Other Subscription Programming
-    CableAndOtherSubscriptionProgramming,
+    /// Media Streaming Distribution Services, Social Networks, and Other Media Networks and Content Providers
+    MediaStreamingDistributionServicesSocialNetworksAndOtherMediaNetworksAndContentProviders,
     /// Wired Telecommunications Carriers
     WiredTelecommunicationsCarriers,
     /// Wireless Telecommunications Carriers (except Satellite)
     WirelessTelecommunicationsCarriersExceptSatellite,
-    /// Satellite Telecommunications
-    SatelliteTelecommunications,
     /// Telecommunications Resellers
     TelecommunicationsResellers,
+    /// Satellite Telecommunications
+    SatelliteTelecommunications,
+    /// Agents for Wireless Telecommunications Services
+    AgentsForWirelessTelecommunicationsServices,
     /// All Other Telecommunications
     AllOtherTelecommunications,
     /// Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services
     ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices,
-    /// News Syndicates
-    NewsSyndicates,
     /// Libraries and Archives
     LibrariesAndArchives,
-    /// Internet Publishing and Broadcasting and Web Search Portals
-    InternetPublishingAndBroadcastingAndWebSearchPortals,
-    /// All Other Information Services
-    AllOtherInformationServices,
+    /// Web Search Portals and All Other Information Services
+    WebSearchPortalsAndAllOtherInformationServices,
     /// Monetary Authorities-Central Bank
     MonetaryAuthoritiesCentralBank,
     /// Commercial Banking
     CommercialBanking,
-    /// Savings Institutions
-    SavingsInstitutions,
     /// Credit Unions
     CreditUnions,
-    /// Other Depository Credit Intermediation
-    OtherDepositoryCreditIntermediation,
+    /// Savings Institutions and Other Depository Credit Intermediation
+    SavingsInstitutionsAndOtherDepositoryCreditIntermediation,
     /// Credit Card Issuing
     CreditCardIssuing,
     /// Sales Financing
@@ -1419,8 +1407,8 @@ pub enum NaicsIndustry {
     ConsumerLending,
     /// Real Estate Credit
     RealEstateCredit,
-    /// All Other Nondepository Credit Intermediation
-    AllOtherNondepositoryCreditIntermediation,
+    /// International, Secondary Market, and All Other Nondepository Credit Intermediation
+    InternationalSecondaryMarketAndAllOtherNondepositoryCreditIntermediation,
     /// Mortgage and Nonmortgage Loan Brokers
     MortgageAndNonmortgageLoanBrokers,
     /// Financial Transactions Processing, Reserve, and Clearinghouse Activities
@@ -1429,20 +1417,14 @@ pub enum NaicsIndustry {
     OtherActivitiesRelatedToCreditIntermediation,
     /// Investment Banking and Securities Dealing
     InvestmentBankingAndSecuritiesDealing,
-    /// Securities Brokerage
-    SecuritiesBrokerage,
-    /// Commodity Contracts Dealing
-    CommodityContractsDealing,
-    /// Commodity Contracts Brokerage
-    CommodityContractsBrokerage,
+    /// Commodity Contracts Intermediation
+    CommodityContractsIntermediation,
     /// Securities and Commodity Exchanges
     SecuritiesAndCommodityExchanges,
     /// Miscellaneous Intermediation
     MiscellaneousIntermediation,
-    /// Portfolio Management
-    PortfolioManagement,
-    /// Investment Advice
-    InvestmentAdvice,
+    /// Portfolio Management and Investment Advice
+    PortfolioManagementAndInvestmentAdvice,
     /// Trust, Fiduciary, and Custody Activities
     TrustFiduciaryAndCustodyActivities,
     /// Miscellaneous Financial Investment Activities
@@ -1463,8 +1445,8 @@ pub enum NaicsIndustry {
     InsuranceAgenciesAndBrokerages,
     /// Claims Adjusting
     ClaimsAdjusting,
-    /// Third Party Administration of Insurance and Pension Funds
-    ThirdPartyAdministrationOfInsuranceAndPensionFunds,
+    /// Pharmacy Benefit Management and Other Third Party Administration of Insurance and Pension Funds
+    PharmacyBenefitManagementAndOtherThirdPartyAdministrationOfInsuranceAndPensionFunds,
     /// All Other Insurance Related Activities
     AllOtherInsuranceRelatedActivities,
     /// Pension Funds
@@ -1477,8 +1459,6 @@ pub enum NaicsIndustry {
     OpenEndInvestmentFunds,
     /// Trusts, Estates, and Agency Accounts
     TrustsEstatesAndAgencyAccounts,
-    /// Real Estate Investment Trusts
-    RealEstateInvestmentTrusts,
     /// Other Financial Vehicles
     OtherFinancialVehicles,
     /// Lessors of Residential Buildings and Dwellings
@@ -1511,12 +1491,8 @@ pub enum NaicsIndustry {
     FormalWearAndCostumeRental,
     /// Video Tape and Disc Rental
     VideoTapeAndDiscRental,
-    /// Recreational Goods Rental Parent
-    RecreationalGoodsRentalParent,
-    /// Medical Equipment and Supplies Rental
-    MedicalEquipmentAndSuppliesRental,
-    /// Home Health Equipment and Supplies Rental
-    HomeHealthEquipmentAndSuppliesRental,
+    /// Home Health Equipment Rental
+    HomeHealthEquipmentRental,
     /// Recreational Goods Rental
     RecreationalGoodsRental,
     /// All Other Consumer Goods Rental
@@ -1635,8 +1611,6 @@ pub enum NaicsIndustry {
     OfficesOfBankHoldingCompanies,
     /// Offices of Other Holding Companies
     OfficesOfOtherHoldingCompanies,
-    /// Corporate, Subsidiary, and Regional Managing Offices Parent
-    CorporateSubsidiaryAndRegionalManagingOfficesParent,
     /// Corporate, Subsidiary, and Regional Managing Offices
     CorporateSubsidiaryAndRegionalManagingOffices,
     /// Office Administrative Services
@@ -1921,12 +1895,8 @@ pub enum NaicsIndustry {
     SnackAndNonalcoholicBeverageBars,
     /// General Automotive Repair
     GeneralAutomotiveRepair,
-    /// Automotive Exhaust System Repair
-    AutomotiveExhaustSystemRepair,
-    /// Automotive Transmission Repair
-    AutomotiveTransmissionRepair,
-    /// Other Automotive Mechanical and Electrical Repair and Maintenance
-    OtherAutomotiveMechanicalAndElectricalRepairAndMaintenance,
+    /// Specialized Automotive Repair
+    SpecializedAutomotiveRepair,
     /// Automotive Body, Paint, and Interior Repair and Maintenance
     AutomotiveBodyPaintAndInteriorRepairAndMaintenance,
     /// Automotive Glass Replacement Shops
@@ -1937,14 +1907,8 @@ pub enum NaicsIndustry {
     CarWashes,
     /// All Other Automotive Repair and Maintenance
     AllOtherAutomotiveRepairAndMaintenance,
-    /// Consumer Electronics Repair and Maintenance
-    ConsumerElectronicsRepairAndMaintenance,
-    /// Computer and Office Machine Repair and Maintenance
-    ComputerAndOfficeMachineRepairAndMaintenance,
-    /// Communication Equipment Repair and Maintenance
-    CommunicationEquipmentRepairAndMaintenance,
-    /// Other Electronic and Precision Equipment Repair and Maintenance
-    OtherElectronicAndPrecisionEquipmentRepairAndMaintenance,
+    /// Electronic and Precision Equipment Repair and Maintenance
+    ElectronicAndPrecisionEquipmentRepairAndMaintenance,
     /// Commercial and Industrial Machinery and Equipment (except Automotive and Electronic) Repair and Maintenance
     CommercialAndIndustrialMachineryAndEquipmentExceptAutomotiveAndElectronicRepairAndMaintenance,
     /// Home and Garden Equipment Repair and Maintenance
@@ -2891,8 +2855,7 @@ impl NaicsIndustry {
             Self::GasolineStationsWithConvenienceStores => "Gasoline Stations with Convenience Stores",
             Self::OtherGasolineStations => "Other Gasoline Stations",
             Self::FuelDealers => "Fuel Dealers",
-            Self::ClothingRetailers => "Clothing Retailers",
-            Self::ClothingAccessoriesRetailers => "Clothing Accessories Retailers",
+            Self::ClothingAndClothingAccessoriesRetailers => "Clothing and Clothing Accessories Retailers",
             Self::ShoeRetailers => "Shoe Retailers",
             Self::JewelryRetailers => "Jewelry Retailers",
             Self::LuggageAndLeatherGoodsRetailers => "Luggage and Leather Goods Retailers",
@@ -2932,11 +2895,9 @@ impl NaicsIndustry {
             Self::MixedModeTransitSystems => "Mixed Mode Transit Systems",
             Self::CommuterRailSystems => "Commuter Rail Systems",
             Self::BusAndOtherMotorVehicleTransitSystems => "Bus and Other Motor Vehicle Transit Systems",
-            Self::StreetRailroads => "Street Railroads",
-            Self::LightRailTransitSystems => "Light Rail Transit Systems",
             Self::OtherUrbanTransitSystems => "Other Urban Transit Systems",
             Self::InterurbanAndRuralBusTransportation => "Interurban and Rural Bus Transportation",
-            Self::TaxiService => "Taxi Service",
+            Self::TaxiAndRidesharingServices => "Taxi and Ridesharing Services",
             Self::LimousineService => "Limousine Service",
             Self::SchoolAndEmployeeBusTransportation => "School and Employee Bus Transportation",
             Self::CharterBusIndustry => "Charter Bus Industry",
@@ -2969,13 +2930,6 @@ impl NaicsIndustry {
             Self::RefrigeratedWarehousingAndStorage => "Refrigerated Warehousing and Storage",
             Self::FarmProductWarehousingAndStorage => "Farm Product Warehousing and Storage",
             Self::OtherWarehousingAndStorage => "Other Warehousing and Storage",
-            Self::NewspaperPublishers => "Newspaper Publishers",
-            Self::PeriodicalPublishers => "Periodical Publishers",
-            Self::BookPublishers => "Book Publishers",
-            Self::DirectoryAndMailingListPublishers => "Directory and Mailing List Publishers",
-            Self::GreetingCardPublishers => "Greeting Card Publishers",
-            Self::AllOtherPublishers => "All Other Publishers",
-            Self::SoftwarePublishers => "Software Publishers",
             Self::MotionPictureAndVideoProduction => "Motion Picture and Video Production",
             Self::MotionPictureAndVideoDistribution => "Motion Picture and Video Distribution",
             Self::MotionPictureTheatersExceptDriveins => "Motion Picture Theaters (except Drive-Ins)",
@@ -2986,42 +2940,43 @@ impl NaicsIndustry {
             Self::SoundRecordingStudios => "Sound Recording Studios",
             Self::RecordProductionAndDistribution => "Record Production and Distribution",
             Self::OtherSoundRecordingIndustries => "Other Sound Recording Industries",
-            Self::RadioNetworks => "Radio Networks",
-            Self::RadioStations => "Radio Stations",
+            Self::NewspaperPublishers => "Newspaper Publishers",
+            Self::PeriodicalPublishers => "Periodical Publishers",
+            Self::BookPublishers => "Book Publishers",
+            Self::DirectoryAndMailingListPublishers => "Directory and Mailing List Publishers",
+            Self::GreetingCardPublishers => "Greeting Card Publishers",
+            Self::AllOtherPublishers => "All Other Publishers",
+            Self::SoftwarePublishers => "Software Publishers",
+            Self::RadioBroadcastingStations => "Radio Broadcasting Stations",
             Self::TelevisionBroadcasting => "Television Broadcasting",
-            Self::CableAndOtherSubscriptionProgramming => "Cable and Other Subscription Programming",
+            Self::MediaStreamingDistributionServicesSocialNetworksAndOtherMediaNetworksAndContentProviders => "Media Streaming Distribution Services, Social Networks, and Other Media Networks and Content Providers",
             Self::WiredTelecommunicationsCarriers => "Wired Telecommunications Carriers",
             Self::WirelessTelecommunicationsCarriersExceptSatellite => "Wireless Telecommunications Carriers (except Satellite)",
-            Self::SatelliteTelecommunications => "Satellite Telecommunications",
             Self::TelecommunicationsResellers => "Telecommunications Resellers",
+            Self::SatelliteTelecommunications => "Satellite Telecommunications",
+            Self::AgentsForWirelessTelecommunicationsServices => "Agents for Wireless Telecommunications Services",
             Self::AllOtherTelecommunications => "All Other Telecommunications",
             Self::ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices => 
                 "Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services",
-            Self::NewsSyndicates => "News Syndicates",
             Self::LibrariesAndArchives => "Libraries and Archives",
-            Self::InternetPublishingAndBroadcastingAndWebSearchPortals => "Internet Publishing and Broadcasting and Web Search Portals",
-            Self::AllOtherInformationServices => "All Other Information Services",
+            Self::WebSearchPortalsAndAllOtherInformationServices => "Web Search Portals and All Other Information Services",
             Self::MonetaryAuthoritiesCentralBank => "Monetary Authorities-Central Bank",
             Self::CommercialBanking => "Commercial Banking",
-            Self::SavingsInstitutions => "Savings Institutions",
             Self::CreditUnions => "Credit Unions",
-            Self::OtherDepositoryCreditIntermediation => "Other Depository Credit Intermediation",
+            Self::SavingsInstitutionsAndOtherDepositoryCreditIntermediation => "Savings Institutions and Other Depository Credit Intermediation",
             Self::CreditCardIssuing => "Credit Card Issuing",
             Self::SalesFinancing => "Sales Financing",
             Self::ConsumerLending => "Consumer Lending",
             Self::RealEstateCredit => "Real Estate Credit",
-            Self::AllOtherNondepositoryCreditIntermediation => "All Other Nondepository Credit Intermediation",
+            Self::InternationalSecondaryMarketAndAllOtherNondepositoryCreditIntermediation => "International, Secondary Market, and All Other Nondepository Credit Intermediation",
             Self::MortgageAndNonmortgageLoanBrokers => "Mortgage and Nonmortgage Loan Brokers",
             Self::FinancialTransactionsProcessingReserveAndClearinghouseActivities => "Financial Transactions Processing, Reserve, and Clearinghouse Activities",
             Self::OtherActivitiesRelatedToCreditIntermediation => "Other Activities Related to Credit Intermediation",
             Self::InvestmentBankingAndSecuritiesDealing => "Investment Banking and Securities Dealing",
-            Self::SecuritiesBrokerage => "Securities Brokerage",
-            Self::CommodityContractsDealing => "Commodity Contracts Dealing",
-            Self::CommodityContractsBrokerage => "Commodity Contracts Brokerage",
+            Self::CommodityContractsIntermediation => "Commodity Contracts Intermediation",
             Self::SecuritiesAndCommodityExchanges => "Securities and Commodity Exchanges",
             Self::MiscellaneousIntermediation => "Miscellaneous Intermediation",
-            Self::PortfolioManagement => "Portfolio Management",
-            Self::InvestmentAdvice => "Investment Advice",
+            Self::PortfolioManagementAndInvestmentAdvice => "Portfolio Management and Investment Advice",
             Self::TrustFiduciaryAndCustodyActivities => "Trust, Fiduciary, and Custody Activities",
             Self::MiscellaneousFinancialInvestmentActivities => "Miscellaneous Financial Investment Activities",
             Self::DirectLifeInsuranceCarriers => "Direct Life Insurance Carriers",
@@ -3032,14 +2987,13 @@ impl NaicsIndustry {
             Self::ReinsuranceCarriers => "Reinsurance Carriers",
             Self::InsuranceAgenciesAndBrokerages => "Insurance Agencies and Brokerages",
             Self::ClaimsAdjusting => "Claims Adjusting",
-            Self::ThirdPartyAdministrationOfInsuranceAndPensionFunds => "Third Party Administration of Insurance and Pension Funds",
+            Self::PharmacyBenefitManagementAndOtherThirdPartyAdministrationOfInsuranceAndPensionFunds => "Pharmacy Benefit Management and Other Third Party Administration of Insurance and Pension Funds",
             Self::AllOtherInsuranceRelatedActivities => "All Other Insurance Related Activities",
             Self::PensionFunds => "Pension Funds",
             Self::HealthAndWelfareFunds => "Health and Welfare Funds",
             Self::OtherInsuranceFunds => "Other Insurance Funds",
             Self::OpenEndInvestmentFunds => "Open-End Investment Funds",
             Self::TrustsEstatesAndAgencyAccounts => "Trusts, Estates, and Agency Accounts",
-            Self::RealEstateInvestmentTrusts => "Real Estate Investment Trusts",
             Self::OtherFinancialVehicles => "Other Financial Vehicles",
             Self::LessorsOfResidentialBuildingsAndDwellings => "Lessors of Residential Buildings and Dwellings",
             Self::LessorsOfNonresidentialBuildingsExceptMiniwarehouses => "Lessors of Nonresidential Buildings (except Miniwarehouses)",
@@ -3056,9 +3010,7 @@ impl NaicsIndustry {
             Self::ConsumerElectronicsAndAppliancesRental => "Consumer Electronics and Appliances Rental",
             Self::FormalWearAndCostumeRental => "Formal Wear and Costume Rental",
             Self::VideoTapeAndDiscRental => "Video Tape and Disc Rental",
-            Self::RecreationalGoodsRentalParent => "Recreational Goods Rental Parent",
-            Self::MedicalEquipmentAndSuppliesRental => "Medical Equipment and Supplies Rental",
-            Self::HomeHealthEquipmentAndSuppliesRental => "Home Health Equipment and Supplies Rental",
+            Self::HomeHealthEquipmentRental => "Home Health Equipment Rental",
             Self::RecreationalGoodsRental => "Recreational Goods Rental",
             Self::AllOtherConsumerGoodsRental => "All Other Consumer Goods Rental",
             Self::GeneralRentalCenters => "General Rental Centers",
@@ -3118,7 +3070,6 @@ impl NaicsIndustry {
             Self::AllOtherProfessionalScientificAndTechnicalServices => "All Other Professional, Scientific, and Technical Services",
             Self::OfficesOfBankHoldingCompanies => "Offices of Bank Holding Companies",
             Self::OfficesOfOtherHoldingCompanies => "Offices of Other Holding Companies",
-            Self::CorporateSubsidiaryAndRegionalManagingOfficesParent => "Corporate, Subsidiary, and Regional Managing Offices Parent",
             Self::CorporateSubsidiaryAndRegionalManagingOffices => "Corporate, Subsidiary, and Regional Managing Offices",
             Self::OfficeAdministrativeServices => "Office Administrative Services",
             Self::FacilitiesSupportServices => "Facilities Support Services",
@@ -3261,18 +3212,13 @@ impl NaicsIndustry {
             Self::CafeteriasGrillBuffetsAndBuffets => "Cafeterias, Grill Buffets, and Buffets",
             Self::SnackAndNonalcoholicBeverageBars => "Snack and Nonalcoholic Beverage Bars",
             Self::GeneralAutomotiveRepair => "General Automotive Repair",
-            Self::AutomotiveExhaustSystemRepair => "Automotive Exhaust System Repair",
-            Self::AutomotiveTransmissionRepair => "Automotive Transmission Repair",
-            Self::OtherAutomotiveMechanicalAndElectricalRepairAndMaintenance => "Other Automotive Mechanical and Electrical Repair and Maintenance",
+            Self::SpecializedAutomotiveRepair => "Specialized Automotive Repair",
             Self::AutomotiveBodyPaintAndInteriorRepairAndMaintenance => "Automotive Body, Paint, and Interior Repair and Maintenance",
             Self::AutomotiveGlassReplacementShops => "Automotive Glass Replacement Shops",
             Self::AutomotiveOilChangeAndLubricationShops => "Automotive Oil Change and Lubrication Shops",
             Self::CarWashes => "Car Washes",
             Self::AllOtherAutomotiveRepairAndMaintenance => "All Other Automotive Repair and Maintenance",
-            Self::ConsumerElectronicsRepairAndMaintenance => "Consumer Electronics Repair and Maintenance",
-            Self::ComputerAndOfficeMachineRepairAndMaintenance => "Computer and Office Machine Repair and Maintenance",
-            Self::CommunicationEquipmentRepairAndMaintenance => "Communication Equipment Repair and Maintenance",
-            Self::OtherElectronicAndPrecisionEquipmentRepairAndMaintenance => "Other Electronic and Precision Equipment Repair and Maintenance",
+            Self::ElectronicAndPrecisionEquipmentRepairAndMaintenance => "Electronic and Precision Equipment Repair and Maintenance",
             Self::CommercialAndIndustrialMachineryAndEquipmentExceptAutomotiveAndElectronicRepairAndMaintenance => "Commercial and Industrial Machinery and Equipment (except Automotive and Electronic) Repair and Maintenance",
             Self::HomeAndGardenEquipmentRepairAndMaintenance => "Home and Garden Equipment Repair and Maintenance",
             Self::ApplianceRepairAndMaintenance => "Appliance Repair and Maintenance",
@@ -3929,8 +3875,7 @@ impl NaicsIndustry {
             Self::GasolineStationsWithConvenienceStores => 457110,
             Self::OtherGasolineStations => 457120,
             Self::FuelDealers => 457210,
-            Self::ClothingRetailers => 458110,
-            Self::ClothingAccessoriesRetailers => 458120,
+            Self::ClothingAndClothingAccessoriesRetailers => 458110,
             Self::ShoeRetailers => 458210,
             Self::JewelryRetailers => 458310,
             Self::LuggageAndLeatherGoodsRetailers => 458320,
@@ -3970,11 +3915,9 @@ impl NaicsIndustry {
             Self::MixedModeTransitSystems => 485111,
             Self::CommuterRailSystems => 485112,
             Self::BusAndOtherMotorVehicleTransitSystems => 485113,
-            Self::StreetRailroads => 485114,
-            Self::LightRailTransitSystems => 485115,
             Self::OtherUrbanTransitSystems => 485119,
             Self::InterurbanAndRuralBusTransportation => 485210,
-            Self::TaxiService => 485310,
+            Self::TaxiAndRidesharingServices => 485310,
             Self::LimousineService => 485320,
             Self::SchoolAndEmployeeBusTransportation => 485410,
             Self::CharterBusIndustry => 485510,
@@ -4007,13 +3950,6 @@ impl NaicsIndustry {
             Self::RefrigeratedWarehousingAndStorage => 493120,
             Self::FarmProductWarehousingAndStorage => 493130,
             Self::OtherWarehousingAndStorage => 493190,
-            Self::NewspaperPublishers => 511110,
-            Self::PeriodicalPublishers => 511120,
-            Self::BookPublishers => 511130,
-            Self::DirectoryAndMailingListPublishers => 511140,
-            Self::GreetingCardPublishers => 511191,
-            Self::AllOtherPublishers => 511199,
-            Self::SoftwarePublishers => 511210,
             Self::MotionPictureAndVideoProduction => 512110,
             Self::MotionPictureAndVideoDistribution => 512120,
             Self::MotionPictureTheatersExceptDriveins => 512131,
@@ -4024,41 +3960,42 @@ impl NaicsIndustry {
             Self::SoundRecordingStudios => 512240,
             Self::RecordProductionAndDistribution => 512250,
             Self::OtherSoundRecordingIndustries => 512290,
-            Self::RadioNetworks => 515111,
-            Self::RadioStations => 515112,
-            Self::TelevisionBroadcasting => 515120,
-            Self::CableAndOtherSubscriptionProgramming => 515210,
-            Self::WiredTelecommunicationsCarriers => 517311,
-            Self::WirelessTelecommunicationsCarriersExceptSatellite => 517312,
+            Self::NewspaperPublishers => 513110,
+            Self::PeriodicalPublishers => 513120,
+            Self::BookPublishers => 513130,
+            Self::DirectoryAndMailingListPublishers => 513140,
+            Self::GreetingCardPublishers => 513191,
+            Self::AllOtherPublishers => 513199,
+            Self::SoftwarePublishers => 513210,
+            Self::RadioBroadcastingStations => 516110,
+            Self::TelevisionBroadcasting => 516120,
+            Self::MediaStreamingDistributionServicesSocialNetworksAndOtherMediaNetworksAndContentProviders => 516210,
+            Self::WiredTelecommunicationsCarriers => 517111,
+            Self::WirelessTelecommunicationsCarriersExceptSatellite => 517112,
+            Self::TelecommunicationsResellers => 517121,
+            Self::AgentsForWirelessTelecommunicationsServices => 517122,
             Self::SatelliteTelecommunications => 517410,
-            Self::TelecommunicationsResellers => 517911,
             Self::AllOtherTelecommunications => 517919,
             Self::ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices => 518210,
-            Self::NewsSyndicates => 519110,
-            Self::LibrariesAndArchives => 519120,
-            Self::InternetPublishingAndBroadcastingAndWebSearchPortals => 519130,
-            Self::AllOtherInformationServices => 519190,
+            Self::LibrariesAndArchives => 519210,
+            Self::WebSearchPortalsAndAllOtherInformationServices => 519290,
             Self::MonetaryAuthoritiesCentralBank => 521110,
             Self::CommercialBanking => 522110,
-            Self::SavingsInstitutions => 522120,
             Self::CreditUnions => 522130,
-            Self::OtherDepositoryCreditIntermediation => 522190,
+            Self::SavingsInstitutionsAndOtherDepositoryCreditIntermediation => 522180,
             Self::CreditCardIssuing => 522210,
             Self::SalesFinancing => 522220,
             Self::ConsumerLending => 522291,
             Self::RealEstateCredit => 522292,
-            Self::AllOtherNondepositoryCreditIntermediation => 522298,
+            Self::InternationalSecondaryMarketAndAllOtherNondepositoryCreditIntermediation => 522299,
             Self::MortgageAndNonmortgageLoanBrokers => 522310,
             Self::FinancialTransactionsProcessingReserveAndClearinghouseActivities => 522320,
             Self::OtherActivitiesRelatedToCreditIntermediation => 522390,
             Self::InvestmentBankingAndSecuritiesDealing => 523110,
-            Self::SecuritiesBrokerage => 523120,
-            Self::CommodityContractsDealing => 523130,
-            Self::CommodityContractsBrokerage => 523140,
+            Self::CommodityContractsIntermediation => 523160,
             Self::SecuritiesAndCommodityExchanges => 523210,
             Self::MiscellaneousIntermediation => 523910,
-            Self::PortfolioManagement => 523920,
-            Self::InvestmentAdvice => 523930,
+            Self::PortfolioManagementAndInvestmentAdvice => 523940,
             Self::TrustFiduciaryAndCustodyActivities => 523991,
             Self::MiscellaneousFinancialInvestmentActivities => 523999,
             Self::DirectLifeInsuranceCarriers => 524113,
@@ -4069,14 +4006,13 @@ impl NaicsIndustry {
             Self::ReinsuranceCarriers => 524130,
             Self::InsuranceAgenciesAndBrokerages => 524210,
             Self::ClaimsAdjusting => 524291,
-            Self::ThirdPartyAdministrationOfInsuranceAndPensionFunds => 524292,
+            Self::PharmacyBenefitManagementAndOtherThirdPartyAdministrationOfInsuranceAndPensionFunds => 524292,
             Self::AllOtherInsuranceRelatedActivities => 524298,
             Self::PensionFunds => 525110,
             Self::HealthAndWelfareFunds => 525120,
             Self::OtherInsuranceFunds => 525190,
             Self::OpenEndInvestmentFunds => 525910,
             Self::TrustsEstatesAndAgencyAccounts => 525920,
-            Self::RealEstateInvestmentTrusts => 525930,
             Self::OtherFinancialVehicles => 525990,
             Self::LessorsOfResidentialBuildingsAndDwellings => 531110,
             Self::LessorsOfNonresidentialBuildingsExceptMiniwarehouses => 531120,
@@ -4091,11 +4027,9 @@ impl NaicsIndustry {
             Self::PassengerCarLeasing => 532112,
             Self::TruckUtilityTrailerAndRvRecreationalVehicleRentalAndLeasing => 532120,
             Self::ConsumerElectronicsAndAppliancesRental => 532210,
-            Self::FormalWearAndCostumeRental => 532220,
-            Self::VideoTapeAndDiscRental => 532230,
-            Self::RecreationalGoodsRentalParent => 532281,
-            Self::MedicalEquipmentAndSuppliesRental => 532282,
-            Self::HomeHealthEquipmentAndSuppliesRental => 532283,
+            Self::FormalWearAndCostumeRental => 532281,
+            Self::VideoTapeAndDiscRental => 532282,
+            Self::HomeHealthEquipmentRental => 532283,
             Self::RecreationalGoodsRental => 532284,
             Self::AllOtherConsumerGoodsRental => 532289,
             Self::GeneralRentalCenters => 532310,
@@ -4155,7 +4089,6 @@ impl NaicsIndustry {
             Self::AllOtherProfessionalScientificAndTechnicalServices => 541990,
             Self::OfficesOfBankHoldingCompanies => 551111,
             Self::OfficesOfOtherHoldingCompanies => 551112,
-            Self::CorporateSubsidiaryAndRegionalManagingOfficesParent => 551113,
             Self::CorporateSubsidiaryAndRegionalManagingOffices => 551114,
             Self::OfficeAdministrativeServices => 561110,
             Self::FacilitiesSupportServices => 561210,
@@ -4298,18 +4231,13 @@ impl NaicsIndustry {
             Self::CafeteriasGrillBuffetsAndBuffets => 722514,
             Self::SnackAndNonalcoholicBeverageBars => 722515,
             Self::GeneralAutomotiveRepair => 811111,
-            Self::AutomotiveExhaustSystemRepair => 811112,
-            Self::AutomotiveTransmissionRepair => 811113,
-            Self::OtherAutomotiveMechanicalAndElectricalRepairAndMaintenance => 811118,
+            Self::SpecializedAutomotiveRepair => 811114,
             Self::AutomotiveBodyPaintAndInteriorRepairAndMaintenance => 811121,
             Self::AutomotiveGlassReplacementShops => 811122,
             Self::AutomotiveOilChangeAndLubricationShops => 811191,
             Self::CarWashes => 811192,
             Self::AllOtherAutomotiveRepairAndMaintenance => 811198,
-            Self::ConsumerElectronicsRepairAndMaintenance => 811211,
-            Self::ComputerAndOfficeMachineRepairAndMaintenance => 811212,
-            Self::CommunicationEquipmentRepairAndMaintenance => 811213,
-            Self::OtherElectronicAndPrecisionEquipmentRepairAndMaintenance => 811219,
+            Self::ElectronicAndPrecisionEquipmentRepairAndMaintenance => 811210,
             Self::CommercialAndIndustrialMachineryAndEquipmentExceptAutomotiveAndElectronicRepairAndMaintenance => 811310,
             Self::HomeAndGardenEquipmentRepairAndMaintenance => 811411,
             Self::ApplianceRepairAndMaintenance => 811412,
@@ -4974,8 +4902,7 @@ impl NaicsIndustry {
             457110 => Self::GasolineStationsWithConvenienceStores,
             457120 => Self::OtherGasolineStations,
             457210 => Self::FuelDealers,
-            458110 => Self::ClothingRetailers,
-            458120 => Self::ClothingAccessoriesRetailers,
+            458110 => Self::ClothingAndClothingAccessoriesRetailers,
             458210 => Self::ShoeRetailers,
             458310 => Self::JewelryRetailers,
             458320 => Self::LuggageAndLeatherGoodsRetailers,
@@ -5015,11 +4942,9 @@ impl NaicsIndustry {
             485111 => Self::MixedModeTransitSystems,
             485112 => Self::CommuterRailSystems,
             485113 => Self::BusAndOtherMotorVehicleTransitSystems,
-            485114 => Self::StreetRailroads,
-            485115 => Self::LightRailTransitSystems,
             485119 => Self::OtherUrbanTransitSystems,
             485210 => Self::InterurbanAndRuralBusTransportation,
-            485310 => Self::TaxiService,
+            485310 => Self::TaxiAndRidesharingServices,
             485320 => Self::LimousineService,
             485410 => Self::SchoolAndEmployeeBusTransportation,
             485510 => Self::CharterBusIndustry,
@@ -5052,13 +4977,6 @@ impl NaicsIndustry {
             493120 => Self::RefrigeratedWarehousingAndStorage,
             493130 => Self::FarmProductWarehousingAndStorage,
             493190 => Self::OtherWarehousingAndStorage,
-            511110 => Self::NewspaperPublishers,
-            511120 => Self::PeriodicalPublishers,
-            511130 => Self::BookPublishers,
-            511140 => Self::DirectoryAndMailingListPublishers,
-            511191 => Self::GreetingCardPublishers,
-            511199 => Self::AllOtherPublishers,
-            511210 => Self::SoftwarePublishers,
             512110 => Self::MotionPictureAndVideoProduction,
             512120 => Self::MotionPictureAndVideoDistribution,
             512131 => Self::MotionPictureTheatersExceptDriveins,
@@ -5069,41 +4987,42 @@ impl NaicsIndustry {
             512240 => Self::SoundRecordingStudios,
             512250 => Self::RecordProductionAndDistribution,
             512290 => Self::OtherSoundRecordingIndustries,
-            515111 => Self::RadioNetworks,
-            515112 => Self::RadioStations,
-            515120 => Self::TelevisionBroadcasting,
-            515210 => Self::CableAndOtherSubscriptionProgramming,
-            517311 => Self::WiredTelecommunicationsCarriers,
-            517312 => Self::WirelessTelecommunicationsCarriersExceptSatellite,
+            513110 => Self::NewspaperPublishers,
+            513120 => Self::PeriodicalPublishers,
+            513130 => Self::BookPublishers,
+            513140 => Self::DirectoryAndMailingListPublishers,
+            513191 => Self::GreetingCardPublishers,
+            513199 => Self::AllOtherPublishers,
+            513210 => Self::SoftwarePublishers,
+            516110 => Self::RadioBroadcastingStations,
+            516120 => Self::TelevisionBroadcasting,
+            516210 => Self::MediaStreamingDistributionServicesSocialNetworksAndOtherMediaNetworksAndContentProviders,
+            517111 => Self::WiredTelecommunicationsCarriers,
+            517112 => Self::WirelessTelecommunicationsCarriersExceptSatellite,
+            517121 => Self::TelecommunicationsResellers,
+            517122 => Self::AgentsForWirelessTelecommunicationsServices,
             517410 => Self::SatelliteTelecommunications,
-            517911 => Self::TelecommunicationsResellers,
             517919 => Self::AllOtherTelecommunications,
             518210 => Self::ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices,
-            519110 => Self::NewsSyndicates,
-            519120 => Self::LibrariesAndArchives,
-            519130 => Self::InternetPublishingAndBroadcastingAndWebSearchPortals,
-            519190 => Self::AllOtherInformationServices,
+            519210 => Self::LibrariesAndArchives,
+            519290 => Self::WebSearchPortalsAndAllOtherInformationServices,
             521110 => Self::MonetaryAuthoritiesCentralBank,
             522110 => Self::CommercialBanking,
-            522120 => Self::SavingsInstitutions,
             522130 => Self::CreditUnions,
-            522190 => Self::OtherDepositoryCreditIntermediation,
+            522180 => Self::SavingsInstitutionsAndOtherDepositoryCreditIntermediation,
             522210 => Self::CreditCardIssuing,
             522220 => Self::SalesFinancing,
             522291 => Self::ConsumerLending,
             522292 => Self::RealEstateCredit,
-            522298 => Self::AllOtherNondepositoryCreditIntermediation,
+            522299 => Self::InternationalSecondaryMarketAndAllOtherNondepositoryCreditIntermediation,
             522310 => Self::MortgageAndNonmortgageLoanBrokers,
             522320 => Self::FinancialTransactionsProcessingReserveAndClearinghouseActivities,
             522390 => Self::OtherActivitiesRelatedToCreditIntermediation,
             523110 => Self::InvestmentBankingAndSecuritiesDealing,
-            523120 => Self::SecuritiesBrokerage,
-            523130 => Self::CommodityContractsDealing,
-            523140 => Self::CommodityContractsBrokerage,
+            523160 => Self::CommodityContractsIntermediation,
             523210 => Self::SecuritiesAndCommodityExchanges,
             523910 => Self::MiscellaneousIntermediation,
-            523920 => Self::PortfolioManagement,
-            523930 => Self::InvestmentAdvice,
+            523940 => Self::PortfolioManagementAndInvestmentAdvice,
             523991 => Self::TrustFiduciaryAndCustodyActivities,
             523999 => Self::MiscellaneousFinancialInvestmentActivities,
             524113 => Self::DirectLifeInsuranceCarriers,
@@ -5114,14 +5033,13 @@ impl NaicsIndustry {
             524130 => Self::ReinsuranceCarriers,
             524210 => Self::InsuranceAgenciesAndBrokerages,
             524291 => Self::ClaimsAdjusting,
-            524292 => Self::ThirdPartyAdministrationOfInsuranceAndPensionFunds,
+            524292 => Self::PharmacyBenefitManagementAndOtherThirdPartyAdministrationOfInsuranceAndPensionFunds,
             524298 => Self::AllOtherInsuranceRelatedActivities,
             525110 => Self::PensionFunds,
             525120 => Self::HealthAndWelfareFunds,
             525190 => Self::OtherInsuranceFunds,
             525910 => Self::OpenEndInvestmentFunds,
             525920 => Self::TrustsEstatesAndAgencyAccounts,
-            525930 => Self::RealEstateInvestmentTrusts,
             525990 => Self::OtherFinancialVehicles,
             531110 => Self::LessorsOfResidentialBuildingsAndDwellings,
             531120 => Self::LessorsOfNonresidentialBuildingsExceptMiniwarehouses,
@@ -5136,11 +5054,9 @@ impl NaicsIndustry {
             532112 => Self::PassengerCarLeasing,
             532120 => Self::TruckUtilityTrailerAndRvRecreationalVehicleRentalAndLeasing,
             532210 => Self::ConsumerElectronicsAndAppliancesRental,
-            532220 => Self::FormalWearAndCostumeRental,
-            532230 => Self::VideoTapeAndDiscRental,
-            532281 => Self::RecreationalGoodsRentalParent,
-            532282 => Self::MedicalEquipmentAndSuppliesRental,
-            532283 => Self::HomeHealthEquipmentAndSuppliesRental,
+            532281 => Self::FormalWearAndCostumeRental,
+            532282 => Self::VideoTapeAndDiscRental,
+            532283 => Self::HomeHealthEquipmentRental,
             532284 => Self::RecreationalGoodsRental,
             532289 => Self::AllOtherConsumerGoodsRental,
             532310 => Self::GeneralRentalCenters,
@@ -5200,7 +5116,6 @@ impl NaicsIndustry {
             541990 => Self::AllOtherProfessionalScientificAndTechnicalServices,
             551111 => Self::OfficesOfBankHoldingCompanies,
             551112 => Self::OfficesOfOtherHoldingCompanies,
-            551113 => Self::CorporateSubsidiaryAndRegionalManagingOfficesParent,
             551114 => Self::CorporateSubsidiaryAndRegionalManagingOffices,
             561110 => Self::OfficeAdministrativeServices,
             561210 => Self::FacilitiesSupportServices,
@@ -5343,18 +5258,13 @@ impl NaicsIndustry {
             722514 => Self::CafeteriasGrillBuffetsAndBuffets,
             722515 => Self::SnackAndNonalcoholicBeverageBars,
             811111 => Self::GeneralAutomotiveRepair,
-            811112 => Self::AutomotiveExhaustSystemRepair,
-            811113 => Self::AutomotiveTransmissionRepair,
-            811118 => Self::OtherAutomotiveMechanicalAndElectricalRepairAndMaintenance,
+            811114 => Self::SpecializedAutomotiveRepair,
             811121 => Self::AutomotiveBodyPaintAndInteriorRepairAndMaintenance,
             811122 => Self::AutomotiveGlassReplacementShops,
             811191 => Self::AutomotiveOilChangeAndLubricationShops,
             811192 => Self::CarWashes,
             811198 => Self::AllOtherAutomotiveRepairAndMaintenance,
-            811211 => Self::ConsumerElectronicsRepairAndMaintenance,
-            811212 => Self::ComputerAndOfficeMachineRepairAndMaintenance,
-            811213 => Self::CommunicationEquipmentRepairAndMaintenance,
-            811219 => Self::OtherElectronicAndPrecisionEquipmentRepairAndMaintenance,
+            811210 => Self::ElectronicAndPrecisionEquipmentRepairAndMaintenance,
             811310 => Self::CommercialAndIndustrialMachineryAndEquipmentExceptAutomotiveAndElectronicRepairAndMaintenance,
             811411 => Self::HomeAndGardenEquipmentRepairAndMaintenance,
             811412 => Self::ApplianceRepairAndMaintenance,
