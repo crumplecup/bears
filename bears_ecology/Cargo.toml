@@ -23,6 +23,7 @@ derive_setters = { workspace = true }
 dotenvy = { workspace = true }
 indicatif = { workspace = true }
 jiff = { workspace = true }
+rand = { workspace = true }
 rayon = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
