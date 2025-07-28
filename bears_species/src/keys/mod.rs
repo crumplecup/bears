@@ -32,7 +32,7 @@ pub use input_output_table::InputOutputTable;
 pub use investment::{DirectionOfInvestment, InvestmentKind};
 pub use millions::{Millions, MillionsOptions};
 pub use naics::{
-    NaicsCategory, NaicsIndustry, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
+    Naics, NaicsCategory, NaicsIndustry, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
     NaicsSubsector,
 };
 pub use numeric::{
