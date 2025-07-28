@@ -151,6 +151,12 @@ async fn datasets_retry_load() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[test]
+fn next_mne_error() -> anyhow::Result<()> {
+    bears_health::next_mne_error()?;
+    Ok(())
+}
+
 #[tokio::test]
 async fn data_to_json() -> anyhow::Result<()> {
     #[cfg(feature = "api")]
