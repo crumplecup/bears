@@ -511,7 +511,7 @@ impl TryFrom<&serde_json::Value> for MneDiData {
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading MneDiData");
         // use naics code to determine missing row codes from the row title
-        let naics = NaicsItems::from_csv("data/naics_codes.csv")?;
+        let naics = NaicsItems::from_csv("../data/naics_codes.csv")?;
         match result_to_data(value)? {
             serde_json::Value::Array(v) => {
                 let mut data = Vec::new();
@@ -527,6 +527,15 @@ impl TryFrom<&serde_json::Value> for MneDiData {
                         }
                     }
                 }
+                tracing::trace!("Data found: {} records.", data.len());
+                Ok(Self(data))
+            }
+            // If there is a only a single observation, this will serialize to an object and not an
+            // array, so this match catches singles before falling through to an array error.
+            serde_json::Value::Object(m) => {
+                let mut data = Vec::new();
+                let datum = MneDiDatum::read_json(m, &naics)?;
+                data.push(datum);
                 tracing::trace!("Data found: {} records.", data.len());
                 Ok(Self(data))
             }
