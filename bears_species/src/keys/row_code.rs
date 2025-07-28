@@ -43,6 +43,11 @@ impl RowCode {
                     // No matching title.
                     match title {
                         // title has a clear and unambiguous match
+                        // 3118,Bakeries and Tortilla Manufacturing,BakeriesAndTortillaManufacturing
+                        "Bakeries and tortilla  manufacturing" => {
+                            tracing::trace!("Categoring Bakeries and tortilla  manufactoring.");
+                            Ok(Self::Naics(3118))
+                        }
                         // 3311,Iron and Steel Mills and Ferroalloy Manufacturing ,,
                         "Iron and steel mills" => {
                             tracing::trace!("Categoring iron and steel mills.");
@@ -63,6 +68,37 @@ impl RowCode {
                             );
                             Ok(Self::Naics(5171))
                         }
+                        // 517112,Wireless Telecommunications Carriers (except Satellite),WirelessTelecommunicationsCarriersExceptSatellite
+                        "Wired and wireless telecommunications (except satellite)" => {
+                            tracing::trace!(
+                                "Categorizing Wired and wireless telecommunications (except satellite)"
+                            );
+                            Ok(Self::Naics(517112))
+                        }
+                        // 516210,"Media Streaming Distribution Services, Social Networks, and Other Media Networks and Content Providers",MediaStreamingDistributionServicesSocialNetworksAndOtherMediaNetworksAndContentProviders
+                        "Media streaming distribution services, social networks, and other media networks and content providers" =>
+                        {
+                            tracing::trace!(
+                                "Categorizing Media streaming distribution services, social networks, and other media networks and content providers"
+                            );
+                            Ok(Self::Naics(516210))
+                        }
+                        // 519290,Web Search Portals and All Other Information Services,WebSearchPortalsAndAllOtherInformationServices
+                        "Web search portals, libraries, archives, and other information services" =>
+                        {
+                            tracing::trace!(
+                                "Categorizing Web search portals, libraries, archives, and other information services"
+                            );
+                            Ok(Self::Naics(519290))
+                        }
+                        // 5151,Radio and Television Broadcasting,RadioAndTelevisionBroadcasting
+                        "Radio and television broadcasting stations" => {
+                            tracing::trace!(
+                                "Categorizing Radio and television broadcasting stations"
+                            );
+                            Ok(Self::Naics(5151))
+                        }
+
                         // 5222,Nondepository Credit Intermediation ,,
                         "Nondepository credit intermediation, except branches and agencies" => {
                             tracing::trace!("Categorizing nondepository credit intermediation.");
