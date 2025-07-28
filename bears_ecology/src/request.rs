@@ -1,4 +1,4 @@
-use crate::{App, History, Mode, Options, Queue, bea_data, init};
+use crate::{App, History, Mode, Options, Overwrite, Queue, Scope, bea_data, init};
 use bears_species::{
     BeaErr, BeaResponse, Data, Dataset, DatasetMissing, FixedAssets, GdpByIndustry, IoError, Ita,
     Method, Mne, NiUnderlyingDetail, Nipa, ParameterName, ReqwestError, Results, SerdeJson,
@@ -157,7 +157,7 @@ pub async fn get_datasets() -> Result<(), BeaErr> {
 pub async fn initial_download(dataset: Dataset) -> Result<(), BeaErr> {
     let queue = init_queue(dataset)?;
     tracing::info!("Queue length: {}", queue.len());
-    queue.download(false).await?;
+    queue.download(Overwrite::No).await?;
     Ok(())
 }
 
@@ -172,7 +172,10 @@ pub async fn download_with_history(
     // get the download history for the size hints
     let history = History::try_from((dataset, Mode::Load))?;
     history.summary();
-    history.iter().download(&queue, false, style).await?;
+    history
+        .iter()
+        .download(&queue, Overwrite::No, style)
+        .await?;
     Ok(())
 }
 
@@ -191,7 +194,7 @@ pub fn initial_load_par(
     let downloads = History::try_from((dataset, Mode::Download))?;
     // only download successes in history
     // strict = true set to include no others in queue.
-    queue.successes(&downloads, true)?;
+    queue.successes(&downloads, Scope::History)?;
     tracing::info!("Files downloaded: {}", queue.len());
 
     if let Some(loads) = load_history {
@@ -220,7 +223,7 @@ pub async fn initial_load(
     let downloads = History::try_from((dataset, Mode::Download))?;
     // only download successes in history
     // strict = true set to include no others in queue.
-    queue.successes(&downloads, true)?;
+    queue.successes(&downloads, Scope::History)?;
     tracing::info!("Files downloaded: {}", queue.len());
 
     if let Some(loads) = load_history {
@@ -244,7 +247,7 @@ pub async fn retry_load(dataset: Dataset) -> Result<Vec<Data>, BeaErr> {
     // The load history contains errors, try them again.
     let history = History::try_from((dataset, Mode::Load))?;
     // strict is true means only download errors included in the event history
-    queue.errors(&history, true)?;
+    queue.errors(&history, Scope::History)?;
     tracing::info!("Files to retry: {}", queue.len());
 
     let data = queue.load().await?;
