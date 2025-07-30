@@ -178,7 +178,7 @@ impl App {
     /// ```
     pub fn with_dataset(&mut self, dataset: Dataset) {
         let options = self.options_mut();
-        options.with_dataset(dataset);
+        let _ = options.with_dataset(dataset);
         self.query = self.params();
     }
 
@@ -219,7 +219,7 @@ impl App {
                     line!(),
                     file!().to_string(),
                 );
-                error.with_body(body);
+                let _ = error.with_body(body);
                 Err(error)
             }
         }
@@ -439,6 +439,9 @@ impl App {
                                     RateLimit::new(error.to_string(), line!(), file!().to_string());
                                 tracing::error!("{error}");
                                 // return Err(error.into());
+                                // tracing::error!("Limit rate exceeded, pausing for one hour.");
+                                // tokio::time::sleep(std::time::Duration::from_millis(3600000)).await;
+
                                 return Ok(ResultStatus::Abort);
                             }
                             _ => {

@@ -6,6 +6,7 @@ naics_code,naics_title,name
 31-33,Manufacturing,Manufacturing
 42,Wholesale Trade,WholesaleTrade
 44-45,Retail Trade,RetailTrade
+48-49,Transportation and Warehousing,TransportationWarehousing
 51,Information,Information
 52,Finance and Insurance,FinanceInsurance
 53,Real Estate and Rental and Leasing,RealEstateRentalLeasing

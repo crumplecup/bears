@@ -121,6 +121,13 @@ async fn datasets_download_initial() -> anyhow::Result<()> {
 
 #[tokio::test]
 #[cfg(feature = "api")]
+async fn datasets_download_mne_initial() -> anyhow::Result<()> {
+    bears_health::datasets_download_mne_initial().await?;
+    Ok(())
+}
+
+#[tokio::test]
+#[cfg(feature = "api")]
 async fn datasets_download_with_history() -> anyhow::Result<()> {
     bears_health::datasets_download_with_history().await?;
     Ok(())
@@ -141,6 +148,12 @@ async fn datasets_initial_load_continued() -> anyhow::Result<()> {
 #[tokio::test]
 async fn datasets_retry_load() -> anyhow::Result<()> {
     bears_health::datasets_retry_load().await?;
+    Ok(())
+}
+
+#[test]
+fn next_mne_error() -> anyhow::Result<()> {
+    bears_health::next_mne_error()?;
     Ok(())
 }
 

@@ -23,5 +23,5 @@ strum = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 tokio.workspace = true

@@ -1,4 +1,4 @@
-use crate::{App, Event, Mode, Queue, ResultStatus, bea_data};
+use crate::{App, Event, Mode, Overwrite, Queue, ResultStatus, bea_data};
 use bears_species::{BeaErr, Data, Dataset, IoError, SerdeJson};
 use indicatif::{ParallelProgressIterator, ProgressIterator};
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
@@ -340,7 +340,7 @@ impl Chunks {
     pub async fn download(
         &self,
         queue: &Queue,
-        overwrite: bool,
+        overwrite: Overwrite,
         style: indicatif::ProgressStyle,
     ) -> Result<(), BeaErr> {
         let queues = self.with_queue_par(queue, style.clone());

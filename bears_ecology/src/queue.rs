@@ -1,6 +1,8 @@
 use crate::{App, Event, History, ResultStatus, SizeEvent, Tracker, file_size};
-use bears_species::{BeaErr, Data};
+use bears_species::{BeaErr, BeaErrorKind, Data};
 use indicatif::ProgressIterator;
+use rand::SeedableRng;
+use rand::seq::SliceRandom;
 use rayon::prelude::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
 
 #[derive(
@@ -17,6 +19,13 @@ use rayon::prelude::{IntoParallelRefIterator, IntoParallelRefMutIterator, Parall
 pub struct Queue(Vec<App>);
 
 impl Queue {
+    /// Shuffle items in queue using a seeded range for reproducibility.
+    #[tracing::instrument(skip_all)]
+    pub fn seeded_shuffle(&mut self, seed: u64) {
+        let mut range = rand::rngs::StdRng::seed_from_u64(seed);
+        self.shuffle(&mut range);
+    }
+
     #[tracing::instrument(skip_all)]
     /// Subset of queue that is not contained within the `history`.
     pub fn exclude(&mut self, history: &History) -> Result<(), BeaErr> {
@@ -27,27 +36,37 @@ impl Queue {
 
     #[tracing::instrument(skip_all)]
     /// Subset of queue that contains a success status.
-    pub fn successes(&mut self, history: &History, strict: bool) -> Result<(), BeaErr> {
+    pub fn successes(&mut self, history: &History, scope: Scope) -> Result<(), BeaErr> {
         history.summary();
-        self.retain(|app| history.is_success(app).unwrap_or(None).unwrap_or(!strict));
+        self.retain(|app| {
+            history
+                .is_success(app)
+                .unwrap_or(None)
+                .unwrap_or(scope.default_scope())
+        });
         Ok(())
     }
 
     #[tracing::instrument(skip_all)]
     /// Subset of queue that contains an error status.
-    pub fn errors(&mut self, history: &History, strict: bool) -> Result<(), BeaErr> {
-        self.retain(|app| history.is_error(app).unwrap_or(None).unwrap_or(!strict));
+    pub fn errors(&mut self, history: &History, scope: Scope) -> Result<(), BeaErr> {
+        self.retain(|app| {
+            history
+                .is_error(app)
+                .unwrap_or(None)
+                .unwrap_or(scope.default_scope())
+        });
         Ok(())
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn active_subset(&mut self, strict: bool) -> Result<(), BeaErr> {
+    pub fn active_subset(&mut self, scope: Scope) -> Result<(), BeaErr> {
         let history = History::from_env()?;
         history.summary();
         self.retain(|app| match history.is_error(app) {
             Ok(opt) => match opt {
                 Some(val) => !val,
-                None => !strict,
+                None => scope.default_scope(),
             },
             Err(source) => {
                 tracing::error!("{source}");
@@ -100,7 +119,7 @@ impl Queue {
             .collect::<Vec<std::path::PathBuf>>();
         let index = paths.binary_search(event.path()).unwrap();
         // Update the `size_hint` field of the app to the event length.
-        self[ids[index]].with_size_hint(*event.length());
+        let _ = self[ids[index]].with_size_hint(*event.length());
     }
 
     #[tracing::instrument(skip_all)]
@@ -128,7 +147,7 @@ impl Queue {
             // get the app associated with the path index
             let mut app = self[ids[index]].clone();
             // Update the `size_hint` field of the app to the event length.
-            app.with_size_hint(*event.length());
+            let _ = app.with_size_hint(*event.length());
             // add to results vector
             apps.push(app);
         }
@@ -136,11 +155,24 @@ impl Queue {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn download(&self, overwrite: bool) -> Result<(), BeaErr> {
+    pub async fn download(&self, overwrite: Overwrite) -> Result<(), BeaErr> {
         let tracker = std::sync::Arc::new(tokio::sync::Mutex::new(Tracker::default()));
         let (tx, mut rx) = tokio::sync::mpsc::channel(29);
         let download = self.downloader(tx, tracker.clone(), overwrite);
         let listen = Self::listen(&mut rx, tracker.clone(), Mode::Download);
+        // let join = tokio::try_join!(download, listen);
+        // if let Err(blame) = join {
+        //     match *blame.as_ref() {
+        //         BeaErrorKind::RateLimit(_) => {
+        //             tracing::error!("Limit rate exceeded, pausing for one hour.");
+        //             tokio::time::sleep(std::time::Duration::from_millis(3600000)).await;
+        //         }
+        //         _ => {
+        //             tracing::error!("Unexpected error: {blame}");
+        //             return Err(blame);
+        //         }
+        //     }
+        // }
         let (download_res, listen_res) = tokio::join!(download, listen);
         // listen_res?;
         if let Err(blame) = download_res {
@@ -148,7 +180,13 @@ impl Queue {
         }
         if let Err(blame) = listen_res {
             tracing::warn!("Probelm with tracking: {blame}");
-            return Err(blame);
+            match *blame.as_ref() {
+                BeaErrorKind::RateLimit(_) => {
+                    tracing::error!("Limit rate exceeded, pausing for one hour.");
+                    tokio::time::sleep(std::time::Duration::from_millis(3600000)).await;
+                }
+                _ => return Err(blame),
+            }
         }
         Ok(())
     }
@@ -168,13 +206,15 @@ impl Queue {
                 }
                 ResultStatus::Pass(_) | ResultStatus::Pending => {}
                 ResultStatus::Abort => {
-                    tracing::info!("Abort detected.");
+                    // tracing::error!("Limit rate exceeded, pausing for one hour.");
+                    // tokio::time::sleep(std::time::Duration::from_millis(3600000)).await;
                     // let error = RateLimit::new(
                     //     "RequestsExceeded".to_string(),
                     //     line!(),
                     //     file!().to_string(),
                     // );
                     // return Err(error.into());
+                    tracing::error!("Abort detected.");
                     panic!("Limit rate exceeded.")
                 }
             }
@@ -192,7 +232,7 @@ impl Queue {
         &self,
         tx: tokio::sync::mpsc::Sender<ResultStatus>,
         tracker: std::sync::Arc<tokio::sync::Mutex<Tracker>>,
-        overwrite: bool,
+        overwrite: Overwrite,
     ) -> Result<Vec<tokio::task::JoinHandle<()>>, BeaErr> {
         let mut futures = Vec::new();
         for app in self.iter() {
@@ -201,7 +241,7 @@ impl Queue {
             let path = app.destination(false)?;
             let path_check = path.exists();
             // tracing::info!("Exists: {path_check} - {path:?}");
-            if !path_check || overwrite {
+            if !path_check || overwrite.bool() {
                 let event = Event::new(&path, Mode::Download);
                 let id = *event.id();
                 let mut slack;
@@ -370,4 +410,83 @@ impl Queue {
 pub enum Mode {
     Download,
     Load,
+}
+
+/// Represents the scope of retain operations on a [`Queue`].  If condition C is the filter for a
+/// subset S of queue Q, then S has `Scope::Queue`.  Let T be the subset of S that is also
+/// contained in the History H, so that Q ⊃ S ⊃ T, where C is true for S, and T ⊂ H.  We use
+/// `Scope::History` to represent the subset T.
+///
+/// This is helpful mainly in the case of negations, for example the set of loads that did not
+/// fail.  Since items in the queue with no history have not failed, the set S contains all items
+/// in the queue that are not in the history, but the set T contains only those items in the
+/// history that have not failed.
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumIter,
+    derive_more::Display,
+    derive_more::FromStr,
+)]
+pub enum Scope {
+    History,
+    Queue,
+}
+
+impl Scope {
+    /// This function converts the variants of self into a boolean value for use in calls to
+    /// retain inside [`Queue`] methods.  When we check for a condition, such as success or
+    /// failure, we first unwrap an option to check for a value.  If a value is not present, we use
+    /// the boolean value produced here to answer the question "should we still keep this?".
+    ///
+    /// So after scanning through the history, if we do not find any records of the request, should
+    /// we still keep the request in the queue?  If the scope is `Queue`, the answer is yes, and if
+    /// the scope is `History`, the answer is no.
+    pub fn default_scope(&self) -> bool {
+        match self {
+            Self::History => false,
+            Self::Queue => true,
+        }
+    }
+}
+
+/// Represents intent to overwite existing files in the `BEA_DATA` directory during download
+/// operations on a [`Queue`].
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumIter,
+    derive_more::Display,
+    derive_more::FromStr,
+)]
+pub enum Overwrite {
+    Yes,
+    No,
+}
+
+impl Overwrite {
+    /// Converts variants `Yes -> true` and `No -> false`.
+    /// Used to specify arguments in [`Queue::download`].
+    pub fn bool(&self) -> bool {
+        match self {
+            Self::Yes => true,
+            Self::No => false,
+        }
+    }
 }

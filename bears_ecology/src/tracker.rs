@@ -11,10 +11,10 @@ use std::str::FromStr;
 // 14 ahead of 14 = 28
 // hitting API rate limit at 14, try 10
 // probably hitting the data upload limit of 100MB per minute
-pub const ERROR_CAP: usize = 29;
+pub const ERROR_CAP: usize = 7;
 // Cannot exceed 100 calls per minute.
 // 14 ahead of 85 = 99
-pub const CALL_CAP: usize = 89;
+pub const CALL_CAP: usize = 30;
 
 #[derive(
     Debug,

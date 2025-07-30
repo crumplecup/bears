@@ -34,11 +34,10 @@ pub fn trace_init() -> Result<(), BeaErr> {
         .with_filter(tracing_subscriber::filter::filter_fn(|metadata| {
             metadata.target() == "download_history" || metadata.target() == "load_history"
         }));
+    let default_env =
+        tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "bea=info".into());
     if tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "bea=info".into()),
-        )
+        .with(default_env)
         .with(
             tracing_subscriber::fmt::layer().with_filter(tracing_subscriber::filter::filter_fn(
                 |metadata| {

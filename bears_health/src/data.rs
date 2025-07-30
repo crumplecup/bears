@@ -1,6 +1,6 @@
 use bears_ecology::{
-    download_with_history, init_queue, initial_download, initial_load, retry_load, trace_init,
-    History, Mode, Style,
+    History, Mode, Overwrite, Queue, Scope, Style, download_with_history, init_queue,
+    initial_download, initial_load, retry_load, trace_init,
 };
 use bears_species::{BeaErr, Dataset, GdpData};
 
@@ -43,7 +43,7 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
         // queue.errors(&history, false)?;
         // tracing::info!("Queue is length {}", queue.len());
         // tracing::info!("{queue:#?}");
-        queue.download(false).await?;
+        queue.download(Overwrite::No).await?;
         // counter.download(false).await?;
     }
     Ok(())
@@ -77,7 +77,7 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
 
         // The load history contains errors, try them again.
         let history = History::try_from((dataset, Mode::Load))?;
-        queue.errors(&history, true)?;
+        queue.errors(&history, Scope::History)?;
         tracing::info!("Files to retry: {}", queue.len());
 
         // let path = "/home/erik/bea/history/history_MNE_Errors.log";
@@ -123,16 +123,34 @@ pub fn debug_gdpbyindustry() -> Result<(), BeaErr> {
 #[tracing::instrument]
 pub async fn datasets_download_initial() -> Result<(), BeaErr> {
     trace_init()?;
-    // let datasets = vec![
-    //     Dataset::Nipa,
-    //     Dataset::NIUnderlyingDetail,
-    //     Dataset::FixedAssets,
-    //     Dataset::Mne,
-    //     Dataset::GDPbyIndustry,
-    // ];
-    let datasets = vec![Dataset::Ita];
+    let datasets = vec![
+        // Dataset::Nipa,
+        // Dataset::NIUnderlyingDetail,
+        // Dataset::FixedAssets,
+        // Dataset::Mne,
+        // Dataset::GDPbyIndustry,
+        Dataset::Ita,
+    ];
+    // let datasets = vec![Dataset::Ita];
     for dataset in datasets {
         initial_download(dataset).await?;
+    }
+    Ok(())
+}
+
+#[tracing::instrument]
+pub async fn datasets_download_mne_initial() -> Result<(), BeaErr> {
+    trace_init()?;
+    let dataset = Dataset::Mne;
+    // let datasets = vec![Dataset::Ita];
+    let queue = init_queue(dataset)?;
+    tracing::info!("Queue length: {}", queue.len());
+    let chunks = queue.chunks(100);
+    for (i, chunk) in chunks.enumerate() {
+        // use .skip(i) to resume progress in case of failure
+        let queue = Queue::new(chunk.to_vec());
+        queue.download(Overwrite::No).await?;
+        tracing::info!("Chunk {} complete.", i + 1);
     }
     Ok(())
 }
@@ -162,14 +180,15 @@ pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 pub async fn datasets_initial_load() -> Result<(), BeaErr> {
     trace_init()?;
-    // let datasets = vec![
-    //     Dataset::Nipa,
-    //     Dataset::NIUnderlyingDetail,
-    //     Dataset::FixedAssets,
-    //     Dataset::Mne,
-    //     Dataset::GDPbyIndustry,
-    // ];
-    let datasets = vec![Dataset::FixedAssets];
+    let datasets = vec![
+        // Dataset::Nipa,
+        // Dataset::NIUnderlyingDetail,
+        // Dataset::FixedAssets,
+        Dataset::Mne,
+        // Dataset::GDPbyIndustry,
+        // Dataset::Ita,
+    ];
+    // let datasets = vec![Dataset::FixedAssets];
     for dataset in datasets {
         let result = initial_load(dataset, None).await?;
         tracing::info!("{} datasets loaded.", result.len());
@@ -201,11 +220,26 @@ pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 pub async fn datasets_retry_load() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::Ita];
+    let datasets = vec![Dataset::Mne];
     for dataset in datasets {
         let result = retry_load(dataset).await?;
         tracing::info!("{} datasets loaded.", result.len());
     }
+    Ok(())
+}
+
+#[tracing::instrument]
+pub fn next_mne_error() -> Result<(), BeaErr> {
+    trace_init()?;
+    let mut queue = init_queue(Dataset::Mne)?;
+    tracing::info!("Queue length: {}", queue.len());
+    let history = History::try_from((Dataset::Mne, Mode::Load))?;
+    queue.errors(&history, Scope::History)?;
+    if let Some(req) = queue.first() {
+        tracing::info!("Loading first MNE error.");
+        req.load()?;
+    }
+    tracing::info!("MNE file successfully loaded.");
     Ok(())
 }
 

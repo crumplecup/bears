@@ -583,8 +583,7 @@ naics_code,naics_title,name
 457110,Gasoline Stations with Convenience Stores,GasolineStationsWithConvenienceStores
 457120,Other Gasoline Stations,OtherGasolineStations
 457210,Fuel Dealers,FuelDealers
-458110,Clothing Retailers,ClothingRetailers
-458120,Clothing Accessories Retailers,ClothingAccessoriesRetailers
+458110,Clothing and Clothing Accessories Retailers,ClothingAndClothingAccessoriesRetailers
 458210,Shoe Retailers,ShoeRetailers
 458310,Jewelry Retailers,JewelryRetailers
 458320,Luggage and Leather Goods Retailers,LuggageAndLeatherGoodsRetailers
@@ -624,11 +623,9 @@ naics_code,naics_title,name
 485111,Mixed Mode Transit Systems,MixedModeTransitSystems
 485112,Commuter Rail Systems,CommuterRailSystems
 485113,Bus and Other Motor Vehicle Transit Systems,BusAndOtherMotorVehicleTransitSystems
-485114,Street Railroads,StreetRailroads
-485115,Light Rail Transit Systems,LightRailTransitSystems
 485119,Other Urban Transit Systems,OtherUrbanTransitSystems
 485210,Interurban and Rural Bus Transportation,InterurbanAndRuralBusTransportation
-485310,Taxi Service,TaxiService
+485310,Taxi and Ridesharing Services,TaxiAndRidesharingServices
 485320,Limousine Service,LimousineService
 485410,School and Employee Bus Transportation,SchoolAndEmployeeBusTransportation
 485510,Charter Bus Industry,CharterBusIndustry
@@ -661,13 +658,6 @@ naics_code,naics_title,name
 493120,Refrigerated Warehousing and Storage,RefrigeratedWarehousingAndStorage
 493130,Farm Product Warehousing and Storage,FarmProductWarehousingAndStorage
 493190,Other Warehousing and Storage,OtherWarehousingAndStorage
-511110,Newspaper Publishers,NewspaperPublishers
-511120,Periodical Publishers,PeriodicalPublishers
-511130,Book Publishers,BookPublishers
-511140,Directory and Mailing List Publishers,DirectoryAndMailingListPublishers
-511191,Greeting Card Publishers,GreetingCardPublishers
-511199,All Other Publishers,AllOtherPublishers
-511210,Software Publishers,SoftwarePublishers
 512110,Motion Picture and Video Production,MotionPictureAndVideoProduction
 512120,Motion Picture and Video Distribution,MotionPictureAndVideoDistribution
 512131,Motion Picture Theaters (except Drive-Ins),MotionPictureTheatersExceptDriveins
@@ -678,41 +668,42 @@ naics_code,naics_title,name
 512240,Sound Recording Studios,SoundRecordingStudios
 512250,Record Production and Distribution,RecordProductionAndDistribution
 512290,Other Sound Recording Industries,OtherSoundRecordingIndustries
-515111,Radio Networks,RadioNetworks
-515112,Radio Stations,RadioStations
-515120,Television Broadcasting,TelevisionBroadcasting
-515210,Cable and Other Subscription Programming,CableAndOtherSubscriptionProgramming
-517311,Wired Telecommunications Carriers,WiredTelecommunicationsCarriers
-517312,Wireless Telecommunications Carriers (except Satellite),WirelessTelecommunicationsCarriersExceptSatellite
+513110,Newspaper Publishers,NewspaperPublishers
+513120,Periodical Publishers,PeriodicalPublishers
+513130,Book Publishers,BookPublishers
+513140,Directory and Mailing List Publishers,DirectoryAndMailingListPublishers
+513191,Greeting Card Publishers,GreetingCardPublishers
+513199,All Other Publishers,AllOtherPublishers
+513210,Software Publishers,SoftwarePublishers
+516110,Radio Broadcasting Stations,RadioBroadcastingStations
+516120,Television Broadcasting,TelevisionBroadcasting
+516210,"Media Streaming Distribution Services, Social Networks, and Other Media Networks and Content Providers",MediaStreamingDistributionServicesSocialNetworksAndOtherMediaNetworksAndContentProviders
+517111,Wired Telecommunications Carriers,WiredTelecommunicationsCarriers
+517112,Wireless Telecommunications Carriers (except Satellite),WirelessTelecommunicationsCarriersExceptSatellite
+517121,Telecommunications Resellers,TelecommunicationsResellers
+517122,Agents for Wireless Telecommunications Services,AgentsForWirelessTelecommunicationsServices
 517410,Satellite Telecommunications,SatelliteTelecommunications
-517911,Telecommunications Resellers,TelecommunicationsResellers
 517919,All Other Telecommunications,AllOtherTelecommunications
 518210,"Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services",ComputingInfrastructureProvidersDataProcessingWebHostingAndRelatedServices
-519110,News Syndicates,NewsSyndicates
-519120,Libraries and Archives,LibrariesAndArchives
-519130,Internet Publishing and Broadcasting and Web Search Portals,InternetPublishingAndBroadcastingAndWebSearchPortals
-519190,All Other Information Services,AllOtherInformationServices
+519210,Libraries and Archives,LibrariesAndArchives
+519290,Web Search Portals and All Other Information Services,WebSearchPortalsAndAllOtherInformationServices
 521110,Monetary Authorities-Central Bank,MonetaryAuthoritiesCentralBank
 522110,Commercial Banking,CommercialBanking
-522120,Savings Institutions,SavingsInstitutions
 522130,Credit Unions,CreditUnions
-522190,Other Depository Credit Intermediation,OtherDepositoryCreditIntermediation
+522180,Savings Institutions and Other Depository Credit Intermediation,SavingsInstitutionsAndOtherDepositoryCreditIntermediation
 522210,Credit Card Issuing,CreditCardIssuing
 522220,Sales Financing,SalesFinancing
 522291,Consumer Lending,ConsumerLending
 522292,Real Estate Credit,RealEstateCredit
-522298,All Other Nondepository Credit Intermediation,AllOtherNondepositoryCreditIntermediation
+522299,"International, Secondary Market, and All Other Nondepository Credit Intermediation",InternationalSecondaryMarketAndAllOtherNondepositoryCreditIntermediation
 522310,Mortgage and Nonmortgage Loan Brokers,MortgageAndNonmortgageLoanBrokers
 522320,"Financial Transactions Processing, Reserve, and Clearinghouse Activities",FinancialTransactionsProcessingReserveAndClearinghouseActivities
 522390,Other Activities Related to Credit Intermediation,OtherActivitiesRelatedToCreditIntermediation
 523110,Investment Banking and Securities Dealing,InvestmentBankingAndSecuritiesDealing
-523120,Securities Brokerage,SecuritiesBrokerage
-523130,Commodity Contracts Dealing,CommodityContractsDealing
-523140,Commodity Contracts Brokerage,CommodityContractsBrokerage
+523160,Commodity Contracts Intermediation,CommodityContractsIntermediation
 523210,Securities and Commodity Exchanges,SecuritiesAndCommodityExchanges
 523910,Miscellaneous Intermediation,MiscellaneousIntermediation
-523920,Portfolio Management,PortfolioManagement
-523930,Investment Advice,InvestmentAdvice
+523940,Portfolio Management and Investment Advice,PortfolioManagementAndInvestmentAdvice
 523991,"Trust, Fiduciary, and Custody Activities",TrustFiduciaryAndCustodyActivities
 523999,Miscellaneous Financial Investment Activities,MiscellaneousFinancialInvestmentActivities
 524113,Direct Life Insurance Carriers,DirectLifeInsuranceCarriers
@@ -723,14 +714,13 @@ naics_code,naics_title,name
 524130,Reinsurance Carriers,ReinsuranceCarriers
 524210,Insurance Agencies and Brokerages,InsuranceAgenciesAndBrokerages
 524291,Claims Adjusting,ClaimsAdjusting
-524292,Third Party Administration of Insurance and Pension Funds,ThirdPartyAdministrationOfInsuranceAndPensionFunds
+524292,Pharmacy Benefit Management and Other Third Party Administration of Insurance and Pension Funds,PharmacyBenefitManagementAndOtherThirdPartyAdministrationOfInsuranceAndPensionFunds
 524298,All Other Insurance Related Activities,AllOtherInsuranceRelatedActivities
 525110,Pension Funds,PensionFunds
 525120,Health and Welfare Funds,HealthAndWelfareFunds
 525190,Other Insurance Funds,OtherInsuranceFunds
 525910,Open-End Investment Funds,OpenEndInvestmentFunds
 525920,"Trusts, Estates, and Agency Accounts",TrustsEstatesAndAgencyAccounts
-525930,Real Estate Investment Trusts,RealEstateInvestmentTrusts
 525990,Other Financial Vehicles,OtherFinancialVehicles
 531110,Lessors of Residential Buildings and Dwellings,LessorsOfResidentialBuildingsAndDwellings
 531120,Lessors of Nonresidential Buildings (except Miniwarehouses),LessorsOfNonresidentialBuildingsExceptMiniwarehouses
@@ -745,11 +735,9 @@ naics_code,naics_title,name
 532112,Passenger Car Leasing,PassengerCarLeasing
 532120,"Truck, Utility Trailer, and RV (Recreational Vehicle) Rental and Leasing",TruckUtilityTrailerAndRvRecreationalVehicleRentalAndLeasing
 532210,Consumer Electronics and Appliances Rental,ConsumerElectronicsAndAppliancesRental
-532220,Formal Wear and Costume Rental,FormalWearAndCostumeRental
-532230,Video Tape and Disc Rental,VideoTapeAndDiscRental
-532281,Recreational Goods Rental Parent,RecreationalGoodsRentalParent
-532282,Medical Equipment and Supplies Rental,MedicalEquipmentAndSuppliesRental
-532283,Home Health Equipment and Supplies Rental,HomeHealthEquipmentAndSuppliesRental
+532281,Formal Wear and Costume Rental,FormalWearAndCostumeRental
+532282,Video Tape and Disc Rental,VideoTapeAndDiscRental
+532283,Home Health Equipment Rental,HomeHealthEquipmentRental
 532284,Recreational Goods Rental,RecreationalGoodsRental
 532289,All Other Consumer Goods Rental,AllOtherConsumerGoodsRental
 532310,General Rental Centers,GeneralRentalCenters
@@ -809,7 +797,6 @@ naics_code,naics_title,name
 541990,"All Other Professional, Scientific, and Technical Services",AllOtherProfessionalScientificAndTechnicalServices
 551111,Offices of Bank Holding Companies,OfficesOfBankHoldingCompanies
 551112,Offices of Other Holding Companies,OfficesOfOtherHoldingCompanies
-551113,"Corporate, Subsidiary, and Regional Managing Offices Parent",CorporateSubsidiaryAndRegionalManagingOfficesParent
 551114,"Corporate, Subsidiary, and Regional Managing Offices",CorporateSubsidiaryAndRegionalManagingOffices
 561110,Office Administrative Services,OfficeAdministrativeServices
 561210,Facilities Support Services,FacilitiesSupportServices
@@ -952,18 +939,13 @@ naics_code,naics_title,name
 722514,"Cafeterias, Grill Buffets, and Buffets",CafeteriasGrillBuffetsAndBuffets
 722515,Snack and Nonalcoholic Beverage Bars,SnackAndNonalcoholicBeverageBars
 811111,General Automotive Repair,GeneralAutomotiveRepair
-811112,Automotive Exhaust System Repair,AutomotiveExhaustSystemRepair
-811113,Automotive Transmission Repair,AutomotiveTransmissionRepair
-811118,Other Automotive Mechanical and Electrical Repair and Maintenance,OtherAutomotiveMechanicalAndElectricalRepairAndMaintenance
+811114,Specialized Automotive Repair,SpecializedAutomotiveRepair
 811121,"Automotive Body, Paint, and Interior Repair and Maintenance",AutomotiveBodyPaintAndInteriorRepairAndMaintenance
 811122,Automotive Glass Replacement Shops,AutomotiveGlassReplacementShops
 811191,Automotive Oil Change and Lubrication Shops,AutomotiveOilChangeAndLubricationShops
 811192,Car Washes,CarWashes
 811198,All Other Automotive Repair and Maintenance,AllOtherAutomotiveRepairAndMaintenance
-811211,Consumer Electronics Repair and Maintenance,ConsumerElectronicsRepairAndMaintenance
-811212,Computer and Office Machine Repair and Maintenance,ComputerAndOfficeMachineRepairAndMaintenance
-811213,Communication Equipment Repair and Maintenance,CommunicationEquipmentRepairAndMaintenance
-811219,Other Electronic and Precision Equipment Repair and Maintenance,OtherElectronicAndPrecisionEquipmentRepairAndMaintenance
+811210,Electronic and Precision Equipment Repair and Maintenance,ElectronicAndPrecisionEquipmentRepairAndMaintenance
 811310,Commercial and Industrial Machinery and Equipment (except Automotive and Electronic) Repair and Maintenance,CommercialAndIndustrialMachineryAndEquipmentExceptAutomotiveAndElectronicRepairAndMaintenance
 811411,Home and Garden Equipment Repair and Maintenance,HomeAndGardenEquipmentRepairAndMaintenance
 811412,Appliance Repair and Maintenance,ApplianceRepairAndMaintenance

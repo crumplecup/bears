@@ -34,11 +34,11 @@ pub use keys::{
     AreaOrCountry, BoolInvalid, BoolOptions, Channel, Component, DirectionOfInvestment, Footnotes,
     Frequencies, Frequency, FrequencyOptions, IipIndustry, Indicator, InputOutputTable, Integer,
     IntegerInvalid, IntegerKind, IntegerOptions, InvestmentKind, ItaFrequencies, ItaFrequency,
-    Millions, MillionsOptions, NaicsCategory, NaicsIndustry, NaicsItem, NaicsItems, NaicsSector,
-    NaicsSubcategory, NaicsSubsector, NipaRange, NipaRangeIterator, NipaRanges, NipaTableName, Nom,
-    NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode, RowCodeMissing,
-    SelectionKind, SelectionSet, State, StateKind, TableName, Year, YearInvalid, YearKind,
-    YearOptions, YearRange, date_by_period, parse_year, roman_numeral_quarter,
+    Millions, MillionsOptions, Naics, NaicsCategory, NaicsIndustry, NaicsItem, NaicsItems,
+    NaicsSector, NaicsSubcategory, NaicsSubsector, NipaRange, NipaRangeIterator, NipaRanges,
+    NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode,
+    RowCodeMissing, SelectionKind, SelectionSet, State, StateKind, TableName, Year, YearInvalid,
+    YearKind, YearOptions, YearRange, date_by_period, parse_year, roman_numeral_quarter,
 };
 pub use method::Method;
 pub use parameter::{NotParameterName, Parameter, ParameterName, Parameters, deserialize_bool};

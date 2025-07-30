@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.9] - 2025-05-12
+## [0.1.10] - 2025-07-30
 
 ### 🚀 Features
 
@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file.
 - The NaicsSector::from_key method is now NaicsSector::from_code.
 - Added the `NaicsSubcategory` type to represent Naics industry codes with a length of five digits.
 - NaicsIndustry enum added to represent the full six-digit NAICS codes.
+- `Scope` and `Overwrite` types added to module to represent parameter options for `Queue` methods.
+- `Overwrite` and `Scope` added to parameter arguments for `Queue` methods.
+- `next_mne_error` added to testing suite to retry to first of a presumably long list of errors, intended for use on TRACE.
+- `Naics` type added to module.
 
 ### 🐛 Bug Fixes
 
@@ -22,6 +26,12 @@ All notable changes to this project will be documented in this file.
 - NaicsSubcategory variants and method values corrected in response to unit testing.
 - `NaicsCategory` variants and methods corrected in response to unit testing.
 - Typo corrections in the reference file for NAICS codes.
+- Clippy fixes and some commented out WIP.
+- Temporary down-throttle of the rate limiting for testing.
+- Corrections to 2022 NAICS codes.
+- Edge case handled where a single item causes the list to serialize as a `serde_json::Value::Object` instead of a `serde_json::Value::Array`.
+- Corrections to 2022 Naics codes incorporated into Naics types.
+- Special cases added for MNE tables.
 
 ### 🚜 Refactor
 
@@ -43,6 +53,12 @@ All notable changes to this project will be documented in this file.
 ### 📚 Documentation
 
 - Descriptions added for member crates.
+- Doc comments added to justfile.
+
+### 🎨 Styling
+
+- Clarify reporting on the `FromStrError` type.
+- Minor refactor of tracing subscriber filter.
 
 ### 🧪 Testing
 
@@ -51,6 +67,8 @@ All notable changes to this project will be documented in this file.
 - Verification testings for Naics types added validating variant names, description and codes against the .csv files in the cave.
 - Check_naics_industry added to check_naics test suite.
 - Check_naics_industry added to check_naics test suite.
+- Flux in unit tests related to bulk dataset downloads.
+- Queue tests updated with `Overwrite` and `Scope` arguments.
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -66,6 +84,16 @@ All notable changes to this project will be documented in this file.
 - NaicsIndustry enum added to public visibility in lib.rs and mod.rs.
 - Minor update to tokio and patch updates to clap and jiff dependencies.
 - Locked flag added to cargo-dist and cargo-release installs.
+- `git-cliff` added to justfile.
+- Increment version to 0.1.10.
+- Patch update to derive_setters dependency.
+- Dependency updates for clap, console, jiff, reqwest and tokio.
+- Patch updates to dependency `clap` and dev-dependency `anyhow`.
+- `rand` added as dependency.  Patch updates to `clap`, `serde_json`, `strum` and `tokio`.
+- `rand` added as dependency.
+- Types updated for public visibility.
+- Naics codes table added back in for backwards compability until the transition to full Naics types is complete.
+- Cargo-dist update.
 
 ## [0.1.6] - 2025-03-31
 

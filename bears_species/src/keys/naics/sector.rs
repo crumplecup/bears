@@ -31,6 +31,8 @@ pub enum NaicsSector {
     WholesaleTrade,
     /// Retail Trade
     RetailTrade,
+    /// Transportation and Warehousing
+    TransportationWarehousing,
     /// Information
     Information,
     /// Finance and Insurance
@@ -72,6 +74,7 @@ impl NaicsSector {
             Self::Manufacturing => "Manufacturing",
             Self::WholesaleTrade => "Wholesale Trade",
             Self::RetailTrade => "Retail Trade",
+            Self::TransportationWarehousing => "Transportation and Warehousing",
             Self::Information => "Information",
             Self::FinanceInsurance => "Finance and Insurance",
             Self::RealEstateRentalLeasing => "Real Estate and Rental and Leasing",
@@ -106,6 +109,7 @@ impl NaicsSector {
             Self::Manufacturing => 31, // Taking only first number from 31-33
             Self::WholesaleTrade => 42,
             Self::RetailTrade => 44, // Taking only first number from 44-45
+            Self::TransportationWarehousing => 48, // Taking only first number from 48-49
             Self::Information => 51,
             Self::FinanceInsurance => 52,
             Self::RealEstateRentalLeasing => 53,
@@ -140,6 +144,7 @@ impl NaicsSector {
             31..=33 => Self::Manufacturing,
             42 => Self::WholesaleTrade,
             44 | 45 => Self::RetailTrade,
+            48 | 49 => Self::TransportationWarehousing,
             51 => Self::Information,
             52 => Self::FinanceInsurance,
             53 => Self::RealEstateRentalLeasing,
