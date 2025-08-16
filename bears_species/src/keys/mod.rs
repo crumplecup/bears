@@ -33,7 +33,7 @@ pub use investment::{DirectionOfInvestment, InvestmentKind};
 pub use millions::{Millions, MillionsOptions};
 pub use naics::{
     Naics, NaicsCategory, NaicsIndustry, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
-    NaicsSubsector,
+    NaicsSubsector, NaicsSupplement,
 };
 pub use numeric::{
     AnnotatedInteger, BoolInvalid, BoolOptions, Integer, IntegerInvalid, IntegerKind,
