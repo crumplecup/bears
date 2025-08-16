@@ -86,7 +86,7 @@ impl Results {
                             return Ok(Self::from(data));
                         }
                         Err(source) => {
-                            tracing::trace!("{source}");
+                            tracing::debug!("{source}");
                         }
                     },
                     Dataset::GDPbyIndustry => match GdpData::try_from(value) {

@@ -424,6 +424,7 @@ impl MneDiDatum {
             data_value_unformatted.as_value()
         );
         let row = map_to_string("Row", m)?;
+        tracing::debug!("Row: {row}.");
         let row_code = RowCode::from_value(m, &row, naics)?;
         let series_id = map_to_int("SeriesID", m)?;
         let series_name = map_to_string("SeriesName", m)?;
