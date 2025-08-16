@@ -1,4 +1,6 @@
-use crate::{NaicsCategory, NaicsIndustry, NaicsSector, NaicsSubcategory, NaicsSubsector};
+use crate::{
+    NaicsCategory, NaicsIndustry, NaicsSector, NaicsSubcategory, NaicsSubsector, NaicsSupplement,
+};
 
 /// Parent enum for types of NAICS codes.
 #[derive(
@@ -25,15 +27,24 @@ pub enum Naics {
     Subcategory(NaicsSubcategory),
     #[from(NaicsIndustry)]
     Industry(NaicsIndustry),
+    #[from(NaicsSupplement)]
+    Supplement(NaicsSupplement),
 }
 
 impl Naics {
     pub fn from_code(key: &str) -> Option<Self> {
+        // check that the key is a number
         let code = match key.parse::<i64>() {
             Ok(num) => num,
             Err(_) => return None,
         };
 
+        // check if key is supplement type
+        if let Some(supplement) = NaicsSupplement::from_code(key) {
+            return Some(Self::from(supplement));
+        }
+
+        // match key to naics code by length
         match code {
             11..100 => NaicsSector::from_code(key).map(|naics| naics.into()),
             111..1000 => NaicsSubsector::from_code(key).map(|naics| naics.into()),
