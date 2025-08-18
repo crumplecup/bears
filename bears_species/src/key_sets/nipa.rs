@@ -20,7 +20,7 @@ impl Nipa {
         self.frequency.params()
     }
 
-    pub fn iter(&self) -> NipaIterator {
+    pub fn iter(&self) -> NipaIterator<'_> {
         NipaIterator::new(self)
     }
 
@@ -375,7 +375,7 @@ impl NiUnderlyingDetail {
         self.frequency.params()
     }
 
-    pub fn iter(&self) -> NiUnderlyingDetailIterator {
+    pub fn iter(&self) -> NiUnderlyingDetailIterator<'_> {
         NiUnderlyingDetailIterator::new(self)
     }
 

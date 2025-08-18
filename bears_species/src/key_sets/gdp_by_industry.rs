@@ -35,7 +35,7 @@ impl GdpByIndustry {
         vec![Frequency::Annual, Frequency::Quarterly].into()
     }
 
-    pub fn iter(&self) -> GdpByIndustryIterator {
+    pub fn iter(&self) -> GdpByIndustryIterator<'_> {
         GdpByIndustryIterator::new(self)
     }
 
