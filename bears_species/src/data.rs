@@ -1,9 +1,10 @@
 use crate::{
-    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, Frequency, IoError, ItaData,
-    JsonParseError, KeyMissing, NaicsItems, NotArray, NotObject, RowCode, SerdeJson,
-    VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string, parse_year,
+    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, Frequency, IipData, InputOutputData,
+    IoError, ItaData, JsonParseError, KeyMissing, NaicsItems, NotArray, NotObject, RowCode,
+    SerdeJson, VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string, parse_year,
     roman_numeral_quarter,
 };
+
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize, derive_more::From,
 )]
@@ -19,6 +20,10 @@ pub enum Data {
     GdpData(GdpData),
     #[from(ItaData)]
     ItaData(ItaData),
+    #[from(IipData)]
+    Iip(IipData),
+    #[from(InputOutputData)]
+    InputOutput(InputOutputData),
 }
 
 #[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
@@ -89,7 +94,6 @@ impl TryFrom<serde_json::Value> for NipaDatum {
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
                 let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseError::from(error);
                 Err(error.into())
             }
         }
