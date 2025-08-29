@@ -1,4 +1,4 @@
-use crate::{AreaOrCountry, Naics, NaicsItems, map_to_int};
+use crate::{AreaOrCountry, Naics, NaicsItems, StateKind, map_to_int};
 
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
@@ -7,6 +7,7 @@ pub enum RowCode {
     Naics(Naics),
     Parent(Naics),
     Region(AreaOrCountry),
+    State(StateKind),
     Addendum(String),
 }
 
@@ -29,8 +30,11 @@ impl RowCode {
                 // 3-digit naics codes that match AOC codes will be parsed incorrectly
                 if let Some(region) = AreaOrCountry::from_code(code) {
                     Ok(Self::Region(region))
+                // States also have row codes, try those next
+                } else if let Some(state) = StateKind::from_code(code) {
+                    Ok(Self::State(state))
                 } else {
-                    // Not an AOC code, try as a NAICS code.
+                    // Not an AOC or state code, try as a NAICS code.
                     let code_str = code.to_string();
                     if let Some(naics) = Naics::from_code(&code_str) {
                         Ok(Self::Naics(naics))
@@ -403,10 +407,10 @@ impl RowCode {
                                 Err(error)
                             }
                         }
-                        // 5132,Software Publishers,,
+                        // NAICS Code 533110 - Lessors of Nonfinancial Intangible Assets (except Copyrighted Works)
                         "Intellectual property rights" => {
                             tracing::trace!("Categorizing Intellectual property rights.");
-                            if let Some(naics) = Naics::from_code("5132") {
+                            if let Some(naics) = Naics::from_code("533110") {
                                 Ok(Self::Parent(naics))
                             } else {
                                 let error = RowCodeMissing::new(
@@ -490,46 +494,46 @@ impl RowCode {
                         }
                         // Not a valid NAICS category.
                         // Regional designations
-                        // "All Countries Total" => {
-                        //     tracing::trace!("Categoring All Countries Total.");
-                        //     Ok(Self::Region("All Countries".to_string()))
-                        // }
-                        // "Far East:" => {
-                        //     tracing::trace!("Categorizing Far East.");
-                        //     Ok(Self::Region("Far East".to_string()))
-                        // }
-                        // "Far West:" => {
-                        //     tracing::trace!("Categorizing Far West.");
-                        //     Ok(Self::Region("Far West".to_string()))
-                        // }
-                        // "Rocky Mountains:" => {
-                        //     tracing::trace!("Categorizing Rocky Mountains.");
-                        //     Ok(Self::Region("Rocky Mountains".to_string()))
-                        // }
-                        // "Southwest:" => {
-                        //     tracing::trace!("Categorizing Southwest.");
-                        //     Ok(Self::Region("Southwest".to_string()))
-                        // }
-                        // "Southeast:" => {
-                        //     tracing::trace!("Categorizing Southeast.");
-                        //     Ok(Self::Region("Southeast".to_string()))
-                        // }
-                        // "Plains:" => {
-                        //     tracing::trace!("Categorizing Plains.");
-                        //     Ok(Self::Region("Plains".to_string()))
-                        // }
-                        // "Great Lakes:" => {
-                        //     tracing::trace!("Categorizing Great Lakes.");
-                        //     Ok(Self::Region("Great Lakes".to_string()))
-                        // }
-                        // "Mideast:" => {
-                        //     tracing::trace!("Categorizing Mideast.");
-                        //     Ok(Self::Region("Mideast".to_string()))
-                        // }
-                        // "New England:" => {
-                        //     tracing::trace!("Categorizing New England.");
-                        //     Ok(Self::Region("New England".to_string()))
-                        // }
+                        "All Countries Total" => {
+                            tracing::trace!("Categoring All Countries Total.");
+                            Ok(Self::Region(AreaOrCountry::AllCountries))
+                        }
+                        "Far East:" => {
+                            tracing::trace!("Categorizing Far East.");
+                            Ok(Self::Region(AreaOrCountry::FarEast))
+                        }
+                        "Far West:" => {
+                            tracing::trace!("Categorizing Far West.");
+                            Ok(Self::Region(AreaOrCountry::FarWest))
+                        }
+                        "Rocky Mountains:" => {
+                            tracing::trace!("Categorizing Rocky Mountains.");
+                            Ok(Self::Region(AreaOrCountry::RockyMountains))
+                        }
+                        "Southwest:" => {
+                            tracing::trace!("Categorizing Southwest.");
+                            Ok(Self::Region(AreaOrCountry::Southwest))
+                        }
+                        "Southeast:" => {
+                            tracing::trace!("Categorizing Southeast.");
+                            Ok(Self::Region(AreaOrCountry::Southeast))
+                        }
+                        "Plains:" => {
+                            tracing::trace!("Categorizing Plains.");
+                            Ok(Self::Region(AreaOrCountry::Plains))
+                        }
+                        "Great Lakes:" => {
+                            tracing::trace!("Categorizing Great Lakes.");
+                            Ok(Self::Region(AreaOrCountry::GreatLakes))
+                        }
+                        "Mideast:" => {
+                            tracing::trace!("Categorizing Mideast.");
+                            Ok(Self::Region(AreaOrCountry::MiddleEast))
+                        }
+                        "New England:" => {
+                            tracing::trace!("Categorizing New England.");
+                            Ok(Self::Region(AreaOrCountry::NewEngland))
+                        }
                         "Addendum:" => {
                             tracing::trace!("Categorizing addendum.");
                             Ok(Self::Addendum("Addendum".to_string()))
