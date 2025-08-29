@@ -129,7 +129,10 @@ pub async fn datasets_download_initial() -> Result<(), BeaErr> {
         // Dataset::FixedAssets,
         // Dataset::Mne,
         // Dataset::GDPbyIndustry,
-        Dataset::Ita,
+        // Dataset::Ita,
+        // Dataset::Iip,
+        // Dataset::InputOutput,
+        Dataset::UnderlyingGDPbyIndustry,
     ];
     // let datasets = vec![Dataset::Ita];
     for dataset in datasets {
@@ -184,9 +187,11 @@ pub async fn datasets_initial_load() -> Result<(), BeaErr> {
         // Dataset::Nipa,
         // Dataset::NIUnderlyingDetail,
         // Dataset::FixedAssets,
-        Dataset::Mne,
+        // Dataset::Mne,
         // Dataset::GDPbyIndustry,
         // Dataset::Ita,
+        // Dataset::Iip,
+        Dataset::InputOutput,
     ];
     // let datasets = vec![Dataset::FixedAssets];
     for dataset in datasets {
@@ -220,7 +225,10 @@ pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
 #[tracing::instrument(skip_all)]
 pub async fn datasets_retry_load() -> Result<(), BeaErr> {
     trace_init()?;
-    let datasets = vec![Dataset::Mne];
+    let datasets = vec![
+        // Dataset::Mne,
+        Dataset::InputOutput,
+    ];
     for dataset in datasets {
         let result = retry_load(dataset).await?;
         tracing::info!("{} datasets loaded.", result.len());
