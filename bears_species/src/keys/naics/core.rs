@@ -1,5 +1,6 @@
 use crate::{
-    NaicsCategory, NaicsIndustry, NaicsSector, NaicsSubcategory, NaicsSubsector, NaicsSupplement,
+    NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsSector, NaicsSubcategory, NaicsSubsector,
+    NaicsSupplement,
 };
 
 /// Parent enum for types of NAICS codes.
@@ -29,6 +30,8 @@ pub enum Naics {
     Industry(NaicsIndustry),
     #[from(NaicsSupplement)]
     Supplement(NaicsSupplement),
+    #[from(NaicsInputOutput)]
+    InputOutput(NaicsInputOutput),
 }
 
 impl Naics {
@@ -36,7 +39,15 @@ impl Naics {
         // check that the key is a number
         let code = match key.parse::<i64>() {
             Ok(num) => num,
-            Err(_) => return None,
+            Err(_) => {
+                // Check for input output row/column codes, which can include letters
+                if let Some(naics) = NaicsInputOutput::from_code(key) {
+                    return Some(naics.into());
+                } else {
+                    // No codes match, return empty-handed
+                    return None;
+                }
+            }
         };
 
         // check if key is supplement type
@@ -53,5 +64,30 @@ impl Naics {
             111110..1_000_000 => NaicsIndustry::from_code(key).map(|naics| naics.into()),
             _ => None,
         }
+    }
+
+    pub fn description(&self) -> &'static str {
+        match self {
+            Self::Sector(naics) => naics.description(),
+            Self::Subsector(naics) => naics.description(),
+            Self::Category(naics) => naics.description(),
+            Self::Subcategory(naics) => naics.description(),
+            Self::Industry(naics) => naics.description(),
+            Self::Supplement(naics) => naics.description(),
+            Self::InputOutput(naics) => naics.description(),
+        }
+    }
+
+    pub fn code(&self) -> String {
+        let code = match self {
+            Self::Sector(naics) => naics.code(),
+            Self::Subsector(naics) => naics.code(),
+            Self::Category(naics) => naics.code(),
+            Self::Subcategory(naics) => naics.code(),
+            Self::Industry(naics) => naics.code(),
+            Self::Supplement(naics) => naics.code(),
+            Self::InputOutput(naics) => return naics.code().to_owned(),
+        };
+        code.to_string()
     }
 }
