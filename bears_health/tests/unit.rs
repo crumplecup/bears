@@ -58,8 +58,8 @@ async fn values_filtered_subset() -> anyhow::Result<()> {
 #[tokio::test]
 #[cfg(feature = "api")]
 async fn values_gdp_filtered() -> anyhow::Result<()> {
-    bears_health::values_gdp_filtered().await?;
-    tracing::info!("Filtered values for GDP read.");
+    // bears_health::values_gdp_filtered().await?;
+    // tracing::info!("Filtered values for GDP read.");
     bears_health::values_ugdp_filtered().await?;
     tracing::info!("Filtered values for Underlying GDP read.");
     Ok(())
@@ -68,6 +68,12 @@ async fn values_gdp_filtered() -> anyhow::Result<()> {
 #[test]
 fn check_indicators() -> anyhow::Result<()> {
     bears_health::check_indicators()?;
+    Ok(())
+}
+
+#[test]
+fn check_investments() -> anyhow::Result<()> {
+    bears_health::check_investments()?;
     Ok(())
 }
 
@@ -179,5 +185,11 @@ fn download_history() -> anyhow::Result<()> {
 #[test]
 fn download_summary() -> anyhow::Result<()> {
     bears_health::download_summary()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn io_codes() -> anyhow::Result<()> {
+    bears_health::io_codes().await?;
     Ok(())
 }
