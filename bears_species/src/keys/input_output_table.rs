@@ -1,5 +1,6 @@
 use crate::{
-    BeaErr, KeyMissing, ParameterFields, ParameterValueTable, ParameterValueTableVariant, ParseInt,
+    BeaErr, KeyMissing, ParameterFields, ParameterName, ParameterValueTable,
+    ParameterValueTableVariant, ParseInt,
 };
 
 /// Represents different types of input-output tables in an economic analysis framework.
@@ -45,6 +46,14 @@ pub enum InputOutputTable {
 }
 
 impl InputOutputTable {
+    /// Format `self` for insertion into a request BTreeMap(key, value).
+    /// The key is the parameter name.  The value is the parameter value.
+    pub fn params(&self) -> (String, String) {
+        let key = ParameterName::TableID.to_string();
+        let value = self.key().to_string();
+        (key, value)
+    }
+
     /// Returns the full description of the input-output table type.
     ///
     /// # Returns
