@@ -3,6 +3,7 @@ use bears_species::{BeaErr, EnvError, IoError, UrlParseError};
 use tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt};
 
 pub fn bea_data() -> Result<std::path::PathBuf, EnvError> {
+    dotenvy::dotenv().ok();
     let key = "BEA_DATA".to_string();
     let path = std::env::var(&key)
         .map_err(|source| EnvError::new(key, source, line!(), file!().into()))?;
