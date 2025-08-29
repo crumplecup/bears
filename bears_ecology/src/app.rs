@@ -385,9 +385,24 @@ impl App {
                         title.push_str(".json");
                         Ok(path.join(title))
                     }
+                    Dataset::UnderlyingGDPbyIndustry => {
+                        let table_id = query[&ParameterName::TableID.to_string()].clone();
+                        let industry = query[&ParameterName::Industry.to_string()].clone();
+                        let title = format!("{dataset}_{table_id}_{industry}.json");
+                        Ok(path.join(title))
+                    }
                     Dataset::Ita => {
                         let aoc = query["AreaOrCountry"].clone();
                         Ok(path.join(format!("{aoc}.json")))
+                    }
+                    Dataset::Iip => {
+                        // let component = query["Component"].clone();
+                        let toi = query["TypeOfInvestment"].clone();
+                        Ok(path.join(format!("IIP_{toi}.json")))
+                    }
+                    Dataset::InputOutput => {
+                        let table_id = query["TableID"].clone();
+                        Ok(path.join(format!("InputOutput_{table_id}.json")))
                     }
                     _ => {
                         tracing::info!("{dataset} not yet implemented.");
