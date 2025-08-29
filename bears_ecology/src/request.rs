@@ -1,8 +1,8 @@
 use crate::{App, History, Mode, Options, Overwrite, Queue, Scope, bea_data, init};
 use bears_species::{
-    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, FixedAssets, GdpByIndustry, IoError, Ita,
-    Method, Mne, NiUnderlyingDetail, Nipa, ParameterName, ReqwestError, Results, SerdeJson,
-    UnderlyingGdpByIndustry, VariantMissing,
+    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, FixedAssets, GdpByIndustry, Iip,
+    InputOutput, IoError, Ita, Method, Mne, NiUnderlyingDetail, Nipa, ParameterName, ReqwestError,
+    Results, SerdeJson, UnderlyingGdpByIndustry, VariantMissing,
 };
 use strum::IntoEnumIterator;
 
@@ -72,7 +72,7 @@ pub fn init_queue(dataset: Dataset) -> Result<Queue, BeaErr> {
     let req = Request::Data;
     let mut app = req.init()?;
     app.with_dataset(dataset);
-    dotenvy::dotenv().ok();
+    // dotenvy::dotenv().ok();
     let path = bea_data()?;
     let mut queue = Vec::new();
 
@@ -86,6 +86,30 @@ pub fn init_queue(dataset: Dataset) -> Result<Queue, BeaErr> {
         }
         Dataset::GDPbyIndustry => {
             let data = GdpByIndustry::try_from(&path)?;
+            for params in data.iter() {
+                app.with_params(params.clone());
+                queue.push(app.clone());
+            }
+        }
+        Dataset::UnderlyingGDPbyIndustry => {
+            tracing::info!("Constructing key set for {dataset}.");
+            let data = UnderlyingGdpByIndustry::try_from(&path)?;
+            tracing::info!("Key set constructed for {dataset}.");
+            for params in data.iter() {
+                tracing::info!("Adding params {params:#?}");
+                app.with_params(params.clone());
+                queue.push(app.clone());
+            }
+        }
+        Dataset::Iip => {
+            let data = Iip::try_from(&path)?;
+            for params in data.iter() {
+                app.with_params(params.clone());
+                queue.push(app.clone());
+            }
+        }
+        Dataset::InputOutput => {
+            let data = InputOutput::try_from(&path)?;
             for params in data.iter() {
                 app.with_params(params.clone());
                 queue.push(app.clone());
