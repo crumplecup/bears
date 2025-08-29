@@ -37,6 +37,8 @@ pub enum NaicsSupplement {
     Apparel,
     /// Arts, entertainment, and recreation
     ArtsEntertainmentRecreation,
+    /// Arts, entertainment, recreation, accommodation, and food services
+    ArtsEntertainmentRecreationAccommodationFoodServices,
     /// Asphalt and other petroleum and coal products,
     AsphaltOtherPetroleumCoal,
     /// Beverages and tobacco products
@@ -47,6 +49,8 @@ pub enum NaicsSupplement {
     BroadcastingCableNetworksProgramDistribution,
     /// Broadcasting (except internet)
     BroadcastingExceptInternet,
+    /// Broadcasting (except internet) and telecommunications
+    BroadcastingExceptInternetTelecommunications,
     /// Broadcasting and telecommunications
     BroadcastingTelecommunications,
     /// Building, developing, and general contracting
@@ -75,12 +79,16 @@ pub enum NaicsSupplement {
     CouriersMessengers,
     /// Crop production
     CropProduction,
+    /// Data processing, internet publishing, and other information services
+    DataProcessingInternetPublishingOtherInformationServices,
     /// Data processing services
     DataProcessingServices,
     /// Direct life insurance carriers
     DirectLifeInsuranceCarriers,
     /// Educational services
     EducationalServices,
+    /// Educational services, health care, and social assistance
+    EducationalServicesHealthCareSocialAssistance,
     /// Electrical equipment, appliances, and components
     ElectricalEquipmentAppliancesComponents,
     /// Electronics and appliance retailers
@@ -113,6 +121,8 @@ pub enum NaicsSupplement {
     GasolineStations,
     /// General merchandise retailers
     GeneralMerchandiseRetailers,
+    /// General merchandise stores
+    GeneralMerchandiseStores,
     /// Gold and silver ores
     GoldSilverOres,
     /// Health care and social assistance
@@ -137,6 +147,10 @@ pub enum NaicsSupplement {
     InsuranceCarriersRelatedActivities,
     /// Integrated petrolium refining and extraction
     IntegratedPetroliumRefiningExtraction,
+    /// International - Drilling Rigs
+    InternationalDrillingRigs,
+    /// Internet, data processing, and other information services
+    InternetDataProcessingOtherInformationServices,
     /// Internet service providers and web search portals
     InternetServiceProvidersWebSearchPortals,
     /// Internet service providers, web search portals, and data processing services
@@ -171,6 +185,8 @@ pub enum NaicsSupplement {
     MotorVehiclePartsDealers,
     /// Motor vehicles, bodies and trailers, and parts
     MotorVehiclesBodiesTrailersParts,
+    /// Nonbusiness Entities, Except Government
+    NonbusinessEntitiesExceptGovernment,
     /// Nondepository credit intermediation and related services
     NondepositoryCreditIntermediationRelatedServices,
     /// Nonmetallic mineral products
@@ -181,6 +197,8 @@ pub enum NaicsSupplement {
     NursingResidentialCareFacilities,
     /// Other durable goods
     OtherDurableGoods,
+    /// Other finance, except depository institutions
+    OtherFinanceExceptDepositoryInstitutions,
     /// Other financial investment activities and exchanges
     OtherFinancialInvestmentActivitiesExchanges,
     /// Other industries
@@ -281,6 +299,8 @@ pub enum NaicsSupplement {
     TransportationWarehousing,
     /// Truck transportation
     TruckTransportation,
+    /// Unspecified
+    Unspecified,
     /// Utilities
     Utilities,
     /// Warehousing and storage
@@ -319,6 +339,9 @@ impl NaicsSupplement {
             Self::AnimalProduction => "Animal production",
             Self::Apparel => "Apparel",
             Self::ArtsEntertainmentRecreation => "Arts, entertainment, and recreation",
+            Self::ArtsEntertainmentRecreationAccommodationFoodServices => {
+                "Arts, entertainment, recreation, accommodation, and food services"
+            }
             Self::AsphaltOtherPetroleumCoal => "Asphalt and other petroleum and coal products",
             Self::BeveragesTobacco => "Beverages and tobacco products",
             Self::BranchesAgencies => "Branches and agencies",
@@ -326,6 +349,9 @@ impl NaicsSupplement {
                 "Broadcasting, cable networks, and program distribution"
             }
             Self::BroadcastingExceptInternet => "Broadcasting (except internet)",
+            Self::BroadcastingExceptInternetTelecommunications => {
+                "Broadcasting (except internet) and telecommunications"
+            }
             Self::BroadcastingTelecommunications => "Broadcasting and telecommunications",
             Self::BuildingDevelopingGeneralContracting => {
                 "Building, developing, and general contracting"
@@ -348,9 +374,15 @@ impl NaicsSupplement {
             }
             Self::CouriersMessengers => "Couriers and messengers",
             Self::CropProduction => "Crop production",
+            Self::DataProcessingInternetPublishingOtherInformationServices => {
+                "Data processing, internet publishing, and other information services"
+            }
             Self::DataProcessingServices => "Data processing services",
             Self::DirectLifeInsuranceCarriers => "Direct life insurance carriers",
             Self::EducationalServices => "Educational services",
+            Self::EducationalServicesHealthCareSocialAssistance => {
+                "Educational services, health care, and social assistance"
+            }
             Self::ElectricalEquipmentAppliancesComponents => {
                 "Electrical equipment, appliances, and components"
             }
@@ -373,6 +405,7 @@ impl NaicsSupplement {
             Self::FurnitureRelated => "Furniture and related products",
             Self::GasolineStations => "Gasoline stations",
             Self::GeneralMerchandiseRetailers => "General merchandise retailers",
+            Self::GeneralMerchandiseStores => "General merchandise stores",
             Self::GoldSilverOres => "Gold and silver ores",
             Self::HealthCareSocialAssistance => "Health care and social assistance",
             Self::HealthPersonalCareRetailers => "Health and personal care retailers",
@@ -390,6 +423,10 @@ impl NaicsSupplement {
             Self::InsuranceCarriersRelatedActivities => "Insurance carriers and related activities",
             Self::IntegratedPetroliumRefiningExtraction => {
                 "Integrated petrolium refining and extraction"
+            }
+            Self::InternationalDrillingRigs => "International - Drilling Rigs",
+            Self::InternetDataProcessingOtherInformationServices => {
+                "Internet, data processing, and other information services"
             }
             Self::InternetPublishingBroadcasting => "Internet publishing and broadcasting",
             Self::InternetServiceProvidersWebSearchPortals => {
@@ -418,6 +455,7 @@ impl NaicsSupplement {
             Self::MotorVehiclesBodiesTrailersParts => {
                 "Motor vehicles, bodies and trailers, and parts"
             }
+            Self::NonbusinessEntitiesExceptGovernment => "Nonbusiness Entities, Except Government",
             Self::NondepositoryCreditIntermediationRelatedServices => {
                 "Nondepository credit intermediation and related services"
             }
@@ -425,6 +463,9 @@ impl NaicsSupplement {
             Self::NonstoreRetailers => "Nonstore retailers",
             Self::NursingResidentialCareFacilities => "Nursing and residential care facilities",
             Self::OtherDurableGoods => "Other durable goods",
+            Self::OtherFinanceExceptDepositoryInstitutions => {
+                "Other finance, except depository institutions"
+            }
             Self::OtherFinancialInvestmentActivitiesExchanges => {
                 "Other financial investment activities and exchanges"
             }
@@ -503,6 +544,7 @@ impl NaicsSupplement {
             Self::TransportationEquipment => "Transportation equipment",
             Self::TransportationWarehousing => "Transportation and warehousing",
             Self::TruckTransportation => "Truck transportation",
+            Self::Unspecified => "Unspecified",
             Self::Utilities => "Utilities",
             Self::WarehousingStorage => "Warehousing and storage",
             Self::WasteManagementRemediationServices => "Waste management and remediation services",
@@ -529,11 +571,13 @@ impl NaicsSupplement {
             Self::AnimalProduction => 1120,
             Self::Apparel => 3150,
             Self::ArtsEntertainmentRecreation => 7100,
+            Self::ArtsEntertainmentRecreationAccommodationFoodServices => 7,
             Self::AsphaltOtherPetroleumCoal => 3244,
             Self::BranchesAgencies => 5229,
             Self::BeveragesTobacco => 3120,
             Self::BroadcastingCableNetworksProgramDistribution => 5147,
             Self::BroadcastingExceptInternet => 5150,
+            Self::BroadcastingExceptInternetTelecommunications => 5149,
             Self::BroadcastingTelecommunications => 5148,
             Self::BuildingDevelopingGeneralContracting => 2330,
             Self::BuildingMaterialGardenEquipmentSuppliesDealers => 4440,
@@ -548,9 +592,11 @@ impl NaicsSupplement {
             Self::CorporateSubsidiaryRegionalManagementOffices => 5513,
             Self::CouriersMessengers => 4920,
             Self::CropProduction => 1110,
+            Self::DataProcessingInternetPublishingOtherInformationServices => 514,
             Self::DataProcessingServices => 5142,
             Self::DirectLifeInsuranceCarriers => 5249,
             Self::EducationalServices => 6110,
+            Self::EducationalServicesHealthCareSocialAssistance => 6,
             Self::ElectricalEquipmentAppliancesComponents => 3350,
             Self::ElectronicsApplianceRetailers => 4431,
             Self::FabricatedMetal => 3320,
@@ -567,6 +613,7 @@ impl NaicsSupplement {
             Self::FurnitureRelated => 3370,
             Self::GasolineStations => 4471,
             Self::GeneralMerchandiseRetailers => 4520,
+            Self::GeneralMerchandiseStores => 452,
             Self::GoldSilverOres => 2125,
             Self::HealthCareSocialAssistance => 6200,
             Self::HealthPersonalCareRetailers => 4461,
@@ -579,6 +626,8 @@ impl NaicsSupplement {
             Self::InsuranceCarriersExceptDirectLifeInsuranceCarriers => 5243,
             Self::InsuranceCarriersRelatedActivities => 5240,
             Self::IntegratedPetroliumRefiningExtraction => 3242,
+            Self::InternationalDrillingRigs => 998,
+            Self::InternetDataProcessingOtherInformationServices => 5189,
             Self::InternetPublishingBroadcasting => 5161,
             Self::InternetServiceProvidersWebSearchPortals => 5181,
             Self::InternetServiceProvidersWebSearchPortalsDataProcessingServices => 5180,
@@ -596,11 +645,13 @@ impl NaicsSupplement {
             Self::MotionPictureSoundRecordingIndustries => 5120,
             Self::MotorVehiclePartsDealers => 4410,
             Self::MotorVehiclesBodiesTrailersParts => 3368,
+            Self::NonbusinessEntitiesExceptGovernment => 9100,
             Self::NondepositoryCreditIntermediationRelatedServices => 5224,
             Self::NonmetalicMineral => 3270,
             Self::NonstoreRetailers => 4540,
             Self::NursingResidentialCareFacilities => 6230,
             Self::OtherDurableGoods => 4299,
+            Self::OtherFinanceExceptDepositoryInstitutions => 5299,
             Self::OtherFinancialInvestmentActivitiesExchanges => 5238,
             Self::OtherIndustries => 8000,
             Self::OtherMetalOres => 2127,
@@ -651,6 +702,7 @@ impl NaicsSupplement {
             Self::TransportationEquipment => 3360,
             Self::TransportationWarehousing => 4800,
             Self::TruckTransportation => 4840,
+            Self::Unspecified => 9000,
             Self::Utilities => 2200,
             Self::WarehousingStorage => 4930,
             Self::WasteManagementRemediationServices => 5620,
@@ -670,6 +722,12 @@ impl NaicsSupplement {
         };
 
         let result = match code {
+            6 => Self::EducationalServicesHealthCareSocialAssistance,
+            7 => Self::ArtsEntertainmentRecreationAccommodationFoodServices,
+            452 => Self::GeneralMerchandiseStores,
+            513 => Self::BroadcastingTelecommunications,
+            514 => Self::DataProcessingInternetPublishingOtherInformationServices,
+            998 => Self::InternationalDrillingRigs,
             1100 => Self::AgricultureForestryFishingHunting,
             1110 => Self::CropProduction,
             1120 => Self::AnimalProduction,
@@ -762,6 +820,7 @@ impl NaicsSupplement {
             5142 => Self::DataProcessingServices,
             5147 => Self::BroadcastingCableNetworksProgramDistribution,
             5148 => Self::BroadcastingTelecommunications,
+            5149 => Self::BroadcastingExceptInternetTelecommunications,
             5150 => Self::BroadcastingExceptInternet,
             5161 => Self::InternetPublishingBroadcasting,
             5171 => Self::WiredTelecommunicationsCarriers,
@@ -771,6 +830,7 @@ impl NaicsSupplement {
             5180 => Self::InternetServiceProvidersWebSearchPortalsDataProcessingServices,
             5181 => Self::InternetServiceProvidersWebSearchPortals,
             5188 => Self::InformationDataProcessingServices,
+            5189 => Self::InternetDataProcessingOtherInformationServices,
             5200 => Self::FinanceInsurance,
             5210 => Self::FinanceExceptDepositoryInstitutionsInsurance,
             5220 => Self::FinanceExceptDepositoryInstitutions,
@@ -782,6 +842,7 @@ impl NaicsSupplement {
             5243 => Self::InsuranceCarriersExceptDirectLifeInsuranceCarriers,
             5249 => Self::DirectLifeInsuranceCarriers,
             5252 => Self::FundsTrustsOtherFinancialVehicles,
+            5299 => Self::OtherFinanceExceptDepositoryInstitutions,
             5300 => Self::RealEstateRentalLeasing,
             5310 => Self::RealEstate,
             5320 => Self::RentalLeasingExceptRealEstate,
@@ -810,6 +871,8 @@ impl NaicsSupplement {
             8120 => Self::PersonalLaundryServices,
             8130 => Self::ReligiousGrantmakingCivicProfessionalSimilarOrganizations,
             8999 => Self::Petroleum,
+            9000 => Self::Unspecified,
+            9100 => Self::NonbusinessEntitiesExceptGovernment,
             _ => return None,
         };
         Some(result)
