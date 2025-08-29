@@ -95,7 +95,7 @@ impl GdpByIndustry {
                         }
                     }
                 }
-                tracing::info!("{dataset} contains {} {name} values.", industry.len());
+                tracing::trace!("{dataset} contains {} {name} values.", industry.len());
                 industries.insert(id, industry);
             } else {
                 tracing::warn!("Results must be of type ParameterValues");
@@ -130,7 +130,7 @@ impl GdpByIndustry {
             for table in pv.iter() {
                 table_id.push(Integer::try_from(table)?);
             }
-            tracing::info!("{dataset} contains {} {name} values.", table_id.len());
+            tracing::trace!("{dataset} contains {} {name} values.", table_id.len());
             Ok(table_id)
         } else {
             tracing::warn!("Results must be of type ParameterValues");
@@ -170,7 +170,7 @@ impl GdpByIndustry {
                 for table in pv.iter() {
                     year.push(Year::try_from(table)?);
                 }
-                tracing::info!("{dataset} contains {} {name} values.", year.len());
+                tracing::trace!("{dataset} contains {} {name} values.", year.len());
                 years.insert(id, year);
             } else {
                 tracing::warn!("Results must be of type ParameterValues");
@@ -398,11 +398,20 @@ pub struct UnderlyingGdpByIndustry {
 }
 
 impl UnderlyingGdpByIndustry {
+    pub fn iter(&self) -> UnderlyingGDPbyIndustryIterator<'_> {
+        UnderlyingGDPbyIndustryIterator::new(self)
+    }
+
+    /// Primary creation method, called `from_file` instead of `new` because it requires reference to
+    /// a path.
     pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Self, BeaErr> {
         let frequency = Self::frequencies();
         let industry = Self::read_industry(&path)?;
+        tracing::info!("Industries read at {}.", path.as_ref().display());
         let table_id = Self::read_table_id(&path)?;
+        tracing::info!("Table IDs read at {}.", path.as_ref().display());
         let year = Self::read_year(&path)?;
+        tracing::info!("Years read at {}.", path.as_ref().display());
         Ok(Self::new(frequency, industry, table_id, year))
     }
 
@@ -449,7 +458,7 @@ impl UnderlyingGdpByIndustry {
                         }
                     }
                 }
-                tracing::info!("{dataset} contains {} {name} values.", industry.len());
+                tracing::trace!("{dataset} contains {} {name} values.", industry.len());
                 industries.insert(id, industry);
             } else {
                 tracing::warn!("Results must be of type ParameterValues");
@@ -484,7 +493,7 @@ impl UnderlyingGdpByIndustry {
             for table in pv.iter() {
                 table_id.push(Integer::try_from(table)?);
             }
-            tracing::info!("{dataset} contains {} {name} values.", table_id.len());
+            tracing::trace!("{dataset} contains {} {name} values.", table_id.len());
             Ok(table_id)
         } else {
             tracing::warn!("Results must be of type ParameterValues");
@@ -492,6 +501,7 @@ impl UnderlyingGdpByIndustry {
         }
     }
 
+    // TODO: fix the redundant call to read_table_id
     pub fn read_year<P: AsRef<std::path::Path>>(
         path: P,
     ) -> Result<std::collections::HashMap<Integer, Vec<Year>>, BeaErr> {
@@ -524,7 +534,7 @@ impl UnderlyingGdpByIndustry {
                 for table in pv.iter() {
                     year.push(Year::try_from(table)?);
                 }
-                tracing::info!("{dataset} contains {} {name} values.", year.len());
+                tracing::trace!("{dataset} contains {} {name} values.", year.len());
                 years.insert(id, year);
             } else {
                 tracing::warn!("Results must be of type ParameterValues");
@@ -532,5 +542,89 @@ impl UnderlyingGdpByIndustry {
             }
         }
         Ok(years)
+    }
+}
+
+impl TryFrom<&std::path::PathBuf> for UnderlyingGdpByIndustry {
+    type Error = BeaErr;
+    fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
+        Self::from_file(value)
+    }
+}
+
+pub struct UnderlyingGDPbyIndustryIterator<'a> {
+    data: &'a UnderlyingGdpByIndustry,
+    table_id: std::slice::Iter<'a, Integer>,
+    current_table: Option<Integer>,
+    industries: Option<std::slice::Iter<'a, ParameterFields>>,
+}
+
+impl<'a> UnderlyingGDPbyIndustryIterator<'a> {
+    pub fn new(data: &'a UnderlyingGdpByIndustry) -> Self {
+        let table_id = data.table_id().iter();
+        let current_table = None;
+        let industries = None;
+        Self {
+            data,
+            table_id,
+            current_table,
+            industries,
+        }
+    }
+}
+
+impl Iterator for UnderlyingGDPbyIndustryIterator<'_> {
+    type Item = std::collections::BTreeMap<String, String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // empty parameters dictionary
+        let mut params = std::collections::BTreeMap::new();
+
+        // advance state
+        // let current_id = if let Some(id) = &self.current_table {
+        //     id.value().to_string()
+        // } else {
+        //     let current_id = self.table_id.next()?;
+        //     self.current_table = Some(current_id.clone());
+        //     if let Some(fields) = self.data.industry.get(current_id) {
+        //         self.industries = Some(fields.iter());
+        //     }
+        //     current_id.value().to_string()
+        // };
+
+        // set industry
+        // let industry = if let Some(industries) = &mut self.industries {
+        //     match industries.next() {
+        //         Some(value) => value.key(),
+        //         None => {
+        //             self.current_table = None;
+        //             return self.next();
+        //         }
+        //     }
+        // } else {
+        //     tracing::error!("Industry should not start as None");
+        //     return None;
+        // };
+        let key = ParameterName::Industry.to_string();
+        let value = "ALL".to_owned();
+        params.insert(key, value);
+
+        // set table_id
+        let current_id = self.table_id.next()?.value().to_string();
+        let key = ParameterName::TableID.to_string();
+        params.insert(key, current_id);
+
+        // set Frequency to all
+        // UnderlyingGDPbyIndustry only has Annual "A" data available
+        let key = ParameterName::Frequency.to_string();
+        let value = "A".to_owned();
+        params.insert(key, value);
+
+        // set years to all
+        let key = ParameterName::Year.to_string();
+        let value = "ALL".to_owned();
+        params.insert(key, value);
+
+        Some(params)
     }
 }
