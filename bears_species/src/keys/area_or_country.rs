@@ -1,3 +1,5 @@
+use crate::ParameterName;
+
 #[derive(
     Debug,
     Copy,
@@ -58,7 +60,7 @@ pub enum AreaOrCountry {
     Cambodia,
     Cameroon,
     Canada,
-    CenAm,
+    CentralAmerica,
     CentralAfricanRepublic,
     Chad,
     Chile,
@@ -79,6 +81,7 @@ pub enum AreaOrCountry {
     Djibouti,
     Dominica,
     DominicanRep,
+    EasternEurope,
     EastTimor,
     Ecuador,
     Egypt,
@@ -92,6 +95,8 @@ pub enum AreaOrCountry {
     EuroArea,
     Europe,
     EuropeOthNsaDetail,
+    FarEast,
+    FarWest,
     Fiji,
     Finland,
     France,
@@ -105,6 +110,7 @@ pub enum AreaOrCountry {
     Germany,
     Ghana,
     Gibraltar,
+    GreatLakes,
     Greece,
     Greenland,
     Grenada,
@@ -170,6 +176,7 @@ pub enum AreaOrCountry {
     Netherlands,
     NetherlandsAntilles,
     NetherlandsIslandsCaribbean,
+    NewEngland,
     NewZealand,
     Nicaragua,
     Niger,
@@ -217,10 +224,12 @@ pub enum AreaOrCountry {
     Paraguay,
     Peru,
     Philippines,
+    Plains,
     Poland,
     Portugal,
     Qatar,
     ResidualSeas,
+    RockyMountains,
     Romania,
     Russia,
     Rwanda,
@@ -242,8 +251,10 @@ pub enum AreaOrCountry {
     SouthAm,
     SouthAndCenAm,
     SouthAndCenAmOthNsaDetail,
+    Southeast,
     SouthKorea,
     SouthSudan,
+    Southwest,
     Spain,
     SriLanka,
     StKittsNevis,
@@ -294,7 +305,7 @@ impl AreaOrCountry {
     /// Format `self` for insertion into a request BTreeMap(key, value).
     /// The key is the parameter name.  The value is the parameter value.
     pub fn params(&self) -> (String, String) {
-        let key = "AreaOrCountry".to_owned();
+        let key = ParameterName::AreaOrCountry.to_string();
         let value = self.to_string();
         (key, value)
     }
@@ -352,7 +363,7 @@ impl AreaOrCountry {
             Self::Cambodia => "Cambodia",
             Self::Cameroon => "Cameroon",
             Self::Canada => "Canada",
-            Self::CenAm => "Central America",
+            Self::CentralAmerica => "Central America",
             Self::CentralAfricanRepublic => "Central African Republic",
             Self::Chad => "Chad",
             Self::Chile => "Chile",
@@ -373,6 +384,7 @@ impl AreaOrCountry {
             Self::Djibouti => "Djibouti",
             Self::Dominica => "Dominica",
             Self::DominicanRep => "Dominican Republic",
+            Self::EasternEurope => "Eastern Europe",
             Self::EastTimor => "East Timor",
             Self::Ecuador => "Ecuador",
             Self::Egypt => "Egypt",
@@ -386,6 +398,8 @@ impl AreaOrCountry {
             Self::EuroArea => "Euro Area",
             Self::Europe => "Europe",
             Self::EuropeOthNsaDetail => "Europe; other countries (those not listed in table 2.3)",
+            Self::FarEast => "Far East",
+            Self::FarWest => "Far West",
             Self::Fiji => "Fiji",
             Self::Finland => "Finland",
             Self::France => "France",
@@ -399,6 +413,7 @@ impl AreaOrCountry {
             Self::Germany => "Germany",
             Self::Ghana => "Ghana",
             Self::Gibraltar => "Gibraltar",
+            Self::GreatLakes => "Great Lakes",
             Self::Greece => "Greece",
             Self::Greenland => "Greenland",
             Self::Grenada => "Grenada",
@@ -466,6 +481,7 @@ impl AreaOrCountry {
             Self::Netherlands => "Netherlands",
             Self::NetherlandsAntilles => "Netherlands Antilles",
             Self::NetherlandsIslandsCaribbean => "Netherlands Islands, Caribbean",
+            Self::NewEngland => "New England",
             Self::NewZealand => "New Zealand",
             Self::Nicaragua => "Nicaragua",
             Self::Niger => "Niger",
@@ -541,12 +557,14 @@ impl AreaOrCountry {
             Self::Paraguay => "Paraguay",
             Self::Peru => "Peru",
             Self::Philippines => "Philippines",
+            Self::Plains => "Plains",
             Self::Poland => "Poland",
             Self::Portugal => "Portugal",
             Self::Qatar => "Qatar",
             Self::ResidualSeas => {
                 "Residual between the seasonally adjusted total based on service type or commodity and the sum of the seasonally adjusted individual countries and the \"all other countries\" aggregate"
             }
+            Self::RockyMountains => "Rocky Mountains",
             Self::Romania => "Romania",
             Self::Russia => "Russia",
             Self::Rwanda => "Rwanda",
@@ -570,8 +588,10 @@ impl AreaOrCountry {
             Self::SouthAndCenAmOthNsaDetail => {
                 "South and Central America; other countries (those not listed in table 2.3)"
             }
+            Self::Southeast => "Southeast",
             Self::SouthKorea => "South Korea",
             Self::SouthSudan => "South Sudan",
+            Self::Southwest => "Southwest",
             Self::Spain => "Spain",
             Self::SriLanka => "Sri Lanka",
             Self::StKittsNevis => "St. Kitts and Nevis",
@@ -671,6 +691,7 @@ impl AreaOrCountry {
             276 => Self::SintMaarten,
             277 => Self::NetherlandsIslandsCaribbean,
             296 => Self::SouthAndCenAm,
+            297 => Self::CentralAmerica,
             298 => Self::OthWestHem,
             299 => Self::LatAmAndOthWestHem,
             300 => Self::Andorra,
@@ -730,6 +751,7 @@ impl AreaOrCountry {
             364 => Self::CzechRep,
             365 => Self::Slovakia,
             366 => Self::Kosovo,
+            391 => Self::EasternEurope,
             398 => Self::EU,
             399 => Self::Europe,
             400 => Self::Algeria,
