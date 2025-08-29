@@ -1,7 +1,7 @@
 use crate::{
-    BeaErr, Data, Dataset, DatasetMissing, Datasets, FixedAssetData, GdpData, ItaData,
-    JsonParseError, KeyMissing, Method, MneDiData, NipaData, NotObject, ParameterValues,
-    Parameters, ParseInt, RequestParameters, map_to_string,
+    BeaErr, Data, Dataset, DatasetMissing, Datasets, FixedAssetData, GdpData, IipData,
+    InputOutputData, ItaData, JsonParseError, KeyMissing, Method, MneDiData, NipaData, NotObject,
+    ParameterValues, Parameters, ParseInt, RequestParameters, map_to_string,
 };
 
 #[derive(
@@ -99,6 +99,24 @@ impl Results {
                         }
                     },
                     Dataset::Ita => match ItaData::try_from(value) {
+                        Ok(t) => {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                        Err(source) => {
+                            tracing::trace!("{source}");
+                        }
+                    },
+                    Dataset::Iip => match IipData::try_from(value) {
+                        Ok(t) => {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                        Err(source) => {
+                            tracing::trace!("{source}");
+                        }
+                    },
+                    Dataset::InputOutput => match InputOutputData::try_from(value) {
                         Ok(t) => {
                             let data = Data::from(t);
                             return Ok(Self::from(data));
