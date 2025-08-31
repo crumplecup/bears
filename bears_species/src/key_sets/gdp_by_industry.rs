@@ -1,6 +1,8 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, Frequencies, Frequency, Integer, IoError, ParameterFields,
-    ParameterName, ParameterValueTable, SelectionKind, SerdeJson, Set, Year,
+    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, Frequencies, Frequency, Integer, IoError,
+    JsonParseError, KeyMissing, NotArray, NotObject, ParameterFields, ParameterName,
+    ParameterValueTable, SelectionKind, SerdeJson, Set, VariantMissing, Year, data::result_to_data,
+    map_to_float, map_to_int, map_to_string, parse_year, roman_numeral_quarter,
 };
 
 #[derive(
@@ -812,5 +814,178 @@ impl Iterator for UnderlyingGDPbyIndustryIterator<'_> {
         params.insert(key, value);
 
         Some(params)
+    }
+}
+
+/// Return value format associated with the
+/// [`Dataset::UnderlyingGDPbyIndustry`](crate::Dataset::UnderlyingGDPbyIndustry) variant.
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    PartialOrd,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_getters::Getters,
+)]
+pub struct UnderlyingGdpDatum {
+    data_value: f64,
+    frequency: Frequency,
+    industry_description: String,
+    industry: String,
+    note_ref: String,
+    table_id: i64,
+    year: jiff::civil::Date,
+}
+
+impl UnderlyingGdpDatum {
+    /// Attempts to map a [`serde_json::Map`] `m` to an instance of `UnderlyingGpdDatum`.
+    ///
+    /// Encapsulates the logic of retrieving the `UnderlyingGpdDatum` when converting the JSON representation
+    /// into internal data types.  Used to implement the [`TryFrom`] trait from [`serde_json::Value`] to `self`.
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+        tracing::trace!("Reading MneDiDatum.");
+        let data_value = map_to_float("DataValue", m)?;
+        tracing::trace!("Data Value: {data_value}.");
+        let frequency = map_to_string("Frequency", m)?;
+        let frequency = Frequency::from_value(&frequency)?;
+        tracing::trace!("Frequency: {}.", frequency.value());
+        let industry_description = map_to_string("IndustrYDescription", m)?;
+        tracing::trace!("Industry Description: {industry_description}.");
+        let industry = map_to_string("Industry", m)?;
+        tracing::trace!("Industry: {industry}.");
+        let note_ref = map_to_string("NoteRef", m)?;
+        tracing::trace!("Note Ref: {note_ref}.");
+        let table_id = map_to_int("TableID", m)?;
+        // let table_id = RowCode::from_value(m, &row, naics)?;
+        tracing::trace!("Note Ref: {note_ref}.");
+        let year = map_to_string("Year", m)?;
+        let year = parse_year(&year)?;
+        tracing::trace!("Year: {year}.");
+        Ok(Self {
+            data_value,
+            frequency,
+            industry_description,
+            industry,
+            note_ref,
+            table_id,
+            year,
+        })
+    }
+
+    pub fn to_industry(&self) -> (String, String) {
+        (
+            self.industry().to_owned(),
+            self.industry_description().to_owned(),
+        )
+    }
+}
+
+/// `UnderlyingGdpData` represents the `Data` portion of the `Results` from a BEA response.
+/// These portions of the response have corresponding internal library representations, [`Data`],
+/// [`Results`](crate::Results) and [`BeaResponse`] respectively.  This is the data type contained
+/// within the [`Data::UnderlyingGdpData`] variant.
+///
+/// Functionally, `UnderlyingGdpData` is a thin wrapper around a vector of type [`UnderlyingGdpDatum`].
+/// This type implements [`TryFrom`] for `&PathBuf`, which I suppose is what Path is for, but I'm
+/// still trying to figure out the idiom here.
+/// This type also implements [`TryFrom`] for references to a [`serde_json::Value`].  Given a
+/// reference to a path, the impl for try_from will then call the impl associated with the
+/// [`serde_json::Value`], which calls [`UnderlyingGdpDatum::read_json`], bubbling up any errors.
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    PartialOrd,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_more::Deref,
+    derive_more::DerefMut,
+    derive_more::From,
+    derive_more::AsRef,
+    derive_more::AsMut,
+)]
+#[from(Vec<UnderlyingGdpDatum>)]
+pub struct UnderlyingGdpData(Vec<UnderlyingGdpDatum>);
+
+impl UnderlyingGdpData {
+    pub fn industry_codes(&self) -> std::collections::BTreeMap<String, String> {
+        let mut params = std::collections::BTreeMap::new();
+        self.iter()
+            .map(|v| {
+                let (key, value) = v.to_industry();
+                params.insert(key, value);
+            })
+            .for_each(drop);
+        params
+    }
+}
+
+impl TryFrom<&std::path::PathBuf> for UnderlyingGdpData {
+    type Error = BeaErr;
+
+    fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
+        let file = std::fs::File::open(value)
+            .map_err(|e| IoError::new(value.into(), e, line!(), file!().into()))?;
+        let rdr = std::io::BufReader::new(file);
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
+        let data = BeaResponse::try_from(&res)?;
+        tracing::trace!("Response read.");
+        let results = data.results();
+        if let Some(data) = results.into_data() {
+            match data {
+                Data::UnderlyingGdpData(value) => {
+                    tracing::trace!("{} GdpData records read.", value.len());
+                    Ok(value)
+                }
+                _ => {
+                    let error =
+                        DatasetMissing::new("GdpData".to_string(), line!(), file!().to_string());
+                    Err(error.into())
+                }
+            }
+        } else {
+            tracing::warn!("Data variant missing.");
+            let error = VariantMissing::new(
+                "Data variant missing".to_string(),
+                "Results".to_string(),
+                line!(),
+                file!().to_string(),
+            );
+            Err(error.into())
+        }
+    }
+}
+
+impl TryFrom<&serde_json::Value> for UnderlyingGdpData {
+    type Error = BeaErr;
+    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
+        tracing::trace!("Reading GdpData");
+        match result_to_data(value)? {
+            serde_json::Value::Array(v) => {
+                let mut data = Vec::new();
+                for val in v {
+                    match val {
+                        serde_json::Value::Object(m) => {
+                            let datum = UnderlyingGdpDatum::read_json(m)?;
+                            data.push(datum);
+                        }
+                        _ => {
+                            let error = NotObject::new(line!(), file!().to_string());
+                            return Err(error.into());
+                        }
+                    }
+                }
+                tracing::trace!("Data found: {} records.", data.len());
+                Ok(Self(data))
+            }
+            _ => {
+                let error = NotArray::new(line!(), file!().to_string());
+                Err(error.into())
+            }
+        }
     }
 }
