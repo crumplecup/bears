@@ -1,5 +1,6 @@
+use crate::write_json;
 use bears_ecology::{bea_data, initial_load, trace_init};
-use bears_species::{BeaErr, Data, Dataset, IoError, SerdeJson};
+use bears_species::{BeaErr, Data, Dataset};
 
 /// Attempts to load all files in the download [`History`], without respect to the load `History`.
 /// Loads InputOutput files, converts them to row and column codes.
@@ -24,19 +25,8 @@ pub async fn io_codes() -> Result<(), BeaErr> {
 
     let path = bea_data()?;
     let row_path = path.join("InputOutput_RowCode.json");
+    write_json(&row_codes, row_path)?;
     let column_path = path.join("InputOutput_ColumnCode.json");
-
-    let row_file = std::fs::File::create(row_path.clone())
-        .map_err(|e| IoError::new(row_path.clone(), e, line!(), file!().to_string()))?;
-    let row_writer = std::io::BufWriter::new(row_file);
-    let column_file = std::fs::File::create(column_path.clone())
-        .map_err(|e| IoError::new(column_path.clone(), e, line!(), file!().to_string()))?;
-    let column_writer = std::io::BufWriter::new(column_file);
-
-    serde_json::to_writer_pretty(row_writer, &row_codes)
-        .map_err(|e| SerdeJson::new(e, line!(), file!().into()))?;
-    serde_json::to_writer_pretty(column_writer, &column_codes)
-        .map_err(|e| SerdeJson::new(e, line!(), file!().into()))?;
-
+    write_json(&column_codes, column_path)?;
     Ok(())
 }
