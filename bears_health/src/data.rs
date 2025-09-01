@@ -189,9 +189,10 @@ pub async fn datasets_initial_load() -> Result<(), BeaErr> {
         // Dataset::FixedAssets,
         // Dataset::Mne,
         // Dataset::GDPbyIndustry,
+        Dataset::UnderlyingGDPbyIndustry,
         // Dataset::Ita,
         // Dataset::Iip,
-        Dataset::InputOutput,
+        // Dataset::InputOutput,
     ];
     // let datasets = vec![Dataset::FixedAssets];
     for dataset in datasets {
@@ -227,7 +228,8 @@ pub async fn datasets_retry_load() -> Result<(), BeaErr> {
     trace_init()?;
     let datasets = vec![
         // Dataset::Mne,
-        Dataset::InputOutput,
+        // Dataset::InputOutput,
+        Dataset::UnderlyingGDPbyIndustry,
     ];
     for dataset in datasets {
         let result = retry_load(dataset).await?;
