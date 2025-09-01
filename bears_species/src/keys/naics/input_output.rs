@@ -14,6 +14,8 @@
     strum::EnumIter,
 )]
 pub enum NaicsInputOutput {
+    /// All industries
+    AllIndustries,
     /// Apparel and leather and allied products
     ApparelLeatherAlliedProducts,
     /// Change in private inventories
@@ -22,10 +24,14 @@ pub enum NaicsInputOutput {
     CifFobAdjustmentsOnImports,
     /// Compensation of employees
     CompensationOfEmployees,
+    /// Durable goods
+    DurableGoods,
     /// Exports of goods and services
     ExportsGoodsServices,
     /// Farms
     Farms,
+    /// Federal
+    Federal,
     /// Federal general government (defense)
     FederalGeneralGovernmentDefense,
     /// Federal general government (nondefense)
@@ -52,10 +58,14 @@ pub enum NaicsInputOutput {
     FoodBeverageTobaccoProducts,
     /// Forestry, fishing, and related activities
     ForestryFishingRelatedActivities,
+    /// General government
+    GeneralGovernment,
     /// Government
     Government,
     /// Government consumption expenditures and gross investment
     GovernmentConsumptionExpendituresGrossInvestment,
+    /// Gross domestic product
+    GrossDomesticProduct,
     /// Gross operating surplus
     GrossOperatingSurplus,
     /// Housing
@@ -64,6 +74,8 @@ pub enum NaicsInputOutput {
     ImportDuties,
     /// Imports
     Imports,
+    /// Information-communications-technology-producing industries<sup> 4</sup>
+    InformationCommunicationsTechnologyProducingIndustries,
     /// Less: Other subsidies on production
     LessOtherSubsidiesOnProduction,
     /// Less: Subsidies on products
@@ -80,12 +92,16 @@ pub enum NaicsInputOutput {
     NoncomparableImportsRestOfTheWorldAdjustment,
     /// Nondefense: Consumption expenditures
     NondefenseConsumptionExpenditures,
+    /// Nondurable goods
+    NondurableGoods,
     /// Nonresidential private fixed investment in equipment
     NonresidentialPrivateFixedInvestmentEquipment,
     /// Nonresidential private fixed investment in intellectual property products
     NonresidentialPrivateFixedInvestmentIntellectualPropertyRights,
     /// Nonresidential private fixed investment in structures
     NonresidentialPrivateFixedInvestmentStructures,
+    /// Not allocated by industry<sup>1</sup>
+    NotAllocatedByIndustry,
     /// Other real estate
     OtherRealEstate,
     /// Other retail
@@ -102,6 +118,12 @@ pub enum NaicsInputOutput {
     PersonalConsumptionExpenditures,
     /// Private fixed investment
     PrivateFixedInvestment,
+    /// Private goods-producing industries<sup>2</sup>
+    PrivateGoodsProducingIndustries,
+    /// Private industries
+    PrivateIndustries,
+    /// Private services-producing industries<sup>3</sup>
+    PrivateServicesProducingIndustries,
     /// Professional and business services
     ProfessionalBusinessServices,
     /// Rental and leasing services and lessors of intangible assets
@@ -112,6 +134,8 @@ pub enum NaicsInputOutput {
     RetailTrade,
     /// Scrap, used and secondhand goods
     ScrapUsedSecondhandGoods,
+    /// State and local
+    StateLocal,
     /// State and local government consumption expenditures
     StateLocalGovernmentConsumptionExpenditures,
     /// State and local government enterprises
@@ -165,12 +189,15 @@ pub enum NaicsInputOutput {
 impl NaicsInputOutput {
     pub fn description(&self) -> &'static str {
         match self {
+            Self::AllIndustries => "All industries",
             Self::ApparelLeatherAlliedProducts => "Apparel and leather and allied products",
             Self::ChangeInPrivateInventories => "Change in private inventories",
             Self::CifFobAdjustmentsOnImports => "CIF/FOB Adjustments on Imports",
             Self::CompensationOfEmployees => "Compensation of employees",
+            Self::DurableGoods => "Durable goods",
             Self::ExportsGoodsServices => "Exports of goods and services",
             Self::Farms => "Farms",
+            Self::Federal => "Federal",
             Self::FederalGeneralGovernmentDefense => "Federal general government (defense)",
             Self::FederalGeneralGovernmentNondefense => "Federal general government (nondefense)",
             Self::FederalGovernmentEnterprises => "Federal government enterprises",
@@ -200,14 +227,19 @@ impl NaicsInputOutput {
             }
             Self::FoodBeverageTobaccoProducts => "Food and beverage and tobacco products",
             Self::ForestryFishingRelatedActivities => "Forestry, fishing, and related activities",
+            Self::GeneralGovernment => "General government",
             Self::Government => "Government",
             Self::GovernmentConsumptionExpendituresGrossInvestment => {
                 "Government consumption expenditures and gross investment"
             }
+            Self::GrossDomesticProduct => "Gross domestic product",
             Self::GrossOperatingSurplus => "Gross operating surplus",
             Self::Housing => "Housing",
             Self::ImportDuties => "Import duties",
             Self::Imports => "Imports",
+            Self::InformationCommunicationsTechnologyProducingIndustries => {
+                "Information-communications-technology-producing industries<sup> 4</sup>"
+            }
             Self::LessOtherSubsidiesOnProduction => "Less: Other subsidies on production",
             Self::LessSubsidiesOnProducts => "Less: Subsidies on products",
             Self::Manufacturing => "Manufacturing",
@@ -224,6 +256,7 @@ impl NaicsInputOutput {
                 "Noncomparable imports and rest-of-the-world adjustment"
             }
             Self::NondefenseConsumptionExpenditures => "Nondefense: Consumption expenditures",
+            Self::NondurableGoods => "Nondurable goods",
             Self::NonresidentialPrivateFixedInvestmentEquipment => {
                 "Nonresidential private fixed investment in equipment"
             }
@@ -233,6 +266,7 @@ impl NaicsInputOutput {
             Self::NonresidentialPrivateFixedInvestmentStructures => {
                 "Nonresidential private fixed investment in structures"
             }
+            Self::NotAllocatedByIndustry => "Not allocated by industry<sup>1</sup>",
             Self::OtherRealEstate => "Other real estate",
             Self::OtherRetail => "Other retail",
             Self::OtherTaxesOnProduction => "Other taxes on production",
@@ -245,6 +279,13 @@ impl NaicsInputOutput {
             }
             Self::PersonalConsumptionExpenditures => "Personal consumption expenditures",
             Self::PrivateFixedInvestment => "Private fixed investment",
+            Self::PrivateGoodsProducingIndustries => {
+                "Private goods-producing industries<sup>2</sup>"
+            }
+            Self::PrivateIndustries => "Private industries",
+            Self::PrivateServicesProducingIndustries => {
+                "Private services-producing industries<sup>3</sup>"
+            }
             Self::ProfessionalBusinessServices => "Professional and business services",
             Self::RentalLeasingServicesLessorsIntangibleAssets => {
                 "Rental and leasing services and lessors of intangible assets"
@@ -252,6 +293,7 @@ impl NaicsInputOutput {
             Self::ResidentialPrivateFixedInvestment => "Residential private fixed investment",
             Self::RetailTrade => "Retail trade",
             Self::ScrapUsedSecondhandGoods => "Scrap, used and secondhand goods",
+            Self::StateLocal => "State and local",
             Self::StateLocalGovernmentConsumptionExpenditures => {
                 "State and local government consumption expenditures"
             }
@@ -289,12 +331,15 @@ impl NaicsInputOutput {
 
     pub fn code(&self) -> &'static str {
         match self {
+            Self::AllIndustries => "II",
             Self::ApparelLeatherAlliedProducts => "315AL",
             Self::ChangeInPrivateInventories => "F030",
             Self::CifFobAdjustmentsOnImports => "MADJ",
             Self::CompensationOfEmployees => "V001",
+            Self::DurableGoods => "33DG",
             Self::ExportsGoodsServices => "F040",
             Self::Farms => "111CA",
+            Self::Federal => "GF",
             Self::FederalGeneralGovernmentDefense => "GFGD",
             Self::FederalGeneralGovernmentNondefense => "GFGN",
             Self::FederalGovernmentEnterprises => "GFE",
@@ -308,12 +353,15 @@ impl NaicsInputOutput {
             Self::FinanceInsuranceRealEstateRentalLeasing => "FIRE",
             Self::FoodBeverageTobaccoProducts => "311FT",
             Self::ForestryFishingRelatedActivities => "113FF",
+            Self::GeneralGovernment => "GFG",
             Self::Government => "G",
             Self::GovernmentConsumptionExpendituresGrossInvestment => "F100",
+            Self::GrossDomesticProduct => "GDP",
             Self::GrossOperatingSurplus => "V003",
             Self::Housing => "HS",
             Self::ImportDuties => "MDTY",
             Self::Imports => "MCIF",
+            Self::InformationCommunicationsTechnologyProducingIndustries => "ICT",
             Self::LessOtherSubsidiesOnProduction => "T00OSUB",
             Self::LessSubsidiesOnProducts => "T00SUB",
             Self::Manufacturing => "31G",
@@ -322,9 +370,11 @@ impl NaicsInputOutput {
             Self::NationalDefenseConsumptionExpenditures => "F06C",
             Self::NoncomparableImportsRestOfTheWorldAdjustment => "Other",
             Self::NondefenseConsumptionExpenditures => "F07C",
+            Self::NondurableGoods => "31ND",
             Self::NonresidentialPrivateFixedInvestmentEquipment => "F02E",
             Self::NonresidentialPrivateFixedInvestmentIntellectualPropertyRights => "F02N",
             Self::NonresidentialPrivateFixedInvestmentStructures => "F02S",
+            Self::NotAllocatedByIndustry => "NABI",
             Self::OtherRealEstate => "ORE",
             Self::OtherRetail => "4A0",
             Self::OtherTaxesOnProduction => "T00OTOP",
@@ -333,11 +383,15 @@ impl NaicsInputOutput {
             Self::PerformingArtsSpectatorSportsMuseumsRelatedActivies => "711AS",
             Self::PersonalConsumptionExpenditures => "F010",
             Self::PrivateFixedInvestment => "F020",
+            Self::PrivateGoodsProducingIndustries => "PGOOD",
+            Self::PrivateIndustries => "PVT",
+            Self::PrivateServicesProducingIndustries => "PSERV",
             Self::ProfessionalBusinessServices => "PROF",
             Self::RentalLeasingServicesLessorsIntangibleAssets => "532RL",
             Self::ResidentialPrivateFixedInvestment => "F02R",
             Self::RetailTrade => "44RT",
             Self::ScrapUsedSecondhandGoods => "Used",
+            Self::StateLocal => "GSL",
             Self::StateLocalGovernmentConsumptionExpenditures => "F10C",
             Self::StateLocalGovernmentEnterprises => "GSLE",
             Self::StateLocalGeneralGovernment => "GSLG",
@@ -373,8 +427,10 @@ impl NaicsInputOutput {
             "313TT" => Self::TextileMillsTextileProductMills,
             "315AL" => Self::ApparelLeatherAlliedProducts,
             "31G" => Self::Manufacturing,
+            "31ND" => Self::NondurableGoods,
             "3361MV" => Self::MotorVehiclesBodiesTrailersParts,
             "3364OT" => Self::OtherTransportationEquipment,
+            "33DG" => Self::DurableGoods,
             "44RT" => Self::RetailTrade,
             "487OS" => Self::OtherTransportationSupportActivities,
             "48TW" => Self::TransportationWarehousing,
@@ -406,18 +462,28 @@ impl NaicsInputOutput {
             "F10S" => Self::StateLocalGrossInvestmentStructures,
             "FIRE" => Self::FinanceInsuranceRealEstateRentalLeasing,
             "G" => Self::Government,
+            "GDP" => Self::GrossDomesticProduct,
+            "GF" => Self::Federal,
             "GFE" => Self::FederalGovernmentEnterprises,
+            "GFG" => Self::GeneralGovernment,
             "GFGD" => Self::FederalGeneralGovernmentDefense,
             "GFGN" => Self::FederalGeneralGovernmentNondefense,
+            "GSL" => Self::StateLocal,
             "GSLE" => Self::StateLocalGovernmentEnterprises,
             "GSLG" => Self::StateLocalGeneralGovernment,
             "HS" => Self::Housing,
+            "ICT" => Self::InformationCommunicationsTechnologyProducingIndustries,
+            "II" => Self::AllIndustries,
             "MADJ" => Self::CifFobAdjustmentsOnImports,
             "MCIF" => Self::Imports,
             "MDTY" => Self::ImportDuties,
+            "NABI" => Self::NotAllocatedByIndustry,
             "ORE" => Self::OtherRealEstate,
             "Other" => Self::NoncomparableImportsRestOfTheWorldAdjustment,
+            "PGOOD" => Self::PrivateGoodsProducingIndustries,
             "PROF" => Self::ProfessionalBusinessServices,
+            "PSERV" => Self::PrivateServicesProducingIndustries,
+            "PVT" => Self::PrivateIndustries,
             "SUB" => Self::SubsidiesOnProducts,
             "T00OSUB" => Self::LessOtherSubsidiesOnProduction,
             "T00OTOP" => Self::OtherTaxesOnProduction,
