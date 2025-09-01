@@ -1,8 +1,8 @@
 use crate::{
-    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, Frequency, IipData, InputOutputData,
+    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, GdpData, IipData, InputOutputData,
     IoError, ItaData, JsonParseError, KeyMissing, NaicsItems, NotArray, NotObject, RowCode,
-    SerdeJson, VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string, parse_year,
-    roman_numeral_quarter,
+    SerdeJson, UnderlyingGdpData, VariantMissing, date_by_period, map_to_float, map_to_int,
+    map_to_string, parse_year,
 };
 
 #[derive(
@@ -17,7 +17,9 @@ pub enum Data {
     #[from(MneDiData)]
     MneDi(MneDiData),
     #[from(GdpData)]
-    GdpData(GdpData),
+    Gdp(GdpData),
+    #[from(UnderlyingGdpData)]
+    UnderlyingGdp(UnderlyingGdpData),
     #[from(ItaData)]
     ItaData(ItaData),
     #[from(IipData)]

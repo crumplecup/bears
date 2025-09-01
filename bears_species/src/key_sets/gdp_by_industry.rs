@@ -515,7 +515,7 @@ impl TryFrom<&std::path::PathBuf> for GdpData {
         let results = data.results();
         if let Some(data) = results.into_data() {
             match data {
-                Data::GdpData(value) => {
+                Data::Gdp(value) => {
                     tracing::trace!("{} GdpData records read.", value.len());
                     Ok(value)
                 }
@@ -937,7 +937,7 @@ impl TryFrom<&std::path::PathBuf> for UnderlyingGdpData {
         let results = data.results();
         if let Some(data) = results.into_data() {
             match data {
-                Data::UnderlyingGdpData(value) => {
+                Data::UnderlyingGdp(value) => {
                     tracing::trace!("{} GdpData records read.", value.len());
                     Ok(value)
                 }
