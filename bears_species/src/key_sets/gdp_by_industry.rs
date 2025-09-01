@@ -1,6 +1,6 @@
 use crate::{
     BeaErr, BeaResponse, Data, Dataset, DatasetMissing, Frequencies, Frequency, Integer, IoError,
-    JsonParseError, KeyMissing, NotArray, NotObject, ParameterFields, ParameterName,
+    JsonParseError, KeyMissing, Naics, NotArray, NotObject, ParameterFields, ParameterName,
     ParameterValueTable, SelectionKind, SerdeJson, Set, VariantMissing, Year, data::result_to_data,
     map_to_float, map_to_int, map_to_string, parse_year, roman_numeral_quarter,
 };
@@ -387,7 +387,6 @@ impl Iterator for GdpByIndustryIterator<'_> {
 #[derive(
     Clone,
     Debug,
-    Default,
     PartialEq,
     PartialOrd,
     serde::Deserialize,
@@ -398,7 +397,7 @@ pub struct GdpDatum {
     data_value: f64,
     frequency: Frequency,
     industry_description: String,
-    industry: String,
+    industry: Naics,
     note_ref: String,
     quarter: jiff::civil::Date,
     table_id: i64,
@@ -420,7 +419,14 @@ impl GdpDatum {
         let industry_description = map_to_string("IndustrYDescription", m)?;
         tracing::trace!("Industry Description: {industry_description}.");
         let industry = map_to_string("Industry", m)?;
-        tracing::trace!("Industry: {industry}.");
+        let industry = if let Some(naics) = Naics::from_code(&industry) {
+            naics
+        } else {
+            let error =
+                VariantMissing::new(industry.clone(), industry, line!(), file!().to_string());
+            return Err(error.into());
+        };
+        tracing::trace!("Industry: {industry:?}.");
         let note_ref = map_to_string("NoteRef", m)?;
         tracing::trace!("Note Ref: {note_ref}.");
         let table_id = map_to_int("TableID", m)?;
@@ -454,7 +460,7 @@ impl GdpDatum {
 
     pub fn to_industry(&self) -> (String, String) {
         (
-            self.industry().to_owned(),
+            self.industry().code(),
             self.industry_description().to_owned(),
         )
     }
@@ -822,7 +828,6 @@ impl Iterator for UnderlyingGDPbyIndustryIterator<'_> {
 #[derive(
     Clone,
     Debug,
-    Default,
     PartialEq,
     PartialOrd,
     serde::Deserialize,
@@ -834,6 +839,7 @@ pub struct UnderlyingGdpDatum {
     frequency: Frequency,
     industry_description: String,
     industry: String,
+    // industry: Naics,
     note_ref: String,
     table_id: i64,
     year: jiff::civil::Date,
@@ -854,7 +860,14 @@ impl UnderlyingGdpDatum {
         let industry_description = map_to_string("IndustrYDescription", m)?;
         tracing::trace!("Industry Description: {industry_description}.");
         let industry = map_to_string("Industry", m)?;
-        tracing::trace!("Industry: {industry}.");
+        // let industry = if let Some(naics) = Naics::from_code(&industry) {
+        //     naics
+        // } else {
+        //     let error =
+        //         VariantMissing::new(industry.clone(), industry, line!(), file!().to_string());
+        //     return Err(error.into());
+        // };
+        // tracing::trace!("Industry: {industry:?}.");
         let note_ref = map_to_string("NoteRef", m)?;
         tracing::trace!("Note Ref: {note_ref}.");
         let table_id = map_to_int("TableID", m)?;
@@ -877,6 +890,7 @@ impl UnderlyingGdpDatum {
     pub fn to_industry(&self) -> (String, String) {
         (
             self.industry().to_owned(),
+            // self.industry().code(),
             self.industry_description().to_owned(),
         )
     }
