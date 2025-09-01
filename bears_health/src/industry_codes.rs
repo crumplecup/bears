@@ -1,5 +1,5 @@
 use bears_ecology::{bea_data, initial_load, trace_init};
-use bears_species::{BeaErr, Data, Dataset, IoError, SerdeJson};
+use bears_species::{BeaErr, Data, Dataset, IoError, Naics, SerdeJson, VariantMissing};
 
 /// Attempts to load all files in the download [`History`], without respect to the load `History`.
 /// Loads GDPbyIndustry files, converts them to industry codes.
@@ -33,6 +33,48 @@ pub async fn gdp_codes() -> Result<(), BeaErr> {
 }
 
 /// Attempts to load all files in the download [`History`], without respect to the load `History`.
+/// Loads GDPbyIndustry files, converts them to industry codes.
+/// Checks that all industry codes are present as variants of the Naics::InputOutput enum.
+#[tracing::instrument(skip_all)]
+pub async fn check_gdp_codes() -> Result<(), BeaErr> {
+    trace_init()?;
+    let dataset = Dataset::GDPbyIndustry;
+    let data = initial_load(dataset, None).await?;
+    tracing::info!("{} datasets loaded.", data.len());
+    let mut industry_codes = std::collections::BTreeMap::new();
+    let mut errors = Vec::new();
+    data.iter()
+        .map(|v| {
+            if let Data::Gdp(data) = v {
+                industry_codes.append(&mut data.industry_codes());
+            }
+        })
+        .for_each(drop);
+    industry_codes
+        .keys()
+        .map(|k| {
+            if Naics::from_code(k).is_none() {
+                errors.push(k.clone());
+            }
+        })
+        .for_each(drop);
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        for e in &errors {
+            tracing::error!("Variant missing for {e}");
+        }
+        let error = VariantMissing::new(
+            "NaicsInputOutput variant".to_string(),
+            errors.concat(),
+            line!(),
+            file!().to_string(),
+        );
+        Err(error.into())
+    }
+}
+
+/// Attempts to load all files in the download [`History`], without respect to the load `History`.
 /// Loads UnderlyingGDPbyIndustry files, converts them to industry codes.
 /// Serializes the results to `UnderlyingGDPbyIndustry_IndustryCode.json` in the
 /// `BEA_DATA` directory.
@@ -61,4 +103,46 @@ pub async fn ugdp_codes() -> Result<(), BeaErr> {
     serde_json::to_writer_pretty(industry_writer, &industry_codes)
         .map_err(|e| SerdeJson::new(e, line!(), file!().into()))?;
     Ok(())
+}
+
+/// Attempts to load all files in the download [`History`], without respect to the load `History`.
+/// Loads UnderlyingGDPbyIndustry files, converts them to industry codes.
+/// Checks that all industry codes are present as variants of the Naics::InputOutput enum.
+#[tracing::instrument(skip_all)]
+pub async fn check_ugdp_codes() -> Result<(), BeaErr> {
+    trace_init()?;
+    let dataset = Dataset::UnderlyingGDPbyIndustry;
+    let data = initial_load(dataset, None).await?;
+    tracing::info!("{} datasets loaded.", data.len());
+    let mut industry_codes = std::collections::BTreeMap::new();
+    let mut errors = Vec::new();
+    data.iter()
+        .map(|v| {
+            if let Data::Gdp(data) = v {
+                industry_codes.append(&mut data.industry_codes());
+            }
+        })
+        .for_each(drop);
+    industry_codes
+        .keys()
+        .map(|k| {
+            if Naics::from_code(k).is_none() {
+                errors.push(k.clone());
+            }
+        })
+        .for_each(drop);
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        for e in &errors {
+            tracing::error!("Variant missing for {e}");
+        }
+        let error = VariantMissing::new(
+            "NaicsInputOutput variant".to_string(),
+            errors.concat(),
+            line!(),
+            file!().to_string(),
+        );
+        Err(error.into())
+    }
 }

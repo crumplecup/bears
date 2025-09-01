@@ -191,7 +191,7 @@ pub use data::{
 pub use datasets::{check_datasets, datasets_from_file, datasets_to_json};
 pub use histories::download_summary;
 pub use indicators::check_indicators;
-pub use industry_codes::{gdp_codes, ugdp_codes};
+pub use industry_codes::{check_gdp_codes, check_ugdp_codes, gdp_codes, ugdp_codes};
 pub use investments::check_investments;
 pub use io_codes::io_codes;
 pub use naics::{

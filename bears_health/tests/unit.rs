@@ -200,3 +200,10 @@ async fn industry_codes() -> anyhow::Result<()> {
     bears_health::ugdp_codes().await?;
     Ok(())
 }
+
+#[tokio::test]
+async fn check_industry_codes() -> anyhow::Result<()> {
+    bears_health::check_gdp_codes().await?;
+    bears_health::check_ugdp_codes().await?;
+    Ok(())
+}
