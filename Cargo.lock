@@ -181,6 +181,7 @@ dependencies = [
  "bears_ecology",
  "bears_species",
  "dotenvy",
+ "serde",
  "serde_json",
  "strum",
  "tokio",
