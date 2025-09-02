@@ -41,6 +41,8 @@ pub enum NaicsSupplement {
     ArtsEntertainmentRecreationAccommodationFoodServices,
     /// Asphalt and other petroleum and coal products,
     AsphaltOtherPetroleumCoal,
+    /// Automobile manufacturing
+    AutomobileManufacturing,
     /// Beverages and tobacco products
     BeveragesTobacco,
     /// Branches and agencies
@@ -65,6 +67,8 @@ pub enum NaicsSupplement {
     Chemicals,
     /// Clothing, clothing accessories, shoe, and jewelry retailers
     ClothingAccessoriesShoeJewelryRetailers,
+    /// Clothing and clothing accessories stores
+    ClothingAccessoriesStores,
     /// Computers and electronic products
     ComputersElectronic,
     /// Construction
@@ -129,6 +133,8 @@ pub enum NaicsSupplement {
     HealthCareSocialAssistance,
     /// Health and personal care retailers
     HealthPersonalCareRetailers,
+    /// Health and personal care stores
+    HealthPersonalCareStores,
     /// Heavy and civil engineering construction
     HeavyCivilEngineeringConstruction,
     /// Heavy construction
@@ -161,6 +167,8 @@ pub enum NaicsSupplement {
     IronOres,
     /// Leather and allied products
     LeatherAlliedProducts,
+    /// Light truck and utility vehicle manufacturing
+    LightTruckUtilityVehicleManufacturing,
     /// Machinery
     Machinery,
     /// Management of nonbank companies and enterprises
@@ -343,6 +351,7 @@ impl NaicsSupplement {
                 "Arts, entertainment, recreation, accommodation, and food services"
             }
             Self::AsphaltOtherPetroleumCoal => "Asphalt and other petroleum and coal products",
+            Self::AutomobileManufacturing => "Automobile manufacturing",
             Self::BeveragesTobacco => "Beverages and tobacco products",
             Self::BranchesAgencies => "Branches and agencies",
             Self::BroadcastingCableNetworksProgramDistribution => {
@@ -365,6 +374,7 @@ impl NaicsSupplement {
             Self::ClothingAccessoriesShoeJewelryRetailers => {
                 "Clothing, clothing accessories, shoe, and jewelry retailers"
             }
+            Self::ClothingAccessoriesStores => "Clothing and clothing accessories stores",
             Self::ComputersElectronic => "Computers and electronic products",
             Self::Construction => "Construction",
             Self::ConstructionBuildings => "Construction of buildings",
@@ -409,6 +419,7 @@ impl NaicsSupplement {
             Self::GoldSilverOres => "Gold and silver ores",
             Self::HealthCareSocialAssistance => "Health care and social assistance",
             Self::HealthPersonalCareRetailers => "Health and personal care retailers",
+            Self::HealthPersonalCareStores => "Health and personal care stores",
             Self::HeavyCivilEngineeringConstruction => "Heavy and civil engineering construction",
             Self::HeavyConstruction => "Heavy construction",
             Self::Hospitals => "Hospitals",
@@ -437,6 +448,9 @@ impl NaicsSupplement {
             }
             Self::IronOres => "Iron ores",
             Self::LeatherAlliedProducts => "Leather and allied products",
+            Self::LightTruckUtilityVehicleManufacturing => {
+                "Light truck and utility vehicle manufacturing"
+            }
             Self::Machinery => "Machinery",
             Self::ManagementNonbankCompaniesEnterprises => {
                 "Management of nonbank companies and enterprises"
@@ -573,6 +587,7 @@ impl NaicsSupplement {
             Self::ArtsEntertainmentRecreation => 7100,
             Self::ArtsEntertainmentRecreationAccommodationFoodServices => 7,
             Self::AsphaltOtherPetroleumCoal => 3244,
+            Self::AutomobileManufacturing => 336111,
             Self::BranchesAgencies => 5229,
             Self::BeveragesTobacco => 3120,
             Self::BroadcastingCableNetworksProgramDistribution => 5147,
@@ -585,6 +600,7 @@ impl NaicsSupplement {
             Self::CableOtherProgramDistribution => 5175,
             Self::Chemicals => 3250,
             Self::ClothingAccessoriesShoeJewelryRetailers => 4480,
+            Self::ClothingAccessoriesStores => 448,
             Self::ComputersElectronic => 3340,
             Self::Construction => 2300,
             Self::ConstructionBuildings => 2360,
@@ -611,12 +627,15 @@ impl NaicsSupplement {
             Self::FundsTrustsOtherFinancialVehicles => 5252,
             Self::FurnitureHomeFurnishingsRetailers => 4420,
             Self::FurnitureRelated => 3370,
+            // Duplicated by child entry 4471
+            // Self::GasolineStations => 447,
             Self::GasolineStations => 4471,
             Self::GeneralMerchandiseRetailers => 4520,
             Self::GeneralMerchandiseStores => 452,
             Self::GoldSilverOres => 2125,
             Self::HealthCareSocialAssistance => 6200,
             Self::HealthPersonalCareRetailers => 4461,
+            Self::HealthPersonalCareStores => 446,
             Self::HeavyCivilEngineeringConstruction => 2370,
             Self::HeavyConstruction => 2340,
             Self::Hospitals => 6220,
@@ -633,6 +652,7 @@ impl NaicsSupplement {
             Self::InternetServiceProvidersWebSearchPortalsDataProcessingServices => 5180,
             Self::IronOres => 2124,
             Self::LeatherAlliedProducts => 3160,
+            Self::LightTruckUtilityVehicleManufacturing => 336112,
             Self::Machinery => 3330,
             Self::ManagementNonbankCompaniesEnterprises => 5512,
             Self::Manufacturing => 3000,
@@ -649,6 +669,8 @@ impl NaicsSupplement {
             Self::NondepositoryCreditIntermediationRelatedServices => 5224,
             Self::NonmetalicMineral => 3270,
             Self::NonstoreRetailers => 4540,
+            // Duplicated by child 4540
+            // Self::NonstoreRetailers => 454,
             Self::NursingResidentialCareFacilities => 6230,
             Self::OtherDurableGoods => 4299,
             Self::OtherFinanceExceptDepositoryInstitutions => 5299,
@@ -724,7 +746,11 @@ impl NaicsSupplement {
         let result = match code {
             6 => Self::EducationalServicesHealthCareSocialAssistance,
             7 => Self::ArtsEntertainmentRecreationAccommodationFoodServices,
+            446 => Self::HealthPersonalCareStores,
+            447 => Self::GasolineStations,
+            448 => Self::ClothingAccessoriesStores,
             452 => Self::GeneralMerchandiseStores,
+            454 => Self::NonstoreRetailers,
             513 => Self::BroadcastingTelecommunications,
             514 => Self::DataProcessingInternetPublishingOtherInformationServices,
             998 => Self::InternationalDrillingRigs,
@@ -873,6 +899,8 @@ impl NaicsSupplement {
             8999 => Self::Petroleum,
             9000 => Self::Unspecified,
             9100 => Self::NonbusinessEntitiesExceptGovernment,
+            336111 => Self::AutomobileManufacturing,
+            336112 => Self::LightTruckUtilityVehicleManufacturing,
             _ => return None,
         };
         Some(result)
