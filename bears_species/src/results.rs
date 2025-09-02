@@ -1,7 +1,7 @@
 use crate::{
-    BeaErr, Data, Dataset, DatasetMissing, Datasets, FixedAssetData, GdpData, ItaData,
-    JsonParseError, KeyMissing, Method, MneDiData, NipaData, NotObject, ParameterValues,
-    Parameters, ParseInt, RequestParameters, map_to_string,
+    BeaErr, Data, Dataset, DatasetMissing, Datasets, FixedAssetData, GdpData, IipData,
+    InputOutputData, ItaData, JsonParseError, KeyMissing, Method, MneDiData, NipaData, NotObject,
+    ParameterValues, Parameters, ParseInt, RequestParameters, UnderlyingGdpData, map_to_string,
 };
 
 #[derive(
@@ -86,7 +86,7 @@ impl Results {
                             return Ok(Self::from(data));
                         }
                         Err(source) => {
-                            tracing::trace!("{source}");
+                            tracing::debug!("{source}");
                         }
                     },
                     Dataset::GDPbyIndustry => match GdpData::try_from(value) {
@@ -98,7 +98,34 @@ impl Results {
                             tracing::trace!("{source}");
                         }
                     },
+                    Dataset::UnderlyingGDPbyIndustry => match UnderlyingGdpData::try_from(value) {
+                        Ok(t) => {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                        Err(source) => {
+                            tracing::trace!("{source}");
+                        }
+                    },
                     Dataset::Ita => match ItaData::try_from(value) {
+                        Ok(t) => {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                        Err(source) => {
+                            tracing::trace!("{source}");
+                        }
+                    },
+                    Dataset::Iip => match IipData::try_from(value) {
+                        Ok(t) => {
+                            let data = Data::from(t);
+                            return Ok(Self::from(data));
+                        }
+                        Err(source) => {
+                            tracing::trace!("{source}");
+                        }
+                    },
+                    Dataset::InputOutput => match InputOutputData::try_from(value) {
                         Ok(t) => {
                             let data = Data::from(t);
                             return Ok(Self::from(data));

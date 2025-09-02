@@ -195,7 +195,7 @@ pub enum YearKind {
 }
 
 impl YearKind {
-    pub fn keys(&self) -> YearKindIterator {
+    pub fn keys(&self) -> YearKindIterator<'_> {
         YearKindIterator::from(self)
     }
 }
@@ -433,7 +433,7 @@ pub struct NipaRange {
 }
 
 impl NipaRange {
-    pub fn iter(&self) -> NipaRangeIterator {
+    pub fn iter(&self) -> NipaRangeIterator<'_> {
         NipaRangeIterator::new(self)
     }
 }
@@ -561,7 +561,7 @@ impl Iterator for NipaRangeIterator<'_> {
 pub struct NipaRanges(std::collections::BTreeMap<String, NipaRange>);
 
 impl NipaRanges {
-    pub fn iter(&self) -> NipaRangesIterator {
+    pub fn iter(&self) -> NipaRangesIterator<'_> {
         NipaRangesIterator::new(self)
     }
 }

@@ -10,7 +10,7 @@ pub async fn inspect_queues() -> Result<(), BeaErr> {
     //     Dataset::FixedAssets,
     //     Dataset::Mne,
     // ];
-    let datasets = vec![Dataset::NIUnderlyingDetail];
+    let datasets = vec![Dataset::UnderlyingGDPbyIndustry];
     for dataset in datasets {
         let queue = init_queue(dataset)?;
         tracing::info!("Queue length: {}", queue.len());

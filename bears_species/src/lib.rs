@@ -10,7 +10,7 @@ mod parameter_value;
 mod request;
 mod results;
 
-pub use data::{Data, FixedAssetData, GdpData, GdpDatum, MneDiData, NipaData};
+pub use data::{Data, FixedAssetData, MneDiData, NipaData};
 pub use dataset::{Dataset, DatasetDetails, Datasets};
 // investment invalid unused
 // check unused
@@ -25,17 +25,18 @@ pub use free::{
     map_to_bool, map_to_float, map_to_int, map_to_string, to_csv,
 };
 pub use key_sets::{
-    ApiMetadata, FixedAssets, GdpByIndustry, Iip, InputOutput, IntlServSta, IntlServTrade, Ita,
-    ItaData, ItaDatum, Mne, NiUnderlyingDetail, Nipa, NipaIterator, Regional,
-    UnderlyingGdpByIndustry,
+    ApiMetadata, FixedAssets, GdpByIndustry, GdpData, GdpDatum, Iip, IipData, InputOutput,
+    InputOutputData, IntlServSta, IntlServTrade, Ita, ItaData, ItaDatum, Mne, NiUnderlyingDetail,
+    Nipa, NipaIterator, Regional, UnderlyingGdpByIndustry, UnderlyingGdpData,
 };
 pub use keys::{
     AffiliateKind, AffiliateLevel, AnnotatedInteger, Annotation, AnnotationMissing, AocSta,
-    AreaOrCountry, BoolInvalid, BoolOptions, Channel, Component, DirectionOfInvestment, Footnotes,
-    Frequencies, Frequency, FrequencyOptions, IipIndustry, Indicator, InputOutputTable, Integer,
-    IntegerInvalid, IntegerKind, IntegerOptions, InvestmentKind, ItaFrequencies, ItaFrequency,
-    Millions, MillionsOptions, Naics, NaicsCategory, NaicsIndustry, NaicsItem, NaicsItems,
-    NaicsSector, NaicsSubcategory, NaicsSubsector, NipaRange, NipaRangeIterator, NipaRanges,
+    AreaOrCountry, BoolInvalid, BoolOptions, Channel, Component, DirectionKind,
+    DirectionOfInvestment, Footnotes, Frequencies, Frequency, FrequencyOptions, IipIndustry,
+    Indicator, InputOutputCode, InputOutputTable, Integer, IntegerInvalid, IntegerKind,
+    IntegerOptions, Investment, ItaFrequencies, ItaFrequency, Millions, MillionsOptions, Naics,
+    NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector,
+    NaicsSubcategory, NaicsSubsector, NaicsSupplement, NipaRange, NipaRangeIterator, NipaRanges,
     NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode,
     RowCodeMissing, SelectionKind, SelectionSet, State, StateKind, TableName, Year, YearInvalid,
     YearKind, YearOptions, YearRange, date_by_period, parse_year, roman_numeral_quarter,

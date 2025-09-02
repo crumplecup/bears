@@ -34,7 +34,7 @@ pub struct Mne {
 }
 
 impl Mne {
-    pub fn iter(&self) -> MneIterator {
+    pub fn iter(&self) -> MneIterator<'_> {
         let series_options = SelectionKind::default();
         let industry_options = SelectionKind::default();
         let country_options = SelectionKind::Individual;

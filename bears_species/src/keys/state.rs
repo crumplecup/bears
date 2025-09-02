@@ -149,6 +149,69 @@ impl StateKind {
     pub fn pascal(&self) -> String {
         self.to_string().to_case(convert_case::Case::Pascal)
     }
+
+    /// Used to parse a [`RowCode`] type.
+    #[tracing::instrument]
+    pub fn from_code(code: i64) -> Option<Self> {
+        let state = match code {
+            1 => Self::Alabama,
+            2 => Self::Alaska,
+            4 => Self::Arizona,
+            5 => Self::Arkansas,
+            6 => Self::California,
+            8 => Self::Colorado,
+            9 => Self::Connecticut,
+            10 => Self::Delaware,
+            11 => Self::DistrictOfColumbia,
+            12 => Self::Florida,
+            13 => Self::Georgia,
+            15 => Self::Hawaii,
+            16 => Self::Idaho,
+            17 => Self::Illinois,
+            18 => Self::Indiana,
+            19 => Self::Iowa,
+            20 => Self::Kansas,
+            21 => Self::Kentucky,
+            22 => Self::Louisiana,
+            23 => Self::Maine,
+            24 => Self::Maryland,
+            25 => Self::Massachusetts,
+            26 => Self::Michigan,
+            27 => Self::Minnesota,
+            28 => Self::Mississippi,
+            29 => Self::Missouri,
+            30 => Self::Montana,
+            31 => Self::Nebraska,
+            32 => Self::Nevada,
+            33 => Self::NewHampshire,
+            34 => Self::NewJersey,
+            35 => Self::NewMexico,
+            36 => Self::NewYork,
+            37 => Self::NorthCarolina,
+            38 => Self::NorthDakota,
+            39 => Self::Ohio,
+            40 => Self::Oklahoma,
+            41 => Self::Oregon,
+            42 => Self::Pennsylvania,
+            43 => Self::PuertoRico,
+            44 => Self::RhodeIsland,
+            45 => Self::SouthCarolina,
+            46 => Self::SouthDakota,
+            47 => Self::Tennessee,
+            48 => Self::Texas,
+            49 => Self::Utah,
+            50 => Self::Vermont,
+            51 => Self::Virginia,
+            53 => Self::Washington,
+            54 => Self::WestVirginia,
+            55 => Self::Wisconsin,
+            56 => Self::Wyoming,
+            70 => Self::OtherUsAreas,
+            75 => Self::Foreign,
+            _ => return None,
+        };
+        Some(state)
+    }
 }
 
 impl TryFrom<&ParameterFields> for StateKind {

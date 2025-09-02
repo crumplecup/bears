@@ -364,30 +364,45 @@ impl App {
                     Dataset::GDPbyIndustry => {
                         let table_id = query[&ParameterName::TableID.to_string()].clone();
                         let mut title = table_id;
-                        if let Some(frequency) = query.get(&ParameterName::Frequency.to_string()) {
-                            if frequency != "A,Q" {
-                                title.push('_');
-                                title.push_str(frequency);
-                            }
+                        if let Some(frequency) = query.get(&ParameterName::Frequency.to_string())
+                            && frequency != "A,Q"
+                        {
+                            title.push('_');
+                            title.push_str(frequency);
                         }
-                        if let Some(value) = query.get(&ParameterName::Industry.to_string()) {
-                            if value != "ALL" {
-                                title.push('_');
-                                title.push_str(value);
-                            }
+                        if let Some(value) = query.get(&ParameterName::Industry.to_string())
+                            && value != "ALL"
+                        {
+                            title.push('_');
+                            title.push_str(value);
                         }
-                        if let Some(value) = query.get(&ParameterName::Year.to_string()) {
-                            if value != "ALL" {
-                                title.push('_');
-                                title.push_str(value);
-                            }
+                        if let Some(value) = query.get(&ParameterName::Year.to_string())
+                            && value != "ALL"
+                        {
+                            title.push('_');
+                            title.push_str(value);
                         }
                         title.push_str(".json");
+                        Ok(path.join(title))
+                    }
+                    Dataset::UnderlyingGDPbyIndustry => {
+                        let table_id = query[&ParameterName::TableID.to_string()].clone();
+                        let industry = query[&ParameterName::Industry.to_string()].clone();
+                        let title = format!("{dataset}_{table_id}_{industry}.json");
                         Ok(path.join(title))
                     }
                     Dataset::Ita => {
                         let aoc = query["AreaOrCountry"].clone();
                         Ok(path.join(format!("{aoc}.json")))
+                    }
+                    Dataset::Iip => {
+                        // let component = query["Component"].clone();
+                        let toi = query["TypeOfInvestment"].clone();
+                        Ok(path.join(format!("IIP_{toi}.json")))
+                    }
+                    Dataset::InputOutput => {
+                        let table_id = query["TableID"].clone();
+                        Ok(path.join(format!("InputOutput_{table_id}.json")))
                     }
                     _ => {
                         tracing::info!("{dataset} not yet implemented.");

@@ -250,6 +250,7 @@ impl TryFrom<&ParameterValueTable> for ItaFrequency {
 
 #[derive(
     Debug,
+    Default,
     Clone,
     PartialEq,
     Eq,

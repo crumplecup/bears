@@ -1,5 +1,6 @@
 #[derive(
     Debug,
+    Default,
     Copy,
     Clone,
     PartialEq,
@@ -16,6 +17,7 @@
 /// Represents different types of components used for position changes in financial accounts.
 pub enum Component {
     /// Change in position
+    #[default]
     ChgPos,
     /// Change in position attributable to changes in volume and valuation n.i.e.
     ChgPosNie,

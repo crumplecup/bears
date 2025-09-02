@@ -3,6 +3,7 @@
 /// Each variant corresponds to a major industry sector as defined by NAICS.
 #[derive(
     Debug,
+    Default,
     Copy,
     Clone,
     PartialEq,
@@ -17,6 +18,7 @@
     strum::EnumIter,
 )]
 pub enum NaicsSector {
+    #[default]
     /// Agriculture, Forestry, Fishing and Hunting
     AgricultureForestryFishingHunting,
     /// Mining, Quarrying, and Oil and Gas Extraction

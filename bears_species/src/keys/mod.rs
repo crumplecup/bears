@@ -7,6 +7,7 @@ mod footnote;
 mod frequency;
 mod indicator;
 mod industry;
+mod input_output_code;
 mod input_output_table;
 mod investment;
 mod millions;
@@ -28,12 +29,13 @@ pub use footnote::Footnotes;
 pub use frequency::{Frequencies, Frequency, FrequencyOptions, ItaFrequencies, ItaFrequency};
 pub use indicator::Indicator;
 pub use industry::IipIndustry;
+pub use input_output_code::InputOutputCode;
 pub use input_output_table::InputOutputTable;
-pub use investment::{DirectionOfInvestment, InvestmentKind};
+pub use investment::{DirectionKind, DirectionOfInvestment, Investment};
 pub use millions::{Millions, MillionsOptions};
 pub use naics::{
-    Naics, NaicsCategory, NaicsIndustry, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
-    NaicsSubsector,
+    Naics, NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector,
+    NaicsSubcategory, NaicsSubsector, NaicsSupplement,
 };
 pub use numeric::{
     AnnotatedInteger, BoolInvalid, BoolOptions, Integer, IntegerInvalid, IntegerKind,

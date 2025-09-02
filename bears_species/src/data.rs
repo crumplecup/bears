@@ -1,9 +1,10 @@
 use crate::{
-    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, Frequency, IoError, ItaData,
-    JsonParseError, KeyMissing, NaicsItems, NotArray, NotObject, RowCode, SerdeJson,
-    VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string, parse_year,
-    roman_numeral_quarter,
+    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, GdpData, IipData, InputOutputData,
+    IoError, ItaData, JsonParseError, KeyMissing, NaicsItems, NotArray, NotObject, RowCode,
+    SerdeJson, UnderlyingGdpData, VariantMissing, date_by_period, map_to_float, map_to_int,
+    map_to_string, parse_year,
 };
+
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize, derive_more::From,
 )]
@@ -16,9 +17,15 @@ pub enum Data {
     #[from(MneDiData)]
     MneDi(MneDiData),
     #[from(GdpData)]
-    GdpData(GdpData),
+    Gdp(GdpData),
+    #[from(UnderlyingGdpData)]
+    UnderlyingGdp(UnderlyingGdpData),
     #[from(ItaData)]
     ItaData(ItaData),
+    #[from(IipData)]
+    Iip(IipData),
+    #[from(InputOutputData)]
+    InputOutput(InputOutputData),
 }
 
 #[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
@@ -89,7 +96,6 @@ impl TryFrom<serde_json::Value> for NipaDatum {
             _ => {
                 tracing::trace!("Invalid Value: {value:#?}");
                 let error = NotObject::new(line!(), file!().to_string());
-                let error = JsonParseError::from(error);
                 Err(error.into())
             }
         }
@@ -424,6 +430,7 @@ impl MneDiDatum {
             data_value_unformatted.as_value()
         );
         let row = map_to_string("Row", m)?;
+        tracing::debug!("Row: {row}.");
         let row_code = RowCode::from_value(m, &row, naics)?;
         let series_id = map_to_int("SeriesID", m)?;
         let series_name = map_to_string("SeriesName", m)?;
@@ -536,163 +543,6 @@ impl TryFrom<&serde_json::Value> for MneDiData {
                 let mut data = Vec::new();
                 let datum = MneDiDatum::read_json(m, &naics)?;
                 data.push(datum);
-                tracing::trace!("Data found: {} records.", data.len());
-                Ok(Self(data))
-            }
-            _ => {
-                let error = NotArray::new(line!(), file!().to_string());
-                Err(error.into())
-            }
-        }
-    }
-}
-
-/// Return value format associated with the
-/// [`Dataset::GDPbyIndustry`](crate::Dataset::GDPbyIndustry) variant.
-#[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
-pub struct GdpDatum {
-    data_value: f64,
-    frequency: Frequency,
-    industry_description: String,
-    industry: String,
-    note_ref: String,
-    quarter: jiff::civil::Date,
-    table_id: i64,
-    year: jiff::civil::Date,
-}
-
-impl GdpDatum {
-    /// Attempts to map a [`serde_json::Map`] `m` to an instance of `GpdDatum`.
-    ///
-    /// Encapsulates the logic of retrieving the `GpdDatum` when converting the JSON representation
-    /// into internal data types.  Used to implement the [`TryFrom`] trait from [`serde_json::Value`] to `self`.
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
-        tracing::trace!("Reading MneDiDatum.");
-        let data_value = map_to_float("DataValue", m)?;
-        tracing::trace!("Data Value: {data_value}.");
-        let frequency = map_to_string("Frequency", m)?;
-        let frequency = Frequency::from_value(&frequency)?;
-        tracing::trace!("Frequency: {}.", frequency.value());
-        let industry_description = map_to_string("IndustrYDescription", m)?;
-        tracing::trace!("Industry Description: {industry_description}.");
-        let industry = map_to_string("Industry", m)?;
-        tracing::trace!("Industry: {industry}.");
-        let note_ref = map_to_string("NoteRef", m)?;
-        tracing::trace!("Note Ref: {note_ref}.");
-        let table_id = map_to_int("TableID", m)?;
-        // let table_id = RowCode::from_value(m, &row, naics)?;
-        tracing::trace!("Note Ref: {note_ref}.");
-        let year = map_to_string("Year", m)?;
-        let year = parse_year(&year)?;
-        tracing::trace!("Year: {year}.");
-        let quarter = map_to_string("Quarter", m)?;
-        let quarter = if let Ok(date) = parse_year(&quarter) {
-            date
-        } else if let Some(date) = roman_numeral_quarter(&quarter, year) {
-            date
-        } else {
-            let error = KeyMissing::new("Quarter".to_owned(), line!(), file!().to_owned());
-            let error = JsonParseError::from(error);
-            return Err(error.into());
-        };
-        tracing::trace!("Quarter: {quarter}.");
-        Ok(Self {
-            data_value,
-            frequency,
-            industry_description,
-            industry,
-            note_ref,
-            quarter,
-            table_id,
-            year,
-        })
-    }
-}
-
-/// `GdpData` represents the `Data` portion of the `Results` from a BEA response.
-/// These portions of the response have corresponding internal library representations, [`Data`],
-/// [`Results`](crate::Results) and [`BeaResponse`] respectively.  This is the data type contained
-/// within the [`Data::GdpData`] variant.
-///
-/// Functionally, `GdpData` is a thin wrapper around a vector of type [`GdpDatum`].
-/// This type implements [`TryFrom`] for `&PathBuf`, which I suppose is what Path is for, but I'm
-/// still trying to figure out the idiom here.
-/// This type also implements [`TryFrom`] for references to a [`serde_json::Value`].  Given a
-/// reference to a path, the impl for try_from will then call the impl associated with the
-/// [`serde_json::Value`], which calls [`GdpDatum::read_json`], bubbling up any errors.
-#[derive(
-    Clone,
-    Debug,
-    Default,
-    PartialEq,
-    PartialOrd,
-    serde::Deserialize,
-    serde::Serialize,
-    derive_more::Deref,
-    derive_more::DerefMut,
-    derive_more::From,
-    derive_more::AsRef,
-    derive_more::AsMut,
-)]
-#[from(Vec<GdpDatum>)]
-pub struct GdpData(Vec<GdpDatum>);
-
-impl TryFrom<&std::path::PathBuf> for GdpData {
-    type Error = BeaErr;
-
-    fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
-        let file = std::fs::File::open(value)
-            .map_err(|e| IoError::new(value.into(), e, line!(), file!().into()))?;
-        let rdr = std::io::BufReader::new(file);
-        let res: serde_json::Value = serde_json::from_reader(rdr)
-            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
-        let data = BeaResponse::try_from(&res)?;
-        tracing::trace!("Response read.");
-        let results = data.results();
-        if let Some(data) = results.into_data() {
-            match data {
-                Data::GdpData(value) => {
-                    tracing::trace!("{} GdpData records read.", value.len());
-                    Ok(value)
-                }
-                _ => {
-                    let error =
-                        DatasetMissing::new("GdpData".to_string(), line!(), file!().to_string());
-                    Err(error.into())
-                }
-            }
-        } else {
-            tracing::warn!("Data variant missing.");
-            let error = VariantMissing::new(
-                "Data variant missing".to_string(),
-                "Results".to_string(),
-                line!(),
-                file!().to_string(),
-            );
-            Err(error.into())
-        }
-    }
-}
-
-impl TryFrom<&serde_json::Value> for GdpData {
-    type Error = BeaErr;
-    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
-        tracing::trace!("Reading GdpData");
-        match result_to_data(value)? {
-            serde_json::Value::Array(v) => {
-                let mut data = Vec::new();
-                for val in v {
-                    match val {
-                        serde_json::Value::Object(m) => {
-                            let datum = GdpDatum::read_json(m)?;
-                            data.push(datum);
-                        }
-                        _ => {
-                            let error = NotObject::new(line!(), file!().to_string());
-                            return Err(error.into());
-                        }
-                    }
-                }
                 tracing::trace!("Data found: {} records.", data.len());
                 Ok(Self(data))
             }

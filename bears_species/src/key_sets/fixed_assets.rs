@@ -12,7 +12,7 @@ pub struct FixedAssets {
 }
 
 impl FixedAssets {
-    pub fn iter(&self) -> FixedAssetsIterator {
+    pub fn iter(&self) -> FixedAssetsIterator<'_> {
         FixedAssetsIterator::new(self)
     }
 

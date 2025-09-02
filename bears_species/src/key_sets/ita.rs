@@ -25,7 +25,7 @@ pub struct Ita {
 }
 
 impl Ita {
-    pub fn iter(&self) -> ItaIterator {
+    pub fn iter(&self) -> ItaIterator<'_> {
         ItaIterator::new(self)
     }
 

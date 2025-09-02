@@ -172,6 +172,10 @@ mod data;
 mod datasets;
 mod histories;
 mod indicators;
+mod industry_codes;
+mod investments;
+mod io_codes;
+mod json;
 mod naics;
 mod parameter_values;
 mod parameters;
@@ -188,6 +192,10 @@ pub use data::{
 pub use datasets::{check_datasets, datasets_from_file, datasets_to_json};
 pub use histories::download_summary;
 pub use indicators::check_indicators;
+pub use industry_codes::{check_gdp_codes, check_ugdp_codes, gdp_codes, ugdp_codes};
+pub use investments::check_investments;
+pub use io_codes::io_codes;
+pub use json::write_json;
 pub use naics::{
     check_naics_category, check_naics_industry, check_naics_sectors, check_naics_subcategory,
     check_naics_subsectors,
