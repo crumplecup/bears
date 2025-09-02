@@ -2,7 +2,180 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.11] - 2025-09-02
+
+### 🚀 Features
+
+- Variants added to `AreaOrCountry` type to account for RowCode numbers.  A `from_code` method added to facilitate conversion.
+- `NaicsSupplement` type added to account for international MNE row codes that do not conform to 2022 NAICS codes.  A corresponding `Supplement` variant added to `Naics` type.
+- `RowCode` now maps to `Naics` type instead of i64, and `AreaOrCountry` instead of String.
+- Variants added to the `NaicsSupplement` type to accommodate MNE data.
+- `from_code` method added to `StateKind` type to facilitate conversion to the `RowCode` type.
+- `NaicsInputOutput` type added to accommodate InputOutput data, as well as the InputOutput variant of the `Naics` enum.
+- `State` variant added to the `RowCode` enum to facilitate MNE data conversion.
+- `params` method added to the `InputOutputTable` type for producing parameters for BEA API calls.
+- `InputOutputCode` type added to represent row and column codes in the InputOutput dataset.
+- Default implemented where missing, even if arbitrarily.
+- Variants added to `AreaOrCountry` enum to accommodate MNE data conversion.
+- The *investment* field of the IIP dataset now maps to the `Investment` type.
+- `InputOutputIterator`, `InputOutputDatum` and `InputOutputData` types added for the InputOutput dataset.
+- `Iip` and `InputOutput` variants added to the `Data` type for their eponymous datasets.
+- `Iip` and `InputOutput` variants added to match statements for parsing `Results` from json.
+- `Iip`, `InputOutput` and `UnderlyingGDPbyIndustry` variants added to match statement in the `App::destination` method.
+- `Iip`, `InputOutput` and `UnderlyingGDPbyIndustry` variants added to queue construction in the `Request` type.
+- Readme updated with `Iip`, `InputOutput` and new `MNE` totals.
+- `UnderlyingGdpDatum` and `UnderlyingGdpData` types added to the *gdp_by_industry* file in the `key_sets` module.
+- `UnderlyingGdpData` placed in `UnderlyingGdp` variant of `Data` enum.
+- `UnderlyingGDPbyIndustry` variant of `Dataset` added to parsing options for the `Results` type.
+- Arbitrary default added to the `NaicsSector` type.
+- Variants added to the `NaicsInputOutput` type to facilitate conversion of UnderlyingGDPbyIndustry data.
+- Industry codes converted from integers to `Naics` type for the GDPbyIndustry and UnderlyingG
+- `write_json` utility function added to write longer outputs to file in JSON format.
+- Variants added to `NaicsSupplement` for conversion of UnderlyingGDPbyIndustry data.
+- Variants added to `NaicsInputOutput` type for conversion of UnderlyingGDPbyIndustry data.
+
+### 💼 Other
+
+- Dataset name rotation for active testing.  Eventually need to move some of this to the CLI.
+
+### 🚜 Refactor
+
+- Call to `dotenv` moved to within the `bea_data` function to reduce code duplication.
+- `GdpDatum` and `GdpData` types moved to `gdp_by_industry` file in `key_sets` module.
+- Tests updated to use the `write_json` method, reducing code duplication.
+- Industry codes in `UnderlyingGdpDatum` mapped to `Naics` type instead of integers.
+
+### 📚 Documentation
+
+- Tables in readme.md updated with UnderlyingGDPbyIndustry data.
+
+### 🧪 Testing
+
+- Test added to pull row and column codes from InputOutput data.
+- Test added to verify that each field of json data containing parameter values has a corresponding variant in the `Investment` enum.
+- `Iip` and `InputOutput` datasets added to the test rotation.
+- Tests added to expose new additions to the testing harness.
+- `industry_codes` test added to produce key:value pairs of industry codes and names from the `GDPbyIndustry` and `UnderlyingGDPbyIndustry` datasets.
+- `check_industry_codes` test added to verify that industry codes in the `GDPbyIndustry` and `UnderlyingGDPbyIndustry` datasets are present as variants in the `Naics` enum.
+- List of datasets updated in unit tests, functionality that should move to the CLI.
+
+### ⚙️ Miscellaneous Tasks
+
+- Version incremented to 0.1.11.
+- `clap` dependency updated.
+- Patch updates to dependencies `serde_json` and `tokio`.
+- RowCode traces update to DEBUG level for work on the `NaicsSupplement` type.
+- Clippy fixes for Rust 1.89 update.
+- Updates to `clap`, `reqwest` and other dependencies.
+- Patch updates to dependencies `clap`, `serde_json` and `url`.
+- Clippy fixes for implied Iterator lifetimes.
+- Visibility updates, adding new types and incorporating a name change.
+- Info-level tracing downgraded to trace-level due to established stability.
+- Mod file updated with new types for visibility.
+- Lib file updated with new modules and types.  Visibility for all library types is at the root level (crate::type).
+- Lib file udpated with new module names and types.
+- `UnderlyingGdpDatum` and `UnderlyingGdpData` types given public visibility at the root level of the crate.
+- Patch update to dependency `tracing-subscriber`.
+- Cargo.toml for `bears_ecology` updated to include `serde` for use of the `Serialize` trait in the `write_json` function.
+
 ## [0.1.10] - 2025-07-30
+
+### 🚀 Features
+
+- `Scope` and `Overwrite` types added to module to represent parameter options for `Queue` methods.
+- `Overwrite` and `Scope` added to parameter arguments for `Queue` methods.
+- `next_mne_error` added to testing suite to retry to first of a presumably long list of errors, intended for use on TRACE.
+- `Naics` type added to module.
+
+### 🐛 Bug Fixes
+
+- Clippy fixes and some commented out WIP.
+- Temporary down-throttle of the rate limiting for testing.
+- Corrections to 2022 NAICS codes.
+- Edge case handled where a single item causes the list to serialize as a `serde_json::Value::Object` instead of a `serde_json::Value::Array`.
+- Corrections to 2022 Naics codes incorporated into Naics types.
+- Special cases added for MNE tables.
+
+### 📚 Documentation
+
+- Doc comments added to justfile.
+
+### 🎨 Styling
+
+- Clarify reporting on the `FromStrError` type.
+- Minor refactor of tracing subscriber filter.
+
+### 🧪 Testing
+
+- Flux in unit tests related to bulk dataset downloads.
+- Queue tests updated with `Overwrite` and `Scope` arguments.
+
+### ⚙️ Miscellaneous Tasks
+
+- Increment version to 0.1.10.
+- Patch update to derive_setters dependency.
+- Dependency updates for clap, console, jiff, reqwest and tokio.
+- Patch updates to dependency `clap` and dev-dependency `anyhow`.
+- `rand` added as dependency.  Patch updates to `clap`, `serde_json`, `strum` and `tokio`.
+- `rand` added as dependency.
+- Types updated for public visibility.
+- Naics codes table added back in for backwards compability until the transition to full Naics types is complete.
+- Cargo-dist update.
+
+## [0.1.9] - 2025-05-12
+
+### 🚀 Features
+
+- NaicsIndustry enum added to represent the full six-digit NAICS codes.
+
+### 🐛 Bug Fixes
+
+- Typo corrections in the reference file for NAICS codes.
+
+### 🧪 Testing
+
+- Check_naics_industry added to check_naics test suite.
+- Check_naics_industry added to check_naics test suite.
+
+### ⚙️ Miscellaneous Tasks
+
+- Version incremented to 0.1.9.
+- NaicsIndustry enum added to public visibility in lib.rs and mod.rs.
+- Minor update to tokio and patch updates to clap and jiff dependencies.
+- Locked flag added to cargo-dist and cargo-release installs.
+- `git-cliff` added to justfile.
+
+## [0.1.8] - 2025-04-14
+
+### 🚀 Features
+
+- The NaicsSector::from_key method is now NaicsSector::from_code.
+- Added the `NaicsSubcategory` type to represent Naics industry codes with a length of five digits.
+
+### 🐛 Bug Fixes
+
+- NaicsSubcategory variants and method values corrected in response to unit testing.
+- `NaicsCategory` variants and methods corrected in response to unit testing.
+
+### 🚜 Refactor
+
+- Naics.rs and naics_codes.csv removed.
+- Naics codes by classification added to the `cave` directory of `bears_health`.
+- NaicsItem moved to the `keys` module of `bears_species`.
+- Data module updated to use the new name for NaicsItems.
+
+### 🧪 Testing
+
+- Verification testings for Naics types added validating variant names, description and codes against the .csv files in the cave.
+
+### ⚙️ Miscellaneous Tasks
+
+- Increment version to 0.1.8.
+- Rust fmt changes.
+- Naics types added to mod and lib files.
+- Clippy corrected `manual implementation of ok` corrected to use the ok method.
+
+## [0.1.7] - 2025-04-07
 
 ### 🚀 Features
 
@@ -12,26 +185,11 @@ All notable changes to this project will be documented in this file.
 - Added the `Channel` enum to represent valid keys for the Channel parameter of the IntlServSTA dataset.
 - Added the `IipIndustry` enum to represent valid keys for the Industry parameter of the IntlServSTA dataset.
 - Added the `NaicsSector`, `NaicsSubsector` and `NaicsCategory` enums to represent different levels of NAICS code categories.
-- The NaicsSector::from_key method is now NaicsSector::from_code.
-- Added the `NaicsSubcategory` type to represent Naics industry codes with a length of five digits.
-- NaicsIndustry enum added to represent the full six-digit NAICS codes.
-- `Scope` and `Overwrite` types added to module to represent parameter options for `Queue` methods.
-- `Overwrite` and `Scope` added to parameter arguments for `Queue` methods.
-- `next_mne_error` added to testing suite to retry to first of a presumably long list of errors, intended for use on TRACE.
-- `Naics` type added to module.
+- Command, ValueSet and ValueSets types stubbed out for future use.
 
 ### 🐛 Bug Fixes
 
 - Explicit version numbers added to workspace members.
-- NaicsSubcategory variants and method values corrected in response to unit testing.
-- `NaicsCategory` variants and methods corrected in response to unit testing.
-- Typo corrections in the reference file for NAICS codes.
-- Clippy fixes and some commented out WIP.
-- Temporary down-throttle of the rate limiting for testing.
-- Corrections to 2022 NAICS codes.
-- Edge case handled where a single item causes the list to serialize as a `serde_json::Value::Object` instead of a `serde_json::Value::Array`.
-- Corrections to 2022 Naics codes incorporated into Naics types.
-- Special cases added for MNE tables.
 
 ### 🚜 Refactor
 
@@ -45,30 +203,15 @@ All notable changes to this project will be documented in this file.
 - ApiMetada moved to the key_sets module of the bears_species crate.
 - InputOutput key set moved to the key_sets module of the bears_ecology crate.
 - `IntlServSta`, `IntlServTrade` and `Regional` key sets moved to the key_sets module of the bears_species crate.
-- Naics.rs and naics_codes.csv removed.
-- Naics codes by classification added to the `cave` directory of `bears_health`.
-- NaicsItem moved to the `keys` module of `bears_species`.
-- Data module updated to use the new name for NaicsItems.
 
 ### 📚 Documentation
 
 - Descriptions added for member crates.
-- Doc comments added to justfile.
-
-### 🎨 Styling
-
-- Clarify reporting on the `FromStrError` type.
-- Minor refactor of tracing subscriber filter.
 
 ### 🧪 Testing
 
 - Unused tests for json removed.
 - Tests added for `Component` and `AocSta` types validating enum variants against the BEA response.
-- Verification testings for Naics types added validating variant names, description and codes against the .csv files in the cave.
-- Check_naics_industry added to check_naics test suite.
-- Check_naics_industry added to check_naics test suite.
-- Flux in unit tests related to bulk dataset downloads.
-- Queue tests updated with `Overwrite` and `Scope` arguments.
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -76,24 +219,7 @@ All notable changes to this project will be documented in this file.
 - Patch update to the `clap` dependency.
 - Unused json and validate modules removed.
 - Patch update to the `tokio` dependency.
-- Increment version to 0.1.8.
-- Rust fmt changes.
-- Naics types added to mod and lib files.
-- Clippy corrected `manual implementation of ok` corrected to use the ok method.
-- Version incremented to 0.1.9.
-- NaicsIndustry enum added to public visibility in lib.rs and mod.rs.
-- Minor update to tokio and patch updates to clap and jiff dependencies.
-- Locked flag added to cargo-dist and cargo-release installs.
-- `git-cliff` added to justfile.
-- Increment version to 0.1.10.
-- Patch update to derive_setters dependency.
-- Dependency updates for clap, console, jiff, reqwest and tokio.
-- Patch updates to dependency `clap` and dev-dependency `anyhow`.
-- `rand` added as dependency.  Patch updates to `clap`, `serde_json`, `strum` and `tokio`.
-- `rand` added as dependency.
-- Types updated for public visibility.
-- Naics codes table added back in for backwards compability until the transition to full Naics types is complete.
-- Cargo-dist update.
+- Recipe marked as invalid for workspace in justfile.
 
 ## [0.1.6] - 2025-03-31
 
