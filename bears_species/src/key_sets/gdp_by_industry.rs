@@ -747,23 +747,13 @@ impl TryFrom<&std::path::PathBuf> for UnderlyingGdpByIndustry {
 }
 
 pub struct UnderlyingGDPbyIndustryIterator<'a> {
-    data: &'a UnderlyingGdpByIndustry,
     table_id: std::slice::Iter<'a, Integer>,
-    current_table: Option<Integer>,
-    industries: Option<std::slice::Iter<'a, ParameterFields>>,
 }
 
 impl<'a> UnderlyingGDPbyIndustryIterator<'a> {
     pub fn new(data: &'a UnderlyingGdpByIndustry) -> Self {
         let table_id = data.table_id().iter();
-        let current_table = None;
-        let industries = None;
-        Self {
-            data,
-            table_id,
-            current_table,
-            industries,
-        }
+        Self { table_id }
     }
 }
 
@@ -838,8 +828,7 @@ pub struct UnderlyingGdpDatum {
     data_value: f64,
     frequency: Frequency,
     industry_description: String,
-    industry: String,
-    // industry: Naics,
+    industry: Naics,
     note_ref: String,
     table_id: i64,
     year: jiff::civil::Date,
@@ -860,14 +849,14 @@ impl UnderlyingGdpDatum {
         let industry_description = map_to_string("IndustrYDescription", m)?;
         tracing::trace!("Industry Description: {industry_description}.");
         let industry = map_to_string("Industry", m)?;
-        // let industry = if let Some(naics) = Naics::from_code(&industry) {
-        //     naics
-        // } else {
-        //     let error =
-        //         VariantMissing::new(industry.clone(), industry, line!(), file!().to_string());
-        //     return Err(error.into());
-        // };
-        // tracing::trace!("Industry: {industry:?}.");
+        let industry = if let Some(naics) = Naics::from_code(&industry) {
+            naics
+        } else {
+            let error =
+                VariantMissing::new(industry.clone(), industry, line!(), file!().to_string());
+            return Err(error.into());
+        };
+        tracing::trace!("Industry: {industry:?}.");
         let note_ref = map_to_string("NoteRef", m)?;
         tracing::trace!("Note Ref: {note_ref}.");
         let table_id = map_to_int("TableID", m)?;
@@ -889,8 +878,7 @@ impl UnderlyingGdpDatum {
 
     pub fn to_industry(&self) -> (String, String) {
         (
-            self.industry().to_owned(),
-            // self.industry().code(),
+            self.industry().code(),
             self.industry_description().to_owned(),
         )
     }
