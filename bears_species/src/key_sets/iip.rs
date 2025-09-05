@@ -377,6 +377,22 @@ impl TryFrom<serde_json::Value> for IipDatum {
 pub struct IipData(Vec<IipDatum>);
 
 impl IipData {
+    pub fn cl_units(&self) -> std::collections::HashSet<String> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(v.cl_unit().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    pub fn components(&self) -> std::collections::HashSet<Component> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(v.component().to_owned()))
+            .for_each(drop);
+        set
+    }
+
     pub fn frequencies(&self) -> std::collections::HashSet<ItaFrequency> {
         let mut set = std::collections::HashSet::new();
         self.iter()
