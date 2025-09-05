@@ -30,16 +30,17 @@ pub use key_sets::{
     Nipa, NipaIterator, Regional, UnderlyingGdpByIndustry, UnderlyingGdpData,
 };
 pub use keys::{
-    AffiliateKind, AffiliateLevel, AnnotatedInteger, Annotation, AnnotationMissing, AocSta,
-    AreaOrCountry, BoolInvalid, BoolOptions, Channel, Component, DirectionKind,
+    AffiliateKind, AffiliateLevel, Affiliation, AnnotatedInteger, Annotation, AnnotationMissing,
+    AocSta, AreaOrCountry, BoolInvalid, BoolOptions, Channel, Component, DirectionKind,
     DirectionOfInvestment, Footnotes, Frequencies, Frequency, FrequencyOptions, IipIndustry,
     Indicator, InputOutputCode, InputOutputTable, Integer, IntegerInvalid, IntegerKind,
     IntegerOptions, Investment, ItaFrequencies, ItaFrequency, Millions, MillionsOptions, Naics,
     NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector,
     NaicsSubcategory, NaicsSubsector, NaicsSupplement, NipaRange, NipaRangeIterator, NipaRanges,
     NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode,
-    RowCodeMissing, SelectionKind, SelectionSet, State, StateKind, TableName, Year, YearInvalid,
-    YearKind, YearOptions, YearRange, date_by_period, parse_year, roman_numeral_quarter,
+    RowCodeMissing, SelectionKind, SelectionSet, Service, State, StateKind, TableName,
+    TradeDirection, Year, YearInvalid, YearKind, YearOptions, YearRange, date_by_period,
+    parse_year, roman_numeral_quarter,
 };
 pub use method::Method;
 pub use parameter::{NotParameterName, Parameter, ParameterName, Parameters, deserialize_bool};

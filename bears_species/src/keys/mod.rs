@@ -1,3 +1,4 @@
+mod affiliation;
 mod annotation;
 mod aoc_sta;
 mod area_or_country;
@@ -16,10 +17,13 @@ mod numeric;
 mod owner;
 mod row_code;
 mod selection;
+mod service;
 mod state;
 mod table_name;
+mod trade;
 mod year;
 
+pub use affiliation::Affiliation;
 pub use annotation::{Annotation, AnnotationMissing};
 pub use aoc_sta::AocSta;
 pub use area_or_country::AreaOrCountry;
@@ -44,8 +48,10 @@ pub use numeric::{
 pub use owner::{AffiliateKind, AffiliateLevel, OwnershipInvalid, OwnershipKind, OwnershipLevel};
 pub use row_code::{RowCode, RowCodeMissing};
 pub use selection::{SelectionKind, SelectionSet};
+pub use service::Service;
 pub use state::{State, StateKind};
 pub use table_name::{NipaTableName, TableName};
+pub use trade::TradeDirection;
 pub use year::{
     NipaRange, NipaRangeIterator, NipaRanges, NotQuarter, Year, YearInvalid, YearKind, YearOptions,
     YearRange, date_by_period, parse_year, roman_numeral_quarter,
