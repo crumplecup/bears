@@ -258,7 +258,16 @@ impl Iterator for IipIterator<'_> {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    PartialOrd,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_getters::Getters,
+)]
 pub struct IipDatum {
     cl_unit: String,
     component: Component,
@@ -366,6 +375,16 @@ impl TryFrom<serde_json::Value> for IipDatum {
 )]
 #[from(Vec<IipDatum>)]
 pub struct IipData(Vec<IipDatum>);
+
+impl IipData {
+    pub fn frequencies(&self) -> std::collections::HashSet<ItaFrequency> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(v.frequency().to_owned()))
+            .for_each(drop);
+        set
+    }
+}
 
 impl TryFrom<&std::path::PathBuf> for IipData {
     type Error = BeaErr;
