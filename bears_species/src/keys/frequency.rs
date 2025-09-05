@@ -18,6 +18,7 @@ use std::str::FromStr;
     serde::Serialize,
     strum::EnumIter,
     derive_more::FromStr,
+    derive_more::Display,
 )]
 pub enum Frequency {
     #[default]
