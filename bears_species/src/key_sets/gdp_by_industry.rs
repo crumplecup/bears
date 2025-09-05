@@ -495,6 +495,14 @@ impl GdpDatum {
 pub struct GdpData(Vec<GdpDatum>);
 
 impl GdpData {
+    pub fn frequencies(&self) -> std::collections::HashSet<Frequency> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(v.frequency().to_owned()))
+            .for_each(drop);
+        set
+    }
+
     pub fn industry_codes(&self) -> std::collections::BTreeMap<String, String> {
         let mut params = std::collections::BTreeMap::new();
         self.iter()
@@ -504,6 +512,22 @@ impl GdpData {
             })
             .for_each(drop);
         params
+    }
+
+    pub fn table_ids(&self) -> std::collections::HashSet<i64> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(*v.table_id()))
+            .for_each(drop);
+        set
+    }
+
+    pub fn years(&self) -> std::collections::HashSet<jiff::civil::Date> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(v.year().to_owned()))
+            .for_each(drop);
+        set
     }
 }
 
@@ -913,6 +937,14 @@ impl UnderlyingGdpDatum {
 pub struct UnderlyingGdpData(Vec<UnderlyingGdpDatum>);
 
 impl UnderlyingGdpData {
+    pub fn frequencies(&self) -> std::collections::HashSet<Frequency> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(v.frequency().to_owned()))
+            .for_each(drop);
+        set
+    }
+
     pub fn industry_codes(&self) -> std::collections::BTreeMap<String, String> {
         let mut params = std::collections::BTreeMap::new();
         self.iter()
@@ -922,6 +954,22 @@ impl UnderlyingGdpData {
             })
             .for_each(drop);
         params
+    }
+
+    pub fn table_ids(&self) -> std::collections::HashSet<i64> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(*v.table_id()))
+            .for_each(drop);
+        set
+    }
+
+    pub fn years(&self) -> std::collections::HashSet<jiff::civil::Date> {
+        let mut set = std::collections::HashSet::new();
+        self.iter()
+            .map(|v| set.insert(v.year().to_owned()))
+            .for_each(drop);
+        set
     }
 }
 
