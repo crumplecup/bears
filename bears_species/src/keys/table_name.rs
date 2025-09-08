@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, DeriveFromStr, NipaTable, ParameterFields, ParameterValueTable,
+    BeaErr, DeriveFromStr, NipaTable, ParameterFields, ParameterName, ParameterValueTable,
     ParameterValueTableVariant,
 };
 use std::str::FromStr;
@@ -24,6 +24,17 @@ use std::str::FromStr;
 pub struct TableName {
     name: String,
     description: String,
+}
+
+impl TableName {
+    /// The String representation of a variant serves as the value for the corresponding parameter
+    /// name in BEA API calls. The `params` method formats the parameter name as a key, as the
+    /// variant name as the value for use in building complex API queries.
+    pub fn params(&self) -> (String, String) {
+        let key = ParameterName::TableName.to_string();
+        let value = self.to_string();
+        (key, value)
+    }
 }
 
 impl From<&NipaTable> for TableName {
