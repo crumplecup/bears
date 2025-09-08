@@ -1,6 +1,8 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, IoError, NipaRange, NipaRanges, ParameterName,
-    ParameterValueTable, ParameterValueTableVariant, SerdeJson, Set, TableName,
+    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, IoError, NipaRange, NipaRanges, NotArray,
+    NotObject, ParameterName, ParameterValueTable, ParameterValueTableVariant, SerdeJson, Set,
+    TableName, VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string,
+    result_to_data,
 };
 
 #[derive(
@@ -135,5 +137,152 @@ impl Iterator for FixedAssetsTables<'_> {
         params.insert(key, value);
 
         Some(params)
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
+pub struct FixedAssetDatum {
+    cl_unit: String,
+    data_value: f64,
+    line_description: String,
+    line_number: i64,
+    metric_name: String,
+    series_code: String,
+    table_name: String,
+    time_period: jiff::civil::Date,
+    unit_mult: Option<i64>,
+}
+
+impl FixedAssetDatum {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+        let cl_unit = map_to_string("CL_UNIT", m)?;
+        let data_value = map_to_float("DataValue", m)?;
+        let line_description = map_to_string("LineDescription", m)?;
+        let line_number = map_to_int("LineNumber", m)?;
+        let metric_name = map_to_string("METRIC_NAME", m)?;
+        let series_code = map_to_string("SeriesCode", m)?;
+        let table_name = map_to_string("TableName", m)?;
+        let time_period = map_to_string("TimePeriod", m)?;
+        let time_period = date_by_period(&time_period)?;
+        let unit_mult = map_to_int("UNIT_MULT", m)?;
+        let unit_mult = match unit_mult {
+            0 => None,
+            num => Some(num),
+        };
+        Ok(Self {
+            cl_unit,
+            data_value,
+            line_description,
+            line_number,
+            metric_name,
+            series_code,
+            table_name,
+            time_period,
+            unit_mult,
+        })
+    }
+}
+
+impl TryFrom<serde_json::Value> for FixedAssetDatum {
+    type Error = BeaErr;
+    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
+        tracing::trace!("Reading FixedAssetDatum.");
+        match value {
+            serde_json::Value::Object(m) => {
+                let data = Self::read_json(&m)?;
+                Ok(data)
+            }
+            _ => {
+                tracing::trace!("Invalid Value: {value:#?}");
+                let error = NotObject::new(line!(), file!().to_string());
+                Err(error.into())
+            }
+        }
+    }
+}
+
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    PartialOrd,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_more::Deref,
+    derive_more::DerefMut,
+    derive_more::From,
+)]
+#[from(Vec<FixedAssetDatum>)]
+pub struct FixedAssetData(Vec<FixedAssetDatum>);
+
+impl TryFrom<&std::path::PathBuf> for FixedAssetData {
+    type Error = BeaErr;
+
+    fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
+        let file = std::fs::File::open(value)
+            .map_err(|e| IoError::new(value.into(), e, line!(), file!().into()))?;
+        let rdr = std::io::BufReader::new(file);
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
+        let data = BeaResponse::try_from(&res)?;
+        tracing::trace!("Response read.");
+        tracing::trace!("Response: {data:#?}");
+        let results = data.results();
+        if let Some(data) = results.into_data() {
+            match data {
+                Data::FixedAssets(value) => {
+                    tracing::trace!("{} FixedAsset records read.", value.len());
+                    Ok(value)
+                }
+                _ => {
+                    let error = DatasetMissing::new(
+                        "FixedAssets".to_string(),
+                        line!(),
+                        file!().to_string(),
+                    );
+                    Err(error.into())
+                }
+            }
+        } else {
+            tracing::warn!("Data variant missing.");
+            let error = VariantMissing::new(
+                "Data variant missing".to_string(),
+                "Results".to_string(),
+                line!(),
+                file!().to_string(),
+            );
+            Err(error.into())
+        }
+    }
+}
+
+impl TryFrom<&serde_json::Value> for FixedAssetData {
+    type Error = BeaErr;
+    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
+        tracing::trace!("Reading FixedAssetData");
+        match result_to_data(value)? {
+            serde_json::Value::Array(v) => {
+                let mut data = Vec::new();
+                for val in v {
+                    match val {
+                        serde_json::Value::Object(m) => {
+                            let datum = FixedAssetDatum::read_json(m)?;
+                            data.push(datum);
+                        }
+                        _ => {
+                            let error = NotObject::new(line!(), file!().to_string());
+                            return Err(error.into());
+                        }
+                    }
+                }
+                tracing::trace!("Data found: {} records.", data.len());
+                Ok(Self(data))
+            }
+            _ => {
+                let error = NotArray::new(line!(), file!().to_string());
+                Err(error.into())
+            }
+        }
     }
 }

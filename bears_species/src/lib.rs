@@ -10,7 +10,7 @@ mod parameter_value;
 mod request;
 mod results;
 
-pub use data::{Data, FixedAssetData, MneDiData, result_to_data};
+pub use data::{Data, MneDiData, result_to_data};
 pub use dataset::{Dataset, DatasetDetails, Datasets};
 // investment invalid unused
 // check unused
@@ -25,10 +25,10 @@ pub use free::{
     map_to_bool, map_to_float, map_to_int, map_to_string, to_csv,
 };
 pub use key_sets::{
-    ApiMetadata, FixedAssets, GdpByIndustry, GdpCodes, GdpData, GdpDatum, Iip, IipData,
-    InputOutput, InputOutputData, IntlServSta, IntlServTrade, IoCodes, Ita, ItaData, ItaDatum, Mne,
-    NiUnderlyingDetail, Nipa, NipaData, NipaIterator, Regional, UnderlyingGdpByIndustry,
-    UnderlyingGdpData,
+    ApiMetadata, FixedAssetData, FixedAssets, GdpByIndustry, GdpCodes, GdpData, GdpDatum, Iip,
+    IipData, InputOutput, InputOutputData, IntlServSta, IntlServTrade, IoCodes, Ita, ItaData,
+    ItaDatum, Mne, NiUnderlyingDetail, Nipa, NipaData, NipaIterator, Regional,
+    UnderlyingGdpByIndustry, UnderlyingGdpData,
 };
 pub use keys::{
     AffiliateKind, AffiliateLevel, Affiliation, AnnotatedInteger, Annotation, AnnotationMissing,
