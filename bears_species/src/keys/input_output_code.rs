@@ -20,6 +20,10 @@ use crate::{KeyMissing, Naics};
 pub struct InputOutputCode(Naics);
 
 impl InputOutputCode {
+    pub fn into_inner(self) -> Naics {
+        *self
+    }
+
     pub fn from_value(value: &str) -> Result<Self, KeyMissing> {
         match Naics::from_code(value) {
             Some(naics) => Ok(naics.into()),
