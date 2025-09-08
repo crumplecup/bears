@@ -96,7 +96,7 @@ pub fn init_queue(dataset: Dataset) -> Result<Queue, BeaErr> {
             let data = UnderlyingGdpByIndustry::try_from(&path)?;
             tracing::info!("Key set constructed for {dataset}.");
             for params in data.iter() {
-                tracing::info!("Adding params {params:#?}");
+                tracing::trace!("Adding params {params:#?}");
                 app.with_params(params.clone());
                 queue.push(app.clone());
             }
