@@ -1,6 +1,6 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, InputOutputCode, InputOutputTable, IoError, NotArray, NotObject,
-    ParameterName, SerdeJson, Set, Year, map_to_float, map_to_int, map_to_string, parse_year,
+    BeaErr, BeaResponse, Dataset, InputOutputCode, InputOutputTable, IoError, Naics, NotArray,
+    NotObject, ParameterName, SerdeJson, Set, Year, map_to_float, map_to_string, parse_year,
 };
 
 #[derive(
@@ -21,6 +21,27 @@ pub struct InputOutput {
 }
 
 impl InputOutput {
+    #[tracing::instrument(skip_all)]
+    pub fn table_ids(&self) -> std::collections::BTreeSet<InputOutputTable> {
+        let mut set = std::collections::BTreeSet::new();
+        self.table_id
+            .iter()
+            .map(|v| set.insert(v.to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn years(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
+        self.year
+            .iter()
+            .map(|v| set.insert(v.date().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument(skip_all)]
     pub fn iter(&self) -> InputOutputIterator<'_> {
         InputOutputIterator::new(self)
     }
@@ -133,11 +154,12 @@ pub struct InputOutputDatum {
     row_code: InputOutputCode,
     row_description: String,
     row_type: String,
-    table_id: i64,
+    table_id: InputOutputTable,
     year: jiff::civil::Date,
 }
 
 impl InputOutputDatum {
+    #[tracing::instrument]
     pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         let column_code = map_to_string("ColCode", m)?;
         let column_code = InputOutputCode::from_value(&column_code)?;
@@ -162,7 +184,8 @@ impl InputOutputDatum {
         tracing::trace!("row_description is {row_description}.");
         let row_type = map_to_string("RowType", m)?;
         tracing::trace!("row_type is {row_type}.");
-        let table_id = map_to_int("TableID", m)?;
+        let table_id = map_to_string("TableID", m)?;
+        let table_id = InputOutputTable::from_key(&table_id)?;
         tracing::trace!("table_id is {table_id}.");
         let year = map_to_string("Year", m)?;
         let year = parse_year(&year)?;
@@ -180,6 +203,7 @@ impl InputOutputDatum {
         })
     }
 
+    #[tracing::instrument]
     pub fn to_column_code(&self) -> (String, String) {
         (
             self.column_code().code(),
@@ -187,6 +211,7 @@ impl InputOutputDatum {
         )
     }
 
+    #[tracing::instrument]
     pub fn to_row_code(&self) -> (String, String) {
         (self.row_code().code(), self.row_description().to_owned())
     }
@@ -210,26 +235,54 @@ impl InputOutputDatum {
 pub struct InputOutputData(Vec<InputOutputDatum>);
 
 impl InputOutputData {
-    pub fn column_codes(&self) -> std::collections::BTreeMap<String, String> {
-        let mut params = std::collections::BTreeMap::new();
+    #[tracing::instrument]
+    pub fn column_codes(&self) -> std::collections::BTreeSet<Naics> {
         self.iter()
-            .map(|v| {
-                let (key, value) = v.to_column_code();
-                params.insert(key, value);
-            })
-            .for_each(drop);
-        params
+            .map(|v| v.column_code().into_inner())
+            .collect::<std::collections::BTreeSet<Naics>>()
     }
 
-    pub fn row_codes(&self) -> std::collections::BTreeMap<String, String> {
-        let mut params = std::collections::BTreeMap::new();
+    #[tracing::instrument]
+    pub fn column_types(&self) -> std::collections::BTreeSet<String> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
-            .map(|v| {
-                let (key, value) = v.to_row_code();
-                params.insert(key, value);
-            })
+            .map(|v| set.insert(v.column_type().to_owned()))
             .for_each(drop);
-        params
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn row_codes(&self) -> std::collections::BTreeSet<Naics> {
+        self.iter()
+            .map(|v| v.row_code().into_inner())
+            .collect::<std::collections::BTreeSet<Naics>>()
+    }
+
+    #[tracing::instrument]
+    pub fn row_types(&self) -> std::collections::BTreeSet<String> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.row_type().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn table_ids(&self) -> std::collections::BTreeSet<InputOutputTable> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.table_id().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn years(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.year().to_owned()))
+            .for_each(drop);
+        set
     }
 }
 
@@ -261,4 +314,27 @@ impl TryFrom<&serde_json::Value> for InputOutputData {
             }
         }
     }
+}
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    derive_getters::Getters,
+    derive_new::new,
+)]
+pub struct IoCodes {
+    column_codes: std::collections::BTreeSet<Naics>,
+    column_types: std::collections::BTreeSet<String>,
+    row_codes: std::collections::BTreeSet<Naics>,
+    row_types: std::collections::BTreeSet<String>,
+    table_ids: std::collections::BTreeSet<InputOutputTable>,
+    years: std::collections::BTreeSet<jiff::civil::Date>,
 }
