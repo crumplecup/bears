@@ -25,7 +25,8 @@ pub struct GdpByIndustry {
 }
 
 impl GdpByIndustry {
-    pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Self, BeaErr> {
+    #[tracing::instrument]
+    pub fn from_file<P: AsRef<std::path::Path> + std::fmt::Debug>(path: P) -> Result<Self, BeaErr> {
         let frequency = Self::frequencies();
         let industry = Self::read_industry(&path)?;
         let table_id = Self::read_table_id(&path)?;
@@ -60,7 +61,8 @@ impl GdpByIndustry {
     //     Ok(Queue::new(queue))
     // }
 
-    pub fn read_industry<P: AsRef<std::path::Path>>(
+    #[tracing::instrument]
+    pub fn read_industry<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
     ) -> Result<std::collections::BTreeMap<Integer, Vec<ParameterFields>>, BeaErr> {
         let path = path.as_ref();
@@ -109,7 +111,10 @@ impl GdpByIndustry {
         Ok(industries)
     }
 
-    pub fn read_table_id<P: AsRef<std::path::Path>>(path: P) -> Result<Vec<Integer>, BeaErr> {
+    #[tracing::instrument]
+    pub fn read_table_id<P: AsRef<std::path::Path> + std::fmt::Debug>(
+        path: P,
+    ) -> Result<Vec<Integer>, BeaErr> {
         let path = path.as_ref();
         let dataset = Dataset::GDPbyIndustry;
         // start with table_id because it is a precondition for other parameter values
@@ -142,7 +147,8 @@ impl GdpByIndustry {
         }
     }
 
-    pub fn read_year<P: AsRef<std::path::Path>>(
+    #[tracing::instrument]
+    pub fn read_year<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
     ) -> Result<std::collections::BTreeMap<Integer, Vec<Year>>, BeaErr> {
         let path = path.as_ref();
@@ -621,13 +627,15 @@ pub struct UnderlyingGdpByIndustry {
 }
 
 impl UnderlyingGdpByIndustry {
+    #[tracing::instrument]
     pub fn iter(&self) -> UnderlyingGDPbyIndustryIterator<'_> {
         UnderlyingGDPbyIndustryIterator::new(self)
     }
 
     /// Primary creation method, called `from_file` instead of `new` because it requires reference to
     /// a path.
-    pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Self, BeaErr> {
+    #[tracing::instrument]
+    pub fn from_file<P: AsRef<std::path::Path> + std::fmt::Debug>(path: P) -> Result<Self, BeaErr> {
         let frequency = Self::frequencies();
         let industry = Self::read_industry(&path)?;
         tracing::info!("Industries read at {}.", path.as_ref().display());
@@ -693,7 +701,10 @@ impl UnderlyingGdpByIndustry {
         Ok(industries)
     }
 
-    pub fn read_table_id<P: AsRef<std::path::Path>>(path: P) -> Result<Vec<Integer>, BeaErr> {
+    #[tracing::instrument]
+    pub fn read_table_id<P: AsRef<std::path::Path> + std::fmt::Debug>(
+        path: P,
+    ) -> Result<Vec<Integer>, BeaErr> {
         let path = path.as_ref();
         let dataset = Dataset::UnderlyingGDPbyIndustry;
         // start with table_id because it is a precondition for other parameter values
@@ -727,7 +738,8 @@ impl UnderlyingGdpByIndustry {
     }
 
     // TODO: fix the redundant call to read_table_id
-    pub fn read_year<P: AsRef<std::path::Path>>(
+    #[tracing::instrument]
+    pub fn read_year<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
     ) -> Result<std::collections::HashMap<Integer, Vec<Year>>, BeaErr> {
         let path = path.as_ref();
