@@ -18,3 +18,18 @@ dist:
 prepare version: tool_up dist
   cargo release {{version}}
 
+# Load a particular dataset.
+load dataset:
+  RUST_LOG=info cargo run --release -- -c load -d {{dataset}}
+
+# Dataset loading test suite.
+load_all:
+  RUST_LOG=info cargo run --release -- -c load -d FixedAssets
+  RUST_LOG=info cargo run --release -- -c load -d GdpByIndustry
+  # RUST_LOG=info cargo run --release -- -c load -d Mne
+  RUST_LOG=info cargo run --release -- -c load -d Nipa
+  RUST_LOG=info cargo run --release -- -c load -d NIUnderlyingDetail
+  RUST_LOG=info cargo run --release -- -c load -d Iip
+  RUST_LOG=info cargo run --release -- -c load -d InputOutput
+  RUST_LOG=info cargo run --release -- -c load -d Ita
+  RUST_LOG=info cargo run --release -- -c load -d UnderlyingGdpByIndustry
