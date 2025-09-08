@@ -506,14 +506,25 @@ impl GdpDatum {
 pub struct GdpData(Vec<GdpDatum>);
 
 impl GdpData {
-    pub fn frequencies(&self) -> std::collections::HashSet<Frequency> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn frequencies(&self) -> std::collections::BTreeSet<Frequency> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.frequency().to_owned()))
             .for_each(drop);
         set
     }
 
+    #[tracing::instrument]
+    pub fn industries(&self) -> std::collections::BTreeSet<Naics> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.industry().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
     pub fn industry_codes(&self) -> std::collections::BTreeMap<String, String> {
         let mut params = std::collections::BTreeMap::new();
         self.iter()
