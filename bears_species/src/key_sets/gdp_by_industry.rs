@@ -1075,3 +1075,24 @@ impl TryFrom<&serde_json::Value> for UnderlyingGdpData {
         }
     }
 }
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    derive_getters::Getters,
+    derive_new::new,
+)]
+pub struct GdpCodes {
+    frequencies: std::collections::BTreeSet<Frequency>,
+    industries: std::collections::BTreeSet<Naics>,
+    table_ids: std::collections::BTreeSet<i64>,
+    years: std::collections::BTreeSet<jiff::civil::Date>,
+}
