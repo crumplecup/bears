@@ -1,7 +1,8 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, Frequencies, Frequency, IoError, Millions, MillionsOptions,
-    NipaRange, NipaRanges, NipaTableName, ParameterName, ParameterValueTable,
-    ParameterValueTableVariant, SelectionKind, SerdeJson, Set, TableName,
+    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, Frequencies, Frequency, IoError, Millions,
+    MillionsOptions, NipaRange, NipaRanges, NipaTableName, NotArray, NotObject, ParameterName,
+    ParameterValueTable, ParameterValueTableVariant, SelectionKind, SerdeJson, Set, TableName,
+    VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string, result_to_data,
 };
 use strum::IntoEnumIterator;
 
@@ -650,5 +651,166 @@ impl Iterator for NiUnderlyingDetailIterator<'_> {
             SelectionKind::Multiple => {}
         }
         Some(params)
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
+pub struct NipaDatum {
+    cl_unit: String,
+    data_value: f64,
+    line_description: String,
+    line_number: i64,
+    metric_name: String,
+    note_ref: String,
+    series_code: String,
+    table_name: String,
+    time_period: jiff::civil::Date,
+    unit_mult: Option<i64>,
+}
+
+impl NipaDatum {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+        let cl_unit = map_to_string("CL_UNIT", m)?;
+        tracing::trace!("cl_unit is {cl_unit}.");
+        let data_value = map_to_float("DataValue", m)?;
+        tracing::trace!("data_value is {data_value}.");
+        let line_description = map_to_string("LineDescription", m)?;
+        tracing::trace!("line_description is {line_description}.");
+        let line_number = map_to_int("LineNumber", m)?;
+        tracing::trace!("line_number is {line_number}.");
+        let metric_name = map_to_string("METRIC_NAME", m)?;
+        tracing::trace!("metric_name is {metric_name}.");
+        let note_ref = map_to_string("NoteRef", m)?;
+        tracing::trace!("note_ref is {note_ref}.");
+        let series_code = map_to_string("SeriesCode", m)?;
+        tracing::trace!("series_code is {series_code}.");
+        let table_name = map_to_string("TableName", m)?;
+        tracing::trace!("table_name is {table_name}.");
+        let time_period = map_to_string("TimePeriod", m)?;
+        let time_period = date_by_period(&time_period)?;
+        tracing::trace!("time_period is {time_period}.");
+        let unit_mult = map_to_int("UNIT_MULT", m)?;
+        let unit_mult = match unit_mult {
+            0 => None,
+            num => Some(num),
+        };
+        tracing::trace!("unit_mult is {unit_mult:?}.");
+        Ok(Self {
+            cl_unit,
+            data_value,
+            line_description,
+            line_number,
+            metric_name,
+            note_ref,
+            series_code,
+            table_name,
+            time_period,
+            unit_mult,
+        })
+    }
+}
+
+impl TryFrom<serde_json::Value> for NipaDatum {
+    type Error = BeaErr;
+    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
+        tracing::trace!("Reading NipaDatum.");
+        match value {
+            serde_json::Value::Object(m) => {
+                let data = Self::read_json(&m)?;
+                Ok(data)
+            }
+            _ => {
+                tracing::trace!("Invalid Value: {value:#?}");
+                let error = NotObject::new(line!(), file!().to_string());
+                Err(error.into())
+            }
+        }
+    }
+}
+
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    PartialOrd,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_more::Deref,
+    derive_more::DerefMut,
+    derive_more::From,
+)]
+#[from(Vec<NipaDatum>)]
+pub struct NipaData(Vec<NipaDatum>);
+
+impl TryFrom<&std::path::PathBuf> for NipaData {
+    type Error = BeaErr;
+
+    fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
+        let file = std::fs::File::open(value)
+            .map_err(|e| IoError::new(value.into(), e, line!(), file!().into()))?;
+        let rdr = std::io::BufReader::new(file);
+        let res: serde_json::Value = serde_json::from_reader(rdr)
+            .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
+        let data = BeaResponse::try_from(&res)?;
+        tracing::trace!("Response read.");
+        tracing::trace!("Response: {data:#?}");
+        let results = data.results();
+        if let Some(data) = results.into_data() {
+            match data {
+                Data::Nipa(nipa) => {
+                    tracing::trace!("{} Nipa records read.", nipa.len());
+                    Ok(nipa)
+                }
+                _ => {
+                    tracing::warn!("Not Nipa variant.");
+                    let error = DatasetMissing::new(
+                        "Nipa variant needed".to_string(),
+                        line!(),
+                        file!().to_string(),
+                    );
+                    Err(error.into())
+                }
+            }
+        } else {
+            tracing::warn!("Data variant missing.");
+            let error = VariantMissing::new(
+                "Data variant missing".to_string(),
+                "Results".to_string(),
+                line!(),
+                file!().to_string(),
+            );
+            Err(error.into())
+        }
+    }
+}
+
+impl TryFrom<&serde_json::Value> for NipaData {
+    type Error = BeaErr;
+    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
+        tracing::trace!("Reading NipaData");
+        match result_to_data(value)? {
+            serde_json::Value::Array(v) => {
+                let mut data = Vec::new();
+                for val in v {
+                    match val {
+                        serde_json::Value::Object(m) => {
+                            let datum = NipaDatum::read_json(m)?;
+                            data.push(datum);
+                        }
+                        _ => {
+                            let error = NotObject::new(line!(), file!().to_string());
+                            return Err(error.into());
+                        }
+                    }
+                }
+                tracing::trace!("Data found: {} records.", data.len());
+                Ok(Self(data))
+            }
+            _ => {
+                let error = NotArray::new(line!(), file!().to_string());
+                Err(error.into())
+            }
+        }
     }
 }
