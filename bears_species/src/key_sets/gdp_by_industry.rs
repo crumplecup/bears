@@ -536,16 +536,18 @@ impl GdpData {
         params
     }
 
-    pub fn table_ids(&self) -> std::collections::HashSet<i64> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn table_ids(&self) -> std::collections::BTreeSet<i64> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(*v.table_id()))
             .for_each(drop);
         set
     }
 
-    pub fn years(&self) -> std::collections::HashSet<jiff::civil::Date> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn years(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.year().to_owned()))
             .for_each(drop);
@@ -970,35 +972,36 @@ impl UnderlyingGdpDatum {
 pub struct UnderlyingGdpData(Vec<UnderlyingGdpDatum>);
 
 impl UnderlyingGdpData {
-    pub fn frequencies(&self) -> std::collections::HashSet<Frequency> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn frequencies(&self) -> std::collections::BTreeSet<Frequency> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.frequency().to_owned()))
             .for_each(drop);
         set
     }
 
-    pub fn industry_codes(&self) -> std::collections::BTreeMap<String, String> {
-        let mut params = std::collections::BTreeMap::new();
+    #[tracing::instrument]
+    pub fn industries(&self) -> std::collections::BTreeSet<Naics> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
-            .map(|v| {
-                let (key, value) = v.to_industry();
-                params.insert(key, value);
-            })
+            .map(|v| set.insert(v.industry().to_owned()))
             .for_each(drop);
-        params
+        set
     }
 
-    pub fn table_ids(&self) -> std::collections::HashSet<i64> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn table_ids(&self) -> std::collections::BTreeSet<i64> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(*v.table_id()))
             .for_each(drop);
         set
     }
 
-    pub fn years(&self) -> std::collections::HashSet<jiff::civil::Date> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn years(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.year().to_owned()))
             .for_each(drop);
