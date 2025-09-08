@@ -1,11 +1,8 @@
-use std::str::FromStr;
-
 use bears::Action;
 use bears_ecology::{History, Mode, init_queue, initial_load, trace_init};
-use bears_species::{BeaErr, Dataset, DeriveFromStr};
+use bears_species::{BeaErr, Dataset};
 use clap::Parser;
 // use indicatif::ProgressBar;
-use tracing::{info, trace};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -22,7 +19,7 @@ struct Cli {
 async fn main() -> Result<(), BeaErr> {
     trace_init()?;
     dotenvy::dotenv().ok();
-    trace!("Environmental variables loaded.");
+    tracing::trace!("Environmental variables loaded.");
 
     // let url = EnvError::from_env("BEA_URL")?;
     // let url = UrlParseError::into_url(&url)?;
