@@ -66,6 +66,18 @@ async fn values_gdp_filtered() -> anyhow::Result<()> {
 }
 
 #[test]
+fn health_check() -> anyhow::Result<()> {
+    check_indicators()?;
+    check_investments()?;
+    check_components()?;
+    check_aoc_sta()?;
+    check_naics()?;
+    check_io_codes()?;
+    check_industry_codes()?;
+    Ok(())
+}
+
+#[test]
 fn check_indicators() -> anyhow::Result<()> {
     bears_health::check_indicators()?;
     Ok(())
@@ -96,6 +108,30 @@ fn check_naics() -> anyhow::Result<()> {
     bears_health::check_naics_category()?;
     bears_health::check_naics_subcategory()?;
     bears_health::check_naics_industry()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn check_industry_codes() -> anyhow::Result<()> {
+    bears_health::check_gdp_codes().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn check_io_codes() -> anyhow::Result<()> {
+    bears_health::check_io_codes().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn check_io_keys() -> anyhow::Result<()> {
+    bears_health::check_io_keys().await?;
+    Ok(())
+}
+
+#[test]
+fn get_io_keys() -> anyhow::Result<()> {
+    bears_health::io_keys()?;
     Ok(())
 }
 
@@ -197,13 +233,11 @@ async fn io_codes() -> anyhow::Result<()> {
 #[tokio::test]
 async fn industry_codes() -> anyhow::Result<()> {
     bears_health::gdp_codes().await?;
-    bears_health::ugdp_codes().await?;
     Ok(())
 }
 
 #[tokio::test]
-async fn check_industry_codes() -> anyhow::Result<()> {
-    bears_health::check_gdp_codes().await?;
-    bears_health::check_ugdp_codes().await?;
+async fn iip_codes() -> anyhow::Result<()> {
+    bears_health::iip_codes().await?;
     Ok(())
 }
