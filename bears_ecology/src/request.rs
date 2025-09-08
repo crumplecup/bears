@@ -103,7 +103,7 @@ pub fn init_queue(dataset: Dataset) -> Result<Queue, BeaErr> {
         }
         Dataset::Iip => {
             let data = Iip::try_from(&path)?;
-            for params in data.iter() {
+            for params in data.iter_investments() {
                 app.with_params(params.clone());
                 queue.push(app.clone());
             }

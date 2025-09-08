@@ -1,8 +1,7 @@
 use crate::{
     BeaErr, BeaResponse, Component, Data, Dataset, DatasetMissing, DeriveFromStr, Investment,
     IoError, ItaFrequencies, ItaFrequency, NotArray, NotObject, ParameterName, ParameterValueTable,
-    SelectionKind, SerdeJson, Set, VariantMissing, Year, date_by_period, map_to_int, map_to_string,
-    parse_year,
+    SerdeJson, Set, VariantMissing, Year, date_by_period, map_to_int, map_to_string, parse_year,
 };
 use std::str::FromStr;
 
@@ -26,8 +25,10 @@ pub struct Iip {
 }
 
 impl Iip {
-    pub fn iter(&self) -> IipIterator<'_> {
-        IipIterator::new(self)
+    /// Uses an iterator over investments in the `Iip` data to produce a series of API calls with
+    /// Component, Frequency and Year set to "ALL", intended to download the complete dataset.
+    pub fn iter_investments(&self) -> IipInvestments<'_> {
+        IipInvestments::new(self)
     }
 }
 
@@ -142,118 +143,46 @@ impl TryFrom<&std::path::PathBuf> for Iip {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, derive_setters::Setters)]
-#[setters(prefix = "with_", borrow_self, into)]
-pub struct IipIterator<'a> {
-    #[setters(skip)]
-    data: &'a Iip,
-    year_selection: SelectionKind,
-    #[setters(skip)]
-    component_index: usize,
-    #[setters(skip)]
-    toi_index: usize,
-    #[setters(skip)]
-    years: Option<Vec<String>>,
-    #[setters(skip)]
-    year_index: usize,
-    #[setters(skip)]
-    year_end: bool,
+/// Returns an iterator over investments in the `Iip` struct.
+/// Used to create API calls with Component, Frequency and Years set to "ALL".
+#[derive(Debug, Clone)]
+pub struct IipInvestments<'a> {
+    investments: std::slice::Iter<'a, Investment>,
 }
 
-impl<'a> IipIterator<'a> {
+impl<'a> IipInvestments<'a> {
+    /// Creates an iterator over investments in the provided `Iip` struct.
     pub fn new(data: &'a Iip) -> Self {
-        let year_selection = SelectionKind::default();
-        let component_index = 0;
-        let toi_index = 0;
-        let years = None;
-        let year_index = 0;
-        let year_end = false;
-        Self {
-            data,
-            year_selection,
-            component_index,
-            toi_index,
-            years,
-            year_index,
-            year_end,
-        }
+        let investments = data.type_of_investment().iter();
+        Self { investments }
     }
 }
 
-impl Iterator for IipIterator<'_> {
+impl Iterator for IipInvestments<'_> {
     type Item = std::collections::BTreeMap<String, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // advance state
-        if self.year_end {
-            // // no more years for this component, move to next
-            // if self.component_index < self.data.component.len() - 1 {
-            //     // increment the index
-            //     self.component_index += 1;
-            // } else {
-            //     // no more components, end iteration
-            //     return None;
-            // }
-            // no more years for this investment, move to next
-            if self.toi_index < self.data.type_of_investment.len() - 1 {
-                // increment the index
-                self.toi_index += 1;
-            } else {
-                // no more investments, end iteration
-                return None;
-            }
-        }
-
         // empty parameters dictionary
         let mut params = std::collections::BTreeMap::new();
+
+        // set type of investment
+        let investments = self.investments.next()?;
+        let (key, value) = investments.params();
+        params.insert(key, value);
+
         // set component
         let key = ParameterName::Component.to_string();
         params.insert(key, "ALL".to_string());
-        // let component = self.data.component[self.component_index].to_string();
-        // params.insert(key, component);
 
         // set frequency
         let key = ParameterName::Frequency.to_string();
         params.insert(key, "ALL".to_string());
 
-        // set type of investment
-        let key = ParameterName::TypeOfInvestment.to_string();
-        // params.insert(key, "ALL".to_string());
-        let toi = self.data.type_of_investment[self.toi_index].to_string();
-        params.insert(key, toi);
-
-        // set year values
+        // set years to all
         let key = ParameterName::Year.to_string();
-        match self.year_selection {
-            // single key value pair is sufficient
-            SelectionKind::All => {
-                let value = "ALL".to_string();
-                params.insert(key, value);
-                // move to next table
-                self.year_end = true;
-            }
-            // pull next year from years
-            SelectionKind::Individual => {
-                if let Some(years) = &self.years {
-                    let value = years[self.year_index].clone();
-                    params.insert(key, value);
-                    // advance state
-                    if self.year_index < years.len() - 1 {
-                        // increment year index
-                        self.year_index += 1;
-                    } else {
-                        // move to next table
-                        self.year_end = true;
-                    }
-                } else {
-                    tracing::warn!("Years should not be None.");
-                    // move to next year range or table
-                    self.year_end = true;
-                }
-            }
-            // TODO: unimplemented
-            SelectionKind::Multiple => {}
-        }
+        let value = "ALL".to_owned();
+        params.insert(key, value);
+
         Some(params)
     }
 }
