@@ -1,8 +1,10 @@
+use std::str::FromStr;
+
 use crate::{
-    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, IoError, NipaRange, NipaRanges, NotArray,
-    NotObject, ParameterName, ParameterValueTable, ParameterValueTableVariant, SerdeJson, Set,
-    TableName, VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string,
-    result_to_data,
+    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, DeriveFromStr, FixedAssetTable, IoError,
+    NipaRange, NipaRanges, NotArray, NotObject, ParameterName, ParameterValueTable,
+    ParameterValueTableVariant, SerdeJson, Set, TableName, VariantMissing, date_by_period,
+    map_to_float, map_to_int, map_to_string, result_to_data,
 };
 
 #[derive(
@@ -14,6 +16,14 @@ pub struct FixedAssets {
 }
 
 impl FixedAssets {
+    pub fn table_names(&self) -> std::collections::BTreeSet<String> {
+        let mut set = std::collections::BTreeSet::new();
+        self.table_name
+            .iter()
+            .map(|v| set.insert(v.name().to_owned()))
+            .for_each(drop);
+        set
+    }
     pub fn iter_tables(&self) -> FixedAssetsTables<'_> {
         FixedAssetsTables::new(self)
     }
@@ -148,7 +158,7 @@ pub struct FixedAssetDatum {
     line_number: i64,
     metric_name: String,
     series_code: String,
-    table_name: String,
+    table_name: FixedAssetTable,
     time_period: jiff::civil::Date,
     unit_mult: Option<i64>,
 }
@@ -162,6 +172,8 @@ impl FixedAssetDatum {
         let metric_name = map_to_string("METRIC_NAME", m)?;
         let series_code = map_to_string("SeriesCode", m)?;
         let table_name = map_to_string("TableName", m)?;
+        let table_name = FixedAssetTable::from_str(&table_name)
+            .map_err(|e| DeriveFromStr::new(table_name, e, line!(), file!().to_owned()))?;
         let time_period = map_to_string("TimePeriod", m)?;
         let time_period = date_by_period(&time_period)?;
         let unit_mult = map_to_int("UNIT_MULT", m)?;
