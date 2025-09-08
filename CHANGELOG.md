@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.12] - 2025-09-08
+
+### 🚀 Features
+
+- `Affiliation` type added for the IntlServTrade dataset.
+- `Service` type added for the IntlServTrade dataset.
+- `Trade` enum added for the IntlServTrade dataset.
+- `Display` implemented for `Frequency` enum.
+- Methods added to `GdpData` and `UnderlyingGdpData` types to produce sets of unique values amongs fields within its wrapped vector of data.
+- Methods added to `IipData` type for producing sets of unique field values in the wrapped vector.
+- `cl_units` and `components` methods added to `IipData` to produce unique sets of values from the wrapped vector.
+- `FromStr` implemented for `Naics`.  A `variants` method added to create a vector of all variants.
+- `into_inner` method added to `InputOutputCode` to facilitate accessing the wrapped `Naics` value inside map closures.
+- Methods added to `InputOutput` and `InputOutputData` to produce sets of unique variants for each struct field of the contained datum.
+- Additional methods added to `Iip` and `IipData` types for producing unique sets of values contained in the wrapped struct fields.  HashMaps and Sets converted to BTreeSets for sorting.
+- `Debug` impl bound added to *path* parameter to enable tracing instrumentation.
+- `frequencies` and `table_ids` methods added to `GdpData` for retrieving the value sets of the wrapped datum.
+- `GdpCodes` type added to facilitate unit testing.
+- Testing endpoints added for `Iip`, `InputOutput` value sets, `health_check` method added as a convenience testing suite.
+- `jiff` dependency added, `anyhow` updated.
+- `params` convenience method added to `Investment` type for producing API calls.
+- `params` method added to `TableName` type to facilitate generating API calls from the types.
+- `FixedAssetTable` type added to represent fixed assets table names in the `FixedAssets` dataset.
+- `table_names` method added to `FixedAssets` for producing the value set of table names.
+- `Command` type updated with Load and NextError variants.
+- Load and NextError commands added to CLI.
+
+### 🚜 Refactor
+
+- `NipaDatum` and `NipaData` moved from `data` module to `nipa` module in `key_sets`.
+- Tracing instrumentation added to value set methods.
+- HashMap and Sets replaced with BTreeSet for ordering, and easier comparison.
+- Noisy log lowered to `TRACE` level.
+- `IipIterator` replaced with `IipInvestment` type to simply the code and convey clearer intent.
+- `FixedAssetsIterator` replaced with `FixedAssetsTables` type to clarify intent and simplify design.
+- `FixedAssetDatum` and `FixedAssetData` types moved to `fixed_assets` within the `key_sets` module.
+- Minor polish.
+
+### 📚 Documentation
+
+- Justfile updated with CLI test suite for loading datasets.
+
+### 🧪 Testing
+
+- Units tests added for `Iip` data comparing unique values in source data to variants of parameter keys or classification enums.
+- Updateds to value set test suites for the `GDPbyIndustry` and `UnderlyingGDPbyIndustry` datasets.
+- Value set comparisons for the `InputOutput` dataset updated to compare parameter keys, as well as additional struct fields within the wrapped data.
+
+### ⚙️ Miscellaneous Tasks
+
+- Version incremented to 0.1.12.  Patch update to `clap` dependency.
+- Visibility updated for `Affiliation`, `Trade` and `Service` enums.
+- Cargo lock updated.
+- Visibility updated for new types and some restructuring.
+- Visibility updated for new tests.
+
 ## [0.1.11] - 2025-09-02
 
 ### 🚀 Features
