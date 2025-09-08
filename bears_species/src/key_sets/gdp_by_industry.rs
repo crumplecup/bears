@@ -33,10 +33,12 @@ impl GdpByIndustry {
         Ok(Self::new(frequency, industry, table_id, year))
     }
 
+    #[tracing::instrument]
     pub fn frequencies() -> Frequencies {
         vec![Frequency::Annual, Frequency::Quarterly].into()
     }
 
+    #[tracing::instrument]
     pub fn iter(&self) -> GdpByIndustryIterator<'_> {
         GdpByIndustryIterator::new(self)
     }
@@ -219,6 +221,7 @@ pub struct GdpByIndustryIterator<'a> {
 }
 
 impl<'a> GdpByIndustryIterator<'a> {
+    #[tracing::instrument]
     pub fn new(data: &'a GdpByIndustry) -> Self {
         let frequency_options = SelectionKind::default();
         let industry_options = SelectionKind::default();
@@ -409,6 +412,7 @@ impl GdpDatum {
     ///
     /// Encapsulates the logic of retrieving the `GpdDatum` when converting the JSON representation
     /// into internal data types.  Used to implement the [`TryFrom`] trait from [`serde_json::Value`] to `self`.
+    #[tracing::instrument]
     pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         tracing::trace!("Reading MneDiDatum.");
         let data_value = map_to_float("DataValue", m)?;
@@ -458,6 +462,7 @@ impl GdpDatum {
         })
     }
 
+    #[tracing::instrument]
     pub fn to_industry(&self) -> (String, String) {
         (
             self.industry().code(),
@@ -633,11 +638,13 @@ impl UnderlyingGdpByIndustry {
         Ok(Self::new(frequency, industry, table_id, year))
     }
 
+    #[tracing::instrument]
     pub fn frequencies() -> Frequencies {
         vec![Frequency::Annual].into()
     }
 
-    pub fn read_industry<P: AsRef<std::path::Path>>(
+    #[tracing::instrument]
+    pub fn read_industry<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
     ) -> Result<std::collections::HashMap<Integer, Vec<ParameterFields>>, BeaErr> {
         let path = path.as_ref();
@@ -775,6 +782,7 @@ pub struct UnderlyingGDPbyIndustryIterator<'a> {
 }
 
 impl<'a> UnderlyingGDPbyIndustryIterator<'a> {
+    #[tracing::instrument]
     pub fn new(data: &'a UnderlyingGdpByIndustry) -> Self {
         let table_id = data.table_id().iter();
         Self { table_id }
@@ -863,6 +871,7 @@ impl UnderlyingGdpDatum {
     ///
     /// Encapsulates the logic of retrieving the `UnderlyingGpdDatum` when converting the JSON representation
     /// into internal data types.  Used to implement the [`TryFrom`] trait from [`serde_json::Value`] to `self`.
+    #[tracing::instrument]
     pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         tracing::trace!("Reading MneDiDatum.");
         let data_value = map_to_float("DataValue", m)?;
@@ -900,6 +909,7 @@ impl UnderlyingGdpDatum {
         })
     }
 
+    #[tracing::instrument]
     pub fn to_industry(&self) -> (String, String) {
         (
             self.industry().code(),
