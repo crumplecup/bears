@@ -283,6 +283,7 @@ pub struct IipDatum {
 }
 
 impl IipDatum {
+    #[tracing::instrument]
     pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         let cl_unit = map_to_string("CL_UNIT", m)?;
         tracing::trace!("cl_unit is {cl_unit}.");
@@ -341,6 +342,15 @@ impl IipDatum {
             year,
         })
     }
+
+    /// Returns the time series id and description as a tuple.
+    #[tracing::instrument]
+    pub fn time_series_code(&self) -> (String, String) {
+        (
+            self.time_series_id().to_owned(),
+            self.time_series_description().to_owned(),
+        )
+    }
 }
 
 impl TryFrom<serde_json::Value> for IipDatum {
@@ -377,26 +387,79 @@ impl TryFrom<serde_json::Value> for IipDatum {
 pub struct IipData(Vec<IipDatum>);
 
 impl IipData {
-    pub fn cl_units(&self) -> std::collections::HashSet<String> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn cl_units(&self) -> std::collections::BTreeSet<String> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.cl_unit().to_owned()))
             .for_each(drop);
         set
     }
 
-    pub fn components(&self) -> std::collections::HashSet<Component> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn components(&self) -> std::collections::BTreeSet<Component> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.component().to_owned()))
             .for_each(drop);
         set
     }
 
-    pub fn frequencies(&self) -> std::collections::HashSet<ItaFrequency> {
-        let mut set = std::collections::HashSet::new();
+    #[tracing::instrument]
+    pub fn frequencies(&self) -> std::collections::BTreeSet<ItaFrequency> {
+        let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.frequency().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn time_periods(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.time_period().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn time_series_codes(&self) -> std::collections::BTreeMap<String, String> {
+        let mut codes = std::collections::BTreeMap::new();
+        self.iter()
+            .map(|v| {
+                codes.insert(
+                    v.time_series_id().to_owned(),
+                    v.time_series_description().to_owned(),
+                )
+            })
+            .for_each(drop);
+        codes
+    }
+
+    #[tracing::instrument]
+    pub fn investments(&self) -> std::collections::BTreeSet<Investment> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.type_of_investment().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn unit_multipliers(&self) -> std::collections::BTreeSet<Option<i64>> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.unit_mult().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn years(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.year().to_owned()))
             .for_each(drop);
         set
     }
