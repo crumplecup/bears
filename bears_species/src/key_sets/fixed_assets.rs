@@ -1,6 +1,6 @@
 use crate::{
     BeaErr, BeaResponse, Dataset, IoError, NipaRange, NipaRanges, ParameterName,
-    ParameterValueTable, ParameterValueTableVariant, SelectionKind, SerdeJson, Set, TableName,
+    ParameterValueTable, ParameterValueTableVariant, SerdeJson, Set, TableName,
 };
 
 #[derive(
@@ -12,8 +12,8 @@ pub struct FixedAssets {
 }
 
 impl FixedAssets {
-    pub fn iter(&self) -> FixedAssetsIterator<'_> {
-        FixedAssetsIterator::new(self)
+    pub fn iter_tables(&self) -> FixedAssetsTables<'_> {
+        FixedAssetsTables::new(self)
     }
 
     // pub fn queue() -> Result<Queue, BeaErr> {
@@ -102,114 +102,38 @@ impl TryFrom<&std::path::PathBuf> for FixedAssets {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, derive_setters::Setters)]
-#[setters(prefix = "with_", borrow_self, into)]
-pub struct FixedAssetsIterator<'a> {
-    #[setters(skip)]
-    data: &'a FixedAssets,
-    year_selection: SelectionKind,
-    // index into data.table_name
-    #[setters(skip)]
-    table_index: usize,
-    #[setters(skip)]
-    years: Option<Vec<String>>,
-    #[setters(skip)]
-    year_index: usize,
-    #[setters(skip)]
-    year_end: bool,
+/// Returns an iterator over investments in the `Iip` struct.
+/// Used to create API calls with Year set to "ALL".
+#[derive(Debug, Clone)]
+pub struct FixedAssetsTables<'a> {
+    table_names: std::slice::Iter<'a, TableName>,
 }
 
-impl<'a> FixedAssetsIterator<'a> {
+impl<'a> FixedAssetsTables<'a> {
+    /// Creates an iterator over table names in the provided `FixedAssets` struct.
     pub fn new(data: &'a FixedAssets) -> Self {
-        let year_selection = SelectionKind::default();
-        let table_index = 0;
-        let first_table = data.table_name[table_index].to_string();
-        // set years if needed
-        let years = match year_selection {
-            // only needed for individual
-            SelectionKind::All => None,
-            SelectionKind::Individual => {
-                if let Some(rng) = data.year.get(&first_table) {
-                    // get the range for the current table
-                    if let Some(annual) = rng.annual() {
-                        Some(annual.keys())
-                    } else {
-                        tracing::error!("Values for annual years not found.");
-                        None
-                    }
-                } else {
-                    tracing::error!("Range for {first_table} not found.");
-                    None
-                }
-            }
-            // TODO: unimplemented
-            SelectionKind::Multiple => None,
-        };
-        Self {
-            data,
-            year_selection,
-            table_index,
-            years,
-            year_index: 0,
-            year_end: false,
-        }
+        let table_names = data.table_name().iter();
+        Self { table_names }
     }
 }
 
-impl Iterator for FixedAssetsIterator<'_> {
+impl Iterator for FixedAssetsTables<'_> {
     type Item = std::collections::BTreeMap<String, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // advance state
-        if self.year_end {
-            // no more years for this table, move to next table
-            if self.table_index < self.data.table_name.len() - 1 {
-                // increment the table index
-                self.table_index += 1;
-            } else {
-                // no more tables, end iteration
-                return None;
-            }
-        }
-
         // empty parameters dictionary
         let mut params = std::collections::BTreeMap::new();
+
         // set table name
-        let key = ParameterName::TableName.to_string();
-        let table_name = self.data.table_name[self.table_index].to_string();
-        params.insert(key, table_name.clone());
-        // set year values
+        let table_name = self.table_names.next()?;
+        let (key, value) = table_name.params();
+        params.insert(key, value);
+
+        // set years to all
         let key = ParameterName::Year.to_string();
-        match self.year_selection {
-            // single key value pair is sufficient
-            SelectionKind::All => {
-                let value = "ALL".to_string();
-                params.insert(key, value);
-                // move to next table
-                self.year_end = true;
-            }
-            // pull next year from years
-            SelectionKind::Individual => {
-                if let Some(years) = &self.years {
-                    let value = years[self.year_index].clone();
-                    params.insert(key, value);
-                    // advance state
-                    if self.year_index < years.len() - 1 {
-                        // increment year index
-                        self.year_index += 1;
-                    } else {
-                        // move to next table
-                        self.year_end = true;
-                    }
-                } else {
-                    tracing::warn!("Years should not be None.");
-                    // move to next year range or table
-                    self.year_end = true;
-                }
-            }
-            // TODO: unimplemented
-            SelectionKind::Multiple => {}
-        }
+        let value = "ALL".to_owned();
+        params.insert(key, value);
+
         Some(params)
     }
 }

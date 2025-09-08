@@ -79,7 +79,7 @@ pub fn init_queue(dataset: Dataset) -> Result<Queue, BeaErr> {
     match dataset {
         Dataset::FixedAssets => {
             let data = FixedAssets::try_from(&path)?;
-            for params in data.iter() {
+            for params in data.iter_tables() {
                 app.with_params(params.clone());
                 queue.push(app.clone());
             }
