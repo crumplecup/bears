@@ -1,5 +1,6 @@
 use crate::{
-    BeaErr, DeriveFromStr, ParameterValueTable, ParameterValueTableVariant, parameter_value::MneDoi,
+    BeaErr, DeriveFromStr, ParameterName, ParameterValueTable, ParameterValueTableVariant,
+    parameter_value::MneDoi,
 };
 use convert_case::Casing;
 use std::str::FromStr;
@@ -1946,5 +1947,14 @@ impl Investment {
                 "U.S. liabilities; portfolio investment; long-term debt securities; Treasury bonds and notes"
             }
         }
+    }
+
+    /// The String representation of a variant serves as the value for the corresponding parameter
+    /// name in BEA API calls. The `params` method formats the parameter name as a key, as the
+    /// variant name as the value for use in building complex API queries.
+    pub fn params(&self) -> (String, String) {
+        let key = ParameterName::Investment.to_string();
+        let value = self.to_string();
+        (key, value)
     }
 }
