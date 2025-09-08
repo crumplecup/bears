@@ -1,5 +1,8 @@
-use bears_ecology::trace_init;
-use bears_species::BeaErr;
+use std::str::FromStr;
+
+use bears::Action;
+use bears_ecology::{History, Mode, init_queue, initial_load, trace_init};
+use bears_species::{BeaErr, Dataset, DeriveFromStr};
 use clap::Parser;
 // use indicatif::ProgressBar;
 use tracing::{info, trace};
@@ -8,7 +11,9 @@ use tracing::{info, trace};
 #[command(author, version, about, long_about = None)]
 struct Cli {
     #[arg(short = 'c', long, help = "Command to execute.")]
-    command: String,
+    command: Action,
+    #[arg(short = 'd', long, help = "Dataset on which to apply command.")]
+    dataset: Option<Dataset>,
     #[arg(short = 's', long, help = "Source of file.")]
     source: Option<std::path::PathBuf>,
 }
@@ -28,9 +33,32 @@ async fn main() -> Result<(), BeaErr> {
     // )
     // .unwrap();
     let cli = Cli::parse();
-    match &cli.command as &str {
-        "download" => tracing::info!("Download not implemented."),
-        _ => info!("Command not recognized."),
+    match &cli.command {
+        Action::Load => {
+            if let Some(dataset) = &cli.dataset {
+                tracing::info!("Loading {dataset}.");
+                let result = initial_load(*dataset, None).await?;
+                tracing::info!("{} datasets loaded.", result.len());
+            } else {
+                tracing::warn!("Dataset parameter is missing, add '-d MyDataset' to args.");
+            }
+        }
+        Action::Download => tracing::info!("Download not implemented."),
+        Action::NextError => {
+            if let Some(dataset) = &cli.dataset {
+                let mut queue = init_queue(*dataset)?;
+                tracing::info!("Queue length: {}", queue.len());
+                let history = History::try_from((*dataset, Mode::Load))?;
+                queue.errors(&history, bears_ecology::Scope::History)?;
+                if let Some(req) = queue.first() {
+                    tracing::info!("Loading first MNE error.");
+                    req.load()?;
+                }
+                tracing::info!("MNE file successfully loaded.");
+            } else {
+                tracing::warn!("Dataset parameter is missing, add '-d MyDataset' to args.");
+            }
+        }
     };
     Ok(())
 }
