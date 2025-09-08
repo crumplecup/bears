@@ -1,7 +1,8 @@
 use crate::{
     NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsSector, NaicsSubcategory, NaicsSubsector,
-    NaicsSupplement,
+    NaicsSupplement, VariantMissing,
 };
+use strum::IntoEnumIterator;
 
 /// Parent enum for types of NAICS codes.
 #[derive(
@@ -89,5 +90,61 @@ impl Naics {
             Self::InputOutput(naics) => return naics.code().to_owned(),
         };
         code.to_string()
+    }
+
+    pub fn variants() -> std::collections::BTreeSet<Self> {
+        let mut variants = std::collections::BTreeSet::new();
+        NaicsSector::iter()
+            .map(|v| variants.insert(Naics::from(v)))
+            .for_each(drop);
+        NaicsSubsector::iter()
+            .map(|v| variants.insert(Naics::from(v)))
+            .for_each(drop);
+        NaicsCategory::iter()
+            .map(|v| variants.insert(Naics::from(v)))
+            .for_each(drop);
+        NaicsSubcategory::iter()
+            .map(|v| variants.insert(Naics::from(v)))
+            .for_each(drop);
+        NaicsIndustry::iter()
+            .map(|v| variants.insert(Naics::from(v)))
+            .for_each(drop);
+        NaicsSupplement::iter()
+            .map(|v| variants.insert(Naics::from(v)))
+            .for_each(drop);
+        NaicsInputOutput::iter()
+            .map(|v| variants.insert(Naics::from(v)))
+            .for_each(drop);
+        variants
+    }
+}
+
+impl std::str::FromStr for Naics {
+    type Err = VariantMissing;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Ok(naics) = NaicsSector::from_str(s) {
+            Ok(Self::from(naics))
+        } else if let Ok(naics) = NaicsSubsector::from_str(s) {
+            Ok(Self::from(naics))
+        } else if let Ok(naics) = NaicsCategory::from_str(s) {
+            Ok(Self::from(naics))
+        } else if let Ok(naics) = NaicsSubcategory::from_str(s) {
+            Ok(Self::from(naics))
+        } else if let Ok(naics) = NaicsIndustry::from_str(s) {
+            Ok(Self::from(naics))
+        } else if let Ok(naics) = NaicsSupplement::from_str(s) {
+            Ok(Self::from(naics))
+        } else if let Ok(naics) = NaicsInputOutput::from_str(s) {
+            Ok(Self::from(naics))
+        } else {
+            let error = VariantMissing::new(
+                "Naics".to_string(),
+                s.to_owned(),
+                line!(),
+                file!().to_owned(),
+            );
+            Err(error)
+        }
     }
 }
