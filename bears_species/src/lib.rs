@@ -25,9 +25,9 @@ pub use free::{
     map_to_bool, map_to_float, map_to_int, map_to_string, to_csv,
 };
 pub use key_sets::{
-    ApiMetadata, FixedAssetData, FixedAssets, GdpByIndustry, GdpCodes, GdpData, GdpDatum, Iip,
-    IipData, InputOutput, InputOutputData, IntlServSta, IntlServTrade, IoCodes, Ita, ItaData,
-    ItaDatum, Mne, NiUnderlyingDetail, Nipa, NipaData, NipaIterator, Regional,
+    ApiMetadata, FixedAssetCodes, FixedAssetData, FixedAssets, GdpByIndustry, GdpCodes, GdpData,
+    GdpDatum, Iip, IipData, InputOutput, InputOutputData, IntlServSta, IntlServTrade, IoCodes, Ita,
+    ItaData, ItaDatum, Mne, NiUnderlyingDetail, Nipa, NipaData, NipaIterator, Regional,
     UnderlyingGdpByIndustry, UnderlyingGdpData,
 };
 pub use keys::{
@@ -35,7 +35,7 @@ pub use keys::{
     AocSta, AreaOrCountry, BoolInvalid, BoolOptions, Channel, Component, DirectionKind,
     DirectionOfInvestment, FixedAssetTable, Footnotes, Frequencies, Frequency, FrequencyOptions,
     IipIndustry, Indicator, InputOutputCode, InputOutputTable, Integer, IntegerInvalid,
-    IntegerKind, IntegerOptions, Investment, ItaFrequencies, ItaFrequency, Millions,
+    IntegerKind, IntegerOptions, Investment, ItaFrequencies, ItaFrequency, Measure, Millions,
     MillionsOptions, Naics, NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems,
     NaicsSector, NaicsSubcategory, NaicsSubsector, NaicsSupplement, NipaRange, NipaRangeIterator,
     NipaRanges, NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel,

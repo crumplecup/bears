@@ -10,7 +10,7 @@ mod mne;
 mod nipa;
 mod regional;
 
-pub use fixed_assets::{FixedAssetData, FixedAssets};
+pub use fixed_assets::{FixedAssetCodes, FixedAssetData, FixedAssets};
 pub use gdp_by_industry::{
     GdpByIndustry, GdpCodes, GdpData, GdpDatum, UnderlyingGdpByIndustry, UnderlyingGdpData,
 };
