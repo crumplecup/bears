@@ -16,6 +16,7 @@ pub struct FixedAssets {
 }
 
 impl FixedAssets {
+    #[tracing::instrument(skip_all)]
     pub fn table_names(&self) -> std::collections::BTreeSet<String> {
         let mut set = std::collections::BTreeSet::new();
         self.table_name
@@ -24,6 +25,8 @@ impl FixedAssets {
             .for_each(drop);
         set
     }
+
+    #[tracing::instrument(skip_all)]
     pub fn iter_tables(&self) -> FixedAssetsTables<'_> {
         FixedAssetsTables::new(self)
     }
