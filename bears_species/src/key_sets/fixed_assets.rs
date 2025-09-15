@@ -150,9 +150,18 @@ impl Iterator for FixedAssetsTables<'_> {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize)]
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    PartialOrd,
+    serde::Deserialize,
+    serde::Serialize,
+    derive_getters::Getters,
+)]
 pub struct FixedAssetDatum {
-    cl_unit: String,
+    cl_unit: Measure,
     data_value: f64,
     line_description: String,
     line_number: i64,
@@ -166,6 +175,8 @@ pub struct FixedAssetDatum {
 impl FixedAssetDatum {
     pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         let cl_unit = map_to_string("CL_UNIT", m)?;
+        let cl_unit = Measure::from_str(&cl_unit)
+            .map_err(|e| DeriveFromStr::new(cl_unit, e, line!(), file!().to_owned()))?;
         let data_value = map_to_float("DataValue", m)?;
         let line_description = map_to_string("LineDescription", m)?;
         let line_number = map_to_int("LineNumber", m)?;
