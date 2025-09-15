@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::{
     BeaErr, BeaResponse, Data, Dataset, DatasetMissing, DeriveFromStr, FixedAssetTable, IoError,
-    NipaRange, NipaRanges, NotArray, NotObject, ParameterName, ParameterValueTable,
+    Measure, NipaRange, NipaRanges, NotArray, NotObject, ParameterName, ParameterValueTable,
     ParameterValueTableVariant, SerdeJson, Set, TableName, VariantMissing, date_by_period,
     map_to_float, map_to_int, map_to_string, result_to_data,
 };
@@ -238,6 +238,84 @@ impl TryFrom<serde_json::Value> for FixedAssetDatum {
 )]
 #[from(Vec<FixedAssetDatum>)]
 pub struct FixedAssetData(Vec<FixedAssetDatum>);
+
+impl FixedAssetData {
+    #[tracing::instrument]
+    pub fn cl_units(&self) -> std::collections::BTreeSet<Measure> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.cl_unit().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn line_descriptions(&self) -> std::collections::BTreeSet<String> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.line_description().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn line_numbers(&self) -> std::collections::BTreeSet<i64> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.line_number().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn metric_names(&self) -> std::collections::BTreeSet<String> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.metric_name().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn series_codes(&self) -> std::collections::BTreeSet<String> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.series_code().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn table_names(&self) -> std::collections::BTreeSet<FixedAssetTable> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.table_name().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn time_periods(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.time_period().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn unit_mults(&self) -> std::collections::BTreeSet<i64> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| {
+                if let Some(value) = v.unit_mult() {
+                    set.insert(*value);
+                }
+            })
+            .for_each(drop);
+        set
+    }
+}
 
 impl TryFrom<&std::path::PathBuf> for FixedAssetData {
     type Error = BeaErr;
