@@ -131,6 +131,7 @@ pub fn io_keys() -> Result<(), BeaErr> {
     write_json(&years, target)?;
     Ok(())
 }
+
 #[tracing::instrument]
 pub async fn check_io_keys() -> Result<(), BeaErr> {
     let path = bea_data()?;
