@@ -12,6 +12,7 @@ mod industry;
 mod input_output_code;
 mod input_output_table;
 mod investment;
+mod measure;
 mod millions;
 mod naics;
 mod numeric;
@@ -38,6 +39,7 @@ pub use industry::IipIndustry;
 pub use input_output_code::InputOutputCode;
 pub use input_output_table::InputOutputTable;
 pub use investment::{DirectionKind, DirectionOfInvestment, Investment};
+pub use measure::Measure;
 pub use millions::{Millions, MillionsOptions};
 pub use naics::{
     Naics, NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector,
