@@ -1,5 +1,7 @@
 use bears::Action;
-use bears_ecology::{History, Mode, init_queue, initial_load, trace_init};
+use bears_ecology::{
+    History, Mode, Overwrite, Style, download_with_history, init_queue, initial_load, trace_init,
+};
 use bears_species::{BeaErr, Dataset};
 use clap::Parser;
 // use indicatif::ProgressBar;
@@ -11,6 +13,20 @@ struct Cli {
     command: Action,
     #[arg(short = 'd', long, help = "Dataset on which to apply command.")]
     dataset: Option<Dataset>,
+    #[arg(
+        short = 'y',
+        long,
+        help = "Use history log for context.",
+        default_value_t = false
+    )]
+    history: bool,
+    #[arg(
+        short = 'x',
+        long,
+        help = "Overwrite existing data.",
+        default_value_t = false
+    )]
+    overwrite: bool,
     #[arg(short = 's', long, help = "Source of file.")]
     source: Option<std::path::PathBuf>,
 }
@@ -32,20 +48,40 @@ async fn main() -> Result<(), BeaErr> {
     let cli = Cli::parse();
     match &cli.command {
         Action::Load => {
-            if let Some(dataset) = &cli.dataset {
+            if let Some(dataset) = cli.dataset {
                 tracing::info!("Loading {dataset}.");
-                let result = initial_load(*dataset, None).await?;
+                let result = initial_load(dataset, None).await?;
                 tracing::info!("{} datasets loaded.", result.len());
             } else {
                 tracing::warn!("Dataset parameter is missing, add '-d MyDataset' to args.");
             }
         }
-        Action::Download => tracing::info!("Download not implemented."),
+        Action::Download => {
+            if let Some(dataset) = cli.dataset {
+                tracing::info!("Downloading {dataset}.");
+                let styles = Style::try_new()?;
+                let style = styles["queue_download"].clone();
+                if cli.history {
+                    download_with_history(dataset, style).await?;
+                } else {
+                    let queue = init_queue(dataset)?;
+                    tracing::info!("Queue length: {}", queue.len());
+                    if cli.overwrite {
+                        queue.download(Overwrite::Yes).await?;
+                    } else {
+                        queue.download(Overwrite::No).await?;
+                    }
+                }
+                tracing::info!("Datasets downloaded.");
+            } else {
+                tracing::warn!("Dataset parameter is missing, add '-d MyDataset' to args.");
+            }
+        }
         Action::NextError => {
-            if let Some(dataset) = &cli.dataset {
-                let mut queue = init_queue(*dataset)?;
+            if let Some(dataset) = cli.dataset {
+                let mut queue = init_queue(dataset)?;
                 tracing::info!("Queue length: {}", queue.len());
-                let history = History::try_from((*dataset, Mode::Load))?;
+                let history = History::try_from((dataset, Mode::Load))?;
                 queue.errors(&history, bears_ecology::Scope::History)?;
                 if let Some(req) = queue.first() {
                     tracing::info!("Loading first MNE error.");
