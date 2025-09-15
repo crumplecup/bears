@@ -1,7 +1,8 @@
 use crate::{
     BeaErr, BeaResponse, Component, Data, Dataset, DatasetMissing, DeriveFromStr, Investment,
-    IoError, ItaFrequencies, ItaFrequency, NotArray, NotObject, ParameterName, ParameterValueTable,
-    SerdeJson, Set, VariantMissing, Year, date_by_period, map_to_int, map_to_string, parse_year,
+    IoError, ItaFrequencies, ItaFrequency, Measure, NotArray, NotObject, ParameterName,
+    ParameterValueTable, SerdeJson, Set, VariantMissing, Year, date_by_period, map_to_int,
+    map_to_string, parse_year,
 };
 use std::str::FromStr;
 
@@ -198,7 +199,7 @@ impl Iterator for IipInvestments<'_> {
     derive_getters::Getters,
 )]
 pub struct IipDatum {
-    cl_unit: String,
+    cl_unit: Measure,
     component: Component,
     data_value: Option<i64>,
     frequency: ItaFrequency,
@@ -215,6 +216,8 @@ impl IipDatum {
     #[tracing::instrument]
     pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
         let cl_unit = map_to_string("CL_UNIT", m)?;
+        let cl_unit = Measure::from_str(&cl_unit)
+            .map_err(|e| DeriveFromStr::new(cl_unit, e, line!(), file!().to_owned()))?;
         tracing::trace!("cl_unit is {cl_unit}.");
         let component = map_to_string("Component", m)?;
         let component = Component::from_str(&component)
@@ -317,7 +320,7 @@ pub struct IipData(Vec<IipDatum>);
 
 impl IipData {
     #[tracing::instrument]
-    pub fn cl_units(&self) -> std::collections::BTreeSet<String> {
+    pub fn cl_units(&self) -> std::collections::BTreeSet<Measure> {
         let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.cl_unit().to_owned()))
