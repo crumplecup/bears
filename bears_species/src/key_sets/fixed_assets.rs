@@ -3,27 +3,25 @@ use std::str::FromStr;
 use crate::{
     BeaErr, BeaResponse, Data, Dataset, DatasetMissing, DeriveFromStr, FixedAssetTable, IoError,
     Measure, NipaRange, NipaRanges, NotArray, NotObject, ParameterName, ParameterValueTable,
-    ParameterValueTableVariant, SerdeJson, Set, TableName, VariantMissing, date_by_period,
-    map_to_float, map_to_int, map_to_string, result_to_data,
+    ParameterValueTableVariant, SerdeJson, Set, VariantMissing, date_by_period, map_to_float,
+    map_to_int, map_to_string, result_to_data,
 };
 
 #[derive(
     Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, derive_getters::Getters,
 )]
 pub struct FixedAssets {
-    table_name: Vec<TableName>,
+    table_name: Vec<FixedAssetTable>,
     year: NipaRanges,
 }
 
 impl FixedAssets {
     #[tracing::instrument(skip_all)]
-    pub fn table_names(&self) -> std::collections::BTreeSet<String> {
-        let mut set = std::collections::BTreeSet::new();
-        self.table_name
+    pub fn table_names(&self) -> std::collections::BTreeSet<FixedAssetTable> {
+        self.table_name()
             .iter()
-            .map(|v| set.insert(v.name().to_owned()))
-            .for_each(drop);
-        set
+            .cloned()
+            .collect::<std::collections::BTreeSet<FixedAssetTable>>()
     }
 
     #[tracing::instrument(skip_all)]
@@ -77,7 +75,7 @@ impl TryFrom<&std::path::PathBuf> for FixedAssets {
                 match name {
                     ParameterName::TableName => {
                         for table in pv.iter() {
-                            table_name.push(TableName::try_from(table)?);
+                            table_name.push(FixedAssetTable::try_from(table)?);
                         }
                     }
                     ParameterName::Year => {
@@ -121,7 +119,7 @@ impl TryFrom<&std::path::PathBuf> for FixedAssets {
 /// Used to create API calls with Year set to "ALL".
 #[derive(Debug, Clone)]
 pub struct FixedAssetsTables<'a> {
-    table_names: std::slice::Iter<'a, TableName>,
+    table_names: std::slice::Iter<'a, FixedAssetTable>,
 }
 
 impl<'a> FixedAssetsTables<'a> {
