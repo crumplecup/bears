@@ -44,6 +44,11 @@ impl GdpByIndustry {
         GdpByIndustryIterator::new(self)
     }
 
+    #[tracing::instrument]
+    pub fn iter_tables(&self) -> GdpTables<'_> {
+        GdpTables::new(self)
+    }
+
     // pub fn queue() -> Result<Queue, BeaErr> {
     //     let req = Request::Data;
     //     let mut app = req.init()?;
@@ -195,6 +200,51 @@ impl TryFrom<&std::path::PathBuf> for GdpByIndustry {
     type Error = BeaErr;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         Self::from_file(value)
+    }
+}
+
+/// Returns an iterator over table ids in the `GdpByIndustry` struct.
+/// Used to create API calls with Industry, Frequency and Years set to "ALL".
+#[derive(Debug, Clone)]
+pub struct GdpTables<'a> {
+    tables: std::slice::Iter<'a, Integer>,
+}
+
+impl<'a> GdpTables<'a> {
+    /// Creates an iterator over table ids in the provided `GdpByIndustry` struct.
+    pub fn new(data: &'a GdpByIndustry) -> Self {
+        let tables = data.table_id().iter();
+        Self { tables }
+    }
+}
+
+impl Iterator for GdpTables<'_> {
+    type Item = std::collections::BTreeMap<String, String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // empty parameters dictionary
+        let mut params = std::collections::BTreeMap::new();
+
+        // set type of investment
+        let tables = self.tables.next()?;
+        let key = ParameterName::TableID.to_string();
+        let value = tables.value().to_string();
+        params.insert(key, value);
+
+        // set industry
+        let key = ParameterName::Industry.to_string();
+        params.insert(key, "ALL".to_string());
+
+        // set frequency
+        let key = ParameterName::Frequency.to_string();
+        params.insert(key, "ALL".to_string());
+
+        // set years to all
+        let key = ParameterName::Year.to_string();
+        let value = "ALL".to_owned();
+        params.insert(key, value);
+
+        Some(params)
     }
 }
 

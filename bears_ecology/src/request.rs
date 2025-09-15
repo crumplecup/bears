@@ -86,7 +86,7 @@ pub fn init_queue(dataset: Dataset) -> Result<Queue, BeaErr> {
         }
         Dataset::GDPbyIndustry => {
             let data = GdpByIndustry::try_from(&path)?;
-            for params in data.iter() {
+            for params in data.iter_tables() {
                 app.with_params(params.clone());
                 queue.push(app.clone());
             }
