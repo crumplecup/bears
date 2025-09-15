@@ -1,7 +1,7 @@
 use crate::write_json;
 use bears_ecology::{bea_data, initial_load, trace_init};
 use bears_species::{
-    BeaErr, Data, Dataset, DeriveFromStr, FixedAssetCodes, FixedAssetTable, FixedAssets, NipaRanges,
+    BeaErr, Data, Dataset, FixedAssetCodes, FixedAssetTable, FixedAssets, NipaRanges,
 };
 use strum::IntoEnumIterator;
 
@@ -9,7 +9,7 @@ use strum::IntoEnumIterator;
 /// Loads InputOutput files, converts them to row and column codes.
 /// Serializes the results to `InputOutput_RowCode.json` and `InputOutput_ColumnCode.json` in the
 /// `BEA_DATA` directory.
-#[tracing::instrument(skip_all)]
+#[tracing::instrument]
 pub async fn get_fa_codes() -> Result<FixedAssetCodes, BeaErr> {
     trace_init()?;
     let dataset = Dataset::FixedAssets;
@@ -125,7 +125,7 @@ pub async fn check_fa_codes() -> Result<(), BeaErr> {
 #[tracing::instrument]
 fn get_fa_keys<P: AsRef<std::path::Path> + std::fmt::Debug>(
     path: P,
-) -> Result<(std::collections::BTreeSet<String>, NipaRanges), BeaErr> {
+) -> Result<(std::collections::BTreeSet<FixedAssetTable>, NipaRanges), BeaErr> {
     let path = path.as_ref().to_owned();
     let data = FixedAssets::try_from(&path)?;
     let ids = data.table_names();
@@ -158,19 +158,8 @@ pub async fn check_fa_keys() -> Result<(), BeaErr> {
     // years observed in source data
     let _obs_years = codes.time_periods();
 
-    use std::str::FromStr;
     // Are all parameter keys contained in source data?
-    let mut target_names = std::collections::BTreeSet::new();
-    for name in &names {
-        match FixedAssetTable::from_str(name) {
-            Ok(value) => target_names.insert(value),
-            Err(e) => {
-                let error = DeriveFromStr::new(name.to_owned(), e, line!(), file!().to_owned());
-                return Err(error.into());
-            }
-        };
-    }
-    let unused_names = target_names
+    let unused_names = names
         .difference(obs_names)
         .collect::<std::collections::BTreeSet<&FixedAssetTable>>();
     // let unused_years = years
@@ -199,7 +188,7 @@ pub async fn check_fa_keys() -> Result<(), BeaErr> {
     // }
     // Are all unique source data values represented by a parameter key?
     let missing_names = obs_names
-        .difference(&target_names)
+        .difference(&names)
         .collect::<std::collections::BTreeSet<&FixedAssetTable>>();
     // let missing_years = obs_years
     //     .difference(&years)
