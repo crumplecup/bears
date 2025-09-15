@@ -170,6 +170,7 @@ mod aocs;
 mod components;
 mod data;
 mod datasets;
+mod fa_codes;
 mod histories;
 mod iip;
 mod indicators;
@@ -191,6 +192,7 @@ pub use data::{
     datasets_retry_load, debug_gdpbyindustry, download_history, next_mne_error,
 };
 pub use datasets::{check_datasets, datasets_from_file, datasets_to_json};
+pub use fa_codes::{check_fa_codes, check_fa_keys, fa_codes, fa_keys, get_fa_codes};
 pub use histories::download_summary;
 pub use iip::iip_codes;
 pub use indicators::check_indicators;

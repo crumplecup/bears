@@ -135,6 +135,30 @@ fn get_io_keys() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[test]
+fn get_fa_keys() -> anyhow::Result<()> {
+    bears_health::fa_keys()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn check_fa_keys() -> anyhow::Result<()> {
+    bears_health::check_fa_keys().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn get_fa_codes() -> anyhow::Result<()> {
+    bears_health::fa_codes().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn check_fa_codes() -> anyhow::Result<()> {
+    bears_health::check_fa_codes().await?;
+    Ok(())
+}
+
 #[tokio::test]
 async fn api_error() -> anyhow::Result<()> {
     bears_health::api_error()?;
