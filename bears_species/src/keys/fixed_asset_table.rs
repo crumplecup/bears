@@ -1,3 +1,8 @@
+use crate::{
+    BeaErr, DeriveFromStr, NipaTable, ParameterFields, ParameterName, ParameterValueTable,
+    ParameterValueTableVariant,
+};
+
 #[derive(
     Debug,
     Default,
@@ -13,6 +18,7 @@
     strum::EnumIter,
     derive_more::Display,
     derive_more::FromStr,
+    derive_new::new,
 )]
 pub enum FixedAssetTable {
     /// Table 1.1. Current-Cost Net Stock of Fixed Assets and Consumer Durable Goods (A)
@@ -653,6 +659,59 @@ impl FixedAssetTable {
             }
             Self::Faat903 => {
                 "Table 9.3. Real Investment in Fixed Assets and Consumer Durable Goods (A)"
+            }
+        }
+    }
+
+    /// The String representation of a variant serves as the value for the corresponding parameter
+    /// name in BEA API calls. The `params` method formats the parameter name as a key, as the
+    /// variant name as the value for use in building complex API queries.
+    pub fn params(&self) -> (String, String) {
+        let key = ParameterName::TableName.to_string();
+        let value = self.to_string();
+        (key, value)
+    }
+}
+
+use std::str::FromStr;
+impl TryFrom<&NipaTable> for FixedAssetTable {
+    type Error = BeaErr;
+    fn try_from(value: &NipaTable) -> Result<Self, Self::Error> {
+        Self::from_str(value.table_name()).map_err(|e| {
+            DeriveFromStr::new(
+                value.table_name().to_owned(),
+                e,
+                line!(),
+                file!().to_owned(),
+            )
+            .into()
+        })
+    }
+}
+
+impl TryFrom<&ParameterFields> for FixedAssetTable {
+    type Error = BeaErr;
+
+    fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
+        Self::from_str(value.key()).map_err(|e| {
+            DeriveFromStr::new(value.key().to_owned(), e, line!(), file!().to_owned()).into()
+        })
+    }
+}
+
+impl TryFrom<&ParameterValueTable> for FixedAssetTable {
+    type Error = BeaErr;
+    fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
+        match value {
+            ParameterValueTable::NipaTable(tab) => Self::try_from(tab),
+            ParameterValueTable::ParameterFields(tab) => Self::try_from(tab),
+            other => {
+                let error = ParameterValueTableVariant::new(
+                    format!("NipaTable or ParameterFields needed, found {other:#?}"),
+                    line!(),
+                    file!().to_string(),
+                );
+                Err(error.into())
             }
         }
     }
