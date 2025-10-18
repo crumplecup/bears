@@ -1,10 +1,10 @@
 use bears::Cli;
 use bears_ecology::trace_init;
-use bears_species::BeaErr;
+use bears_species::Bull;
 use clap::Parser;
 
 #[tokio::main]
-async fn main() -> Result<(), BeaErr> {
+async fn main() -> Result<(), Bull> {
     trace_init()?;
     dotenvy::dotenv().ok();
     tracing::trace!("Environmental variables loaded.");

@@ -1,5 +1,5 @@
 use crate::{App, Event, History, ResultStatus, SizeEvent, Tracker, file_size};
-use bears_species::{BeaErr, BeaErrorKind, Data};
+use bears_species::{BeaErrorKind, Bull, Data};
 use indicatif::ProgressIterator;
 use rand::SeedableRng;
 use rand::seq::SliceRandom;
@@ -28,7 +28,7 @@ impl Queue {
 
     #[tracing::instrument(skip_all)]
     /// Subset of queue that is not contained within the `history`.
-    pub fn exclude(&mut self, history: &History) -> Result<(), BeaErr> {
+    pub fn exclude(&mut self, history: &History) -> Result<(), Bull> {
         history.summary();
         self.retain(|app| !history.contains_key(&app.destination(false).unwrap()));
         Ok(())
@@ -36,7 +36,7 @@ impl Queue {
 
     #[tracing::instrument(skip_all)]
     /// Subset of queue that contains a success status.
-    pub fn successes(&mut self, history: &History, scope: Scope) -> Result<(), BeaErr> {
+    pub fn successes(&mut self, history: &History, scope: Scope) -> Result<(), Bull> {
         history.summary();
         self.retain(|app| {
             history
@@ -49,7 +49,7 @@ impl Queue {
 
     #[tracing::instrument(skip_all)]
     /// Subset of queue that contains an error status.
-    pub fn errors(&mut self, history: &History, scope: Scope) -> Result<(), BeaErr> {
+    pub fn errors(&mut self, history: &History, scope: Scope) -> Result<(), Bull> {
         self.retain(|app| {
             history
                 .is_error(app)
@@ -60,7 +60,7 @@ impl Queue {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn active_subset(&mut self, scope: Scope) -> Result<(), BeaErr> {
+    pub fn active_subset(&mut self, scope: Scope) -> Result<(), Bull> {
         let history = History::from_env()?;
         history.summary();
         self.retain(|app| match history.is_error(app) {
@@ -155,7 +155,7 @@ impl Queue {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn download_sync(&self, overwrite: Overwrite) -> Result<(), BeaErr> {
+    pub async fn download_sync(&self, overwrite: Overwrite) -> Result<(), Bull> {
         let tracker = std::sync::Arc::new(tokio::sync::Mutex::new(Tracker::default()));
         // let (tx, mut rx) = tokio::sync::mpsc::channel(29);
         for app in self.iter() {
@@ -209,7 +209,7 @@ impl Queue {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn download(&self, overwrite: Overwrite) -> Result<(), BeaErr> {
+    pub async fn download(&self, overwrite: Overwrite) -> Result<(), Bull> {
         let tracker = std::sync::Arc::new(tokio::sync::Mutex::new(Tracker::default()));
         let (tx, mut rx) = tokio::sync::mpsc::channel(29);
         let download = self.downloader(tx, tracker.clone(), overwrite);
@@ -250,7 +250,7 @@ impl Queue {
         rx: &mut tokio::sync::mpsc::Receiver<ResultStatus>,
         tracker: std::sync::Arc<tokio::sync::Mutex<Tracker>>,
         mode: Mode,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         while let Some(status) = rx.recv().await {
             match status {
                 ResultStatus::Success(_, _) | ResultStatus::Error(_) => {
@@ -287,7 +287,7 @@ impl Queue {
         tx: tokio::sync::mpsc::Sender<ResultStatus>,
         tracker: std::sync::Arc<tokio::sync::Mutex<Tracker>>,
         overwrite: Overwrite,
-    ) -> Result<Vec<tokio::task::JoinHandle<()>>, BeaErr> {
+    ) -> Result<Vec<tokio::task::JoinHandle<()>>, Bull> {
         let mut futures = Vec::new();
         for app in self.iter() {
             let app = app.clone();
@@ -359,7 +359,7 @@ impl Queue {
         data: std::sync::Arc<tokio::sync::Mutex<Vec<Data>>>,
         tx: tokio::sync::mpsc::Sender<ResultStatus>,
         tracker: std::sync::Arc<tokio::sync::Mutex<Tracker>>,
-    ) -> Result<Vec<tokio::task::JoinHandle<()>>, BeaErr> {
+    ) -> Result<Vec<tokio::task::JoinHandle<()>>, Bull> {
         let style = indicatif::ProgressStyle::with_template(
             "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {'Loading files in queue.'}",
         )
@@ -417,7 +417,7 @@ impl Queue {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn load(&self) -> Result<std::sync::Arc<tokio::sync::Mutex<Vec<Data>>>, BeaErr> {
+    pub async fn load(&self) -> Result<std::sync::Arc<tokio::sync::Mutex<Vec<Data>>>, Bull> {
         let tracker = std::sync::Arc::new(tokio::sync::Mutex::new(Tracker::default()));
         let (tx, mut rx) = tokio::sync::mpsc::channel(100);
         let data = std::sync::Arc::new(tokio::sync::Mutex::new(Vec::new()));
@@ -435,7 +435,7 @@ impl Queue {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn load_par(&self) -> Result<Vec<Data>, BeaErr> {
+    pub fn load_par(&self) -> Result<Vec<Data>, Bull> {
         let data = self
             .par_iter()
             .map(|app| app.load())

@@ -2,11 +2,11 @@ use bears_ecology::{
     History, Mode, Overwrite, Queue, Scope, Style, download_with_history, init_queue,
     initial_download, initial_load, retry_load, trace_init,
 };
-use bears_species::{BeaErr, Dataset, GdpData};
+use bears_species::{Bull, Dataset, GdpData};
 
 /// Pings the BEA API.
 #[tracing::instrument]
-pub async fn data_to_json() -> Result<(), BeaErr> {
+pub async fn data_to_json() -> Result<(), Bull> {
     trace_init()?;
     let datasets = vec![Dataset::GDPbyIndustry];
     for dataset in datasets {
@@ -50,7 +50,7 @@ pub async fn data_to_json() -> Result<(), BeaErr> {
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn data_from_json() -> Result<(), BeaErr> {
+pub async fn data_from_json() -> Result<(), Bull> {
     trace_init()?;
     let datasets = vec![Dataset::Mne];
     for dataset in datasets {
@@ -105,7 +105,7 @@ pub async fn data_from_json() -> Result<(), BeaErr> {
 /// Specialty function for debugging deserialization errors with the GDPbyIndustry tables.
 /// Attempts to load each file in the download history.
 /// Move the problematic files into the download history (backing up as needed).
-pub fn debug_gdpbyindustry() -> Result<(), BeaErr> {
+pub fn debug_gdpbyindustry() -> Result<(), Bull> {
     trace_init()?;
     let dataset = Dataset::GDPbyIndustry;
     let history = History::try_from((dataset, Mode::Download))?;
@@ -121,7 +121,7 @@ pub fn debug_gdpbyindustry() -> Result<(), BeaErr> {
 /// Cannot meter by file size, susceptible to exceeding the 100MB per minute rate limit of the BEA
 /// server.
 #[tracing::instrument]
-pub async fn datasets_download_initial() -> Result<(), BeaErr> {
+pub async fn datasets_download_initial() -> Result<(), Bull> {
     trace_init()?;
     let datasets = vec![
         // Dataset::Nipa,
@@ -142,7 +142,7 @@ pub async fn datasets_download_initial() -> Result<(), BeaErr> {
 }
 
 #[tracing::instrument]
-pub async fn datasets_download_mne_initial() -> Result<(), BeaErr> {
+pub async fn datasets_download_mne_initial() -> Result<(), Bull> {
     trace_init()?;
     let dataset = Dataset::Mne;
     // let datasets = vec![Dataset::Ita];
@@ -161,7 +161,7 @@ pub async fn datasets_download_mne_initial() -> Result<(), BeaErr> {
 /// Download existing files of a known size from the download [`History`].
 /// Metered to prevent exceeding the 100MB per minute rate limit set by the BEA server.
 #[tracing::instrument]
-pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
+pub async fn datasets_download_with_history() -> Result<(), Bull> {
     trace_init()?;
     let styles = Style::try_new()?;
     let style = styles["queue_download"].clone();
@@ -181,7 +181,7 @@ pub async fn datasets_download_with_history() -> Result<(), BeaErr> {
 
 /// Attempts to load all files in the download [`History`], without respect to the load `History`.
 #[tracing::instrument(skip_all)]
-pub async fn datasets_initial_load() -> Result<(), BeaErr> {
+pub async fn datasets_initial_load() -> Result<(), Bull> {
     trace_init()?;
     let datasets = vec![
         // Dataset::Nipa,
@@ -204,7 +204,7 @@ pub async fn datasets_initial_load() -> Result<(), BeaErr> {
 
 /// Attempts to load all files in the download [`History`] that are not yet in the load `History`.
 #[tracing::instrument(skip_all)]
-pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
+pub async fn datasets_initial_load_continued() -> Result<(), Bull> {
     trace_init()?;
     let datasets = vec![
         Dataset::Nipa,
@@ -224,7 +224,7 @@ pub async fn datasets_initial_load_continued() -> Result<(), BeaErr> {
 /// Attempts to reload errors in the load [`History`].
 /// Run on `TRACE` level to gather more data on specific a specific file.
 #[tracing::instrument(skip_all)]
-pub async fn datasets_retry_load() -> Result<(), BeaErr> {
+pub async fn datasets_retry_load() -> Result<(), Bull> {
     trace_init()?;
     let datasets = vec![
         // Dataset::Mne,
@@ -239,7 +239,7 @@ pub async fn datasets_retry_load() -> Result<(), BeaErr> {
 }
 
 #[tracing::instrument]
-pub fn next_mne_error() -> Result<(), BeaErr> {
+pub fn next_mne_error() -> Result<(), Bull> {
     trace_init()?;
     let mut queue = init_queue(Dataset::Mne)?;
     tracing::info!("Queue length: {}", queue.len());
@@ -254,7 +254,7 @@ pub fn next_mne_error() -> Result<(), BeaErr> {
 }
 
 #[tracing::instrument]
-pub fn download_history() -> Result<(), BeaErr> {
+pub fn download_history() -> Result<(), Bull> {
     trace_init()?;
     let history = History::from_env()?;
     tracing::info!("History: {history:#?}");

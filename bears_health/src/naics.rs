@@ -1,6 +1,6 @@
 use bears_ecology::trace_init;
 use bears_species::{
-    BeaErr, KeyMissing, NaicsCategory, NaicsIndustry, NaicsItems, NaicsSector, NaicsSubcategory,
+    Bull, KeyMissing, NaicsCategory, NaicsIndustry, NaicsItems, NaicsSector, NaicsSubcategory,
     NaicsSubsector,
 };
 use std::str::FromStr;
@@ -12,7 +12,7 @@ use strum::IntoEnumIterator;
 ///
 /// Does not test that all variants in `NaicsSector` are in active use.
 #[tracing::instrument]
-pub fn check_naics_sectors() -> Result<(), BeaErr> {
+pub fn check_naics_sectors() -> Result<(), Bull> {
     trace_init()?;
     let path = "cave/naics_sector.csv";
     let naics = NaicsItems::from_csv(path)?;
@@ -81,7 +81,7 @@ pub fn check_naics_sectors() -> Result<(), BeaErr> {
 ///
 /// Does not test that all variants in `NaicsSubsector` are in active use.
 #[tracing::instrument]
-pub fn check_naics_subsectors() -> Result<(), BeaErr> {
+pub fn check_naics_subsectors() -> Result<(), Bull> {
     trace_init()?;
     let path = "cave/naics_subsector.csv";
     let naics = NaicsItems::from_csv(path)?;
@@ -150,7 +150,7 @@ pub fn check_naics_subsectors() -> Result<(), BeaErr> {
 ///
 /// Does not test that all variants in `NaicsCategory` are in active use.
 #[tracing::instrument]
-pub fn check_naics_category() -> Result<(), BeaErr> {
+pub fn check_naics_category() -> Result<(), Bull> {
     trace_init()?;
     let path = "cave/naics_category.csv";
     let naics = NaicsItems::from_csv(path)?;
@@ -219,7 +219,7 @@ pub fn check_naics_category() -> Result<(), BeaErr> {
 ///
 /// Does not test that all variants in `NaicsSubcategory` are in active use.
 #[tracing::instrument]
-pub fn check_naics_subcategory() -> Result<(), BeaErr> {
+pub fn check_naics_subcategory() -> Result<(), Bull> {
     trace_init()?;
     let path = "cave/naics_subcategory.csv";
     let naics = NaicsItems::from_csv(path)?;
@@ -288,7 +288,7 @@ pub fn check_naics_subcategory() -> Result<(), BeaErr> {
 ///
 /// Does not test that all variants in `NaicsIndustry` are in active use.
 #[tracing::instrument]
-pub fn check_naics_industry() -> Result<(), BeaErr> {
+pub fn check_naics_industry() -> Result<(), Bull> {
     trace_init()?;
     let path = "cave/naics_industry.csv";
     let naics = NaicsItems::from_csv(path)?;

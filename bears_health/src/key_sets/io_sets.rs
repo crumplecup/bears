@@ -1,7 +1,7 @@
 use crate::{difference, params};
 use bears_ecology::initial_load;
 use bears_species::{
-    BeaErr, Data, Dataset, InputOutput, InputOutputTable, Naics, Note, ParameterName,
+    Bull, Data, Dataset, InputOutput, InputOutputTable, Naics, Note, ParameterName,
 };
 use std::collections::BTreeSet;
 use strum::IntoEnumIterator;
@@ -38,7 +38,7 @@ impl IoKeys {
     /// Serializes the results to `InputOutput_RowCode.json` and `InputOutput_ColumnCode.json` in the
     /// `BEA_DATA` directory.
     #[tracing::instrument(skip_all)]
-    async fn observed() -> Result<IoKeys, BeaErr> {
+    async fn observed() -> Result<IoKeys, Bull> {
         let dataset = Dataset::InputOutput;
         let iot = initial_load(dataset, None).await?;
         tracing::info!("{} datasets loaded.", iot.len());
@@ -84,7 +84,7 @@ impl IoKeys {
     #[tracing::instrument]
     pub async fn print_observed<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::InputOutput;
         let kind = "Observed";
@@ -112,7 +112,7 @@ impl IoKeys {
     #[tracing::instrument]
     pub async fn check_observed<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::InputOutput;
         let obs = Self::observed().await?;
@@ -140,7 +140,7 @@ impl IoKeys {
             std::collections::BTreeSet<InputOutputTable>,
             std::collections::BTreeSet<jiff::civil::Date>,
         ),
-        BeaErr,
+        Bull,
     > {
         let path = path.as_ref().to_owned();
         let data = InputOutput::try_from(&path)?;
@@ -153,7 +153,7 @@ impl IoKeys {
     #[tracing::instrument]
     pub fn print_expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::InputOutput;
         let kind = "Expected";
@@ -170,7 +170,7 @@ impl IoKeys {
     #[tracing::instrument]
     pub fn check_expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::InputOutput;
         // BEA provided paramater name keys for table id and year

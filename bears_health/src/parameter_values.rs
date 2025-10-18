@@ -1,13 +1,11 @@
 use bears_ecology::{Request, bea_data, parameter_values, trace_init};
-use bears_species::{
-    BeaErr, BeaResponse, Dataset, IoError, ParameterName, ReqwestError, SerdeJson,
-};
+use bears_species::{BeaResponse, Bull, Dataset, IoError, ParameterName, ReqwestError, SerdeJson};
 use strum::IntoEnumIterator;
 
 /// Download valid parameter values for each dataset from the BEA server using the
 /// `GetParameterValues` method into the `parameter_values` folder of the `BEA_DATA` directory.
 #[tracing::instrument]
-pub async fn parameter_values_to_json() -> Result<(), BeaErr> {
+pub async fn parameter_values_to_json() -> Result<(), Bull> {
     parameter_values().await
 }
 
@@ -16,7 +14,7 @@ pub async fn parameter_values_to_json() -> Result<(), BeaErr> {
 ///
 /// Called by [`parameter_values_from_file`].
 #[tracing::instrument(skip_all)]
-pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), BeaErr> {
+pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), Bull> {
     let file =
         std::fs::File::open(&path).map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
     let rdr = std::io::BufReader::new(file);
@@ -31,7 +29,7 @@ pub fn parameter_value_from_json(path: std::path::PathBuf) -> Result<(), BeaErr>
 /// Load parameter values from the `parameter_values` folder of the `BEA_DATA` and serialize into
 /// the [`BeaResponse`](crate::BeaResponse) type.
 #[tracing::instrument]
-pub fn parameter_values_from_file() -> Result<(), BeaErr> {
+pub fn parameter_values_from_file() -> Result<(), Bull> {
     trace_init()?;
     dotenvy::dotenv().ok();
     let datasets: Vec<Dataset> = Dataset::iter().collect();
@@ -49,7 +47,7 @@ pub fn parameter_values_from_file() -> Result<(), BeaErr> {
 }
 
 #[tracing::instrument]
-pub async fn parameter_value_filtered() -> Result<(), BeaErr> {
+pub async fn parameter_value_filtered() -> Result<(), Bull> {
     trace_init()?;
     let req = Request::ParameterValueFilter;
     let mut app = req.init()?;

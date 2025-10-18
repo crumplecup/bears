@@ -1,8 +1,8 @@
 use bears_ecology::{init_queue, trace_init};
-use bears_species::{BeaErr, Dataset};
+use bears_species::{Bull, Dataset};
 
 #[tracing::instrument(skip_all)]
-pub async fn inspect_queues() -> Result<(), BeaErr> {
+pub async fn inspect_queues() -> Result<(), Bull> {
     trace_init()?;
     // let datasets = vec![
     //     Dataset::Nipa,

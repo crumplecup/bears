@@ -1,5 +1,5 @@
 use crate::{App, Event, Mode, Overwrite, Queue, ResultStatus, bea_data};
-use bears_species::{BeaErr, Data, Dataset, IoError, SerdeJson};
+use bears_species::{Bull, Data, Dataset, IoError, SerdeJson};
 use indicatif::{ParallelProgressIterator, ProgressIterator};
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 
@@ -24,7 +24,7 @@ impl History {
     ///
     /// Called by [`Queue::active_subset`].
     #[tracing::instrument]
-    pub fn from_env() -> Result<Self, BeaErr> {
+    pub fn from_env() -> Result<Self, Bull> {
         dotenvy::dotenv().ok();
         let path = bea_data()?;
         let path = path.join("history");
@@ -37,7 +37,7 @@ impl History {
     ///
     /// Called by [`Queue::successes`].
     #[tracing::instrument(skip_all)]
-    pub fn is_success(&self, app: &App) -> Result<Option<bool>, BeaErr> {
+    pub fn is_success(&self, app: &App) -> Result<Option<bool>, Bull> {
         // get the path destination associated with app
         let path = app.destination(false)?;
         if let Some(event) = self.get(&path) {
@@ -60,7 +60,7 @@ impl History {
     ///
     /// Called by [`Queue::errors`] and [`Queue::active_subset`].
     #[tracing::instrument(skip_all)]
-    pub fn is_error(&self, app: &App) -> Result<Option<bool>, BeaErr> {
+    pub fn is_error(&self, app: &App) -> Result<Option<bool>, Bull> {
         // get the path destination associated with app
         let path = app.destination(false)?;
         if let Some(event) = self.get(&path) {
@@ -164,7 +164,7 @@ impl From<Vec<Event>> for History {
 }
 
 impl TryFrom<&std::path::PathBuf> for History {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(path: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let mut events = std::collections::BTreeMap::new();
@@ -183,7 +183,7 @@ impl TryFrom<&std::path::PathBuf> for History {
 }
 
 impl TryFrom<(Dataset, Mode)> for History {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(ctx: (Dataset, Mode)) -> Result<Self, Self::Error> {
         dotenvy::dotenv().ok();
@@ -342,7 +342,7 @@ impl Chunks {
         queue: &Queue,
         overwrite: Overwrite,
         style: indicatif::ProgressStyle,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let queues = self.with_queue_par(queue, style.clone());
         tracing::trace!("Chunks to download: {}.", queues.len());
         for (i, queue) in queues.iter().enumerate().progress_with_style(style) {
@@ -363,7 +363,7 @@ impl Chunks {
         &self,
         queue: &Queue,
         style: indicatif::ProgressStyle,
-    ) -> Result<Vec<Data>, BeaErr> {
+    ) -> Result<Vec<Data>, Bull> {
         let mut data = Vec::new();
         for queue in self
             .with_queue_single(queue, style.clone())

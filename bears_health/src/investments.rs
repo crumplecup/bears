@@ -1,5 +1,5 @@
 use bears_ecology::{bea_data, trace_init};
-use bears_species::{BeaErr, BeaResponse, Investment, IoError, KeyMissing, SerdeJson};
+use bears_species::{BeaResponse, Bull, Investment, IoError, KeyMissing, SerdeJson};
 use std::str::FromStr;
 
 /// Checks that each "TypeOfInvestment" parameter value matches an enum variant in
@@ -8,7 +8,7 @@ use std::str::FromStr;
 ///
 /// Does not test that all variants in `Component` are in active use.
 #[tracing::instrument]
-pub fn check_investments() -> Result<(), BeaErr> {
+pub fn check_investments() -> Result<(), Bull> {
     trace_init()?;
     dotenvy::dotenv().ok();
     // Load Indicator parameter values into the `BeaResponse` type.

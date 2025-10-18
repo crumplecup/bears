@@ -1,5 +1,5 @@
 use bears_ecology::{bea_data, get_datasets, trace_init};
-use bears_species::{BeaErr, BeaResponse, Dataset, DatasetMissing, IoError, SerdeJson};
+use bears_species::{BeaResponse, Bull, Dataset, DatasetMissing, IoError, SerdeJson};
 use strum::IntoEnumIterator;
 
 /// Queries valid parameter values for the dataset parameter.
@@ -7,7 +7,7 @@ use strum::IntoEnumIterator;
 /// Saves the result as `dataset.json` in the `BEA_DATA` directory.
 /// Pings the BEA API.
 #[tracing::instrument]
-pub async fn datasets_to_json() -> Result<(), BeaErr> {
+pub async fn datasets_to_json() -> Result<(), Bull> {
     get_datasets().await
 }
 
@@ -15,7 +15,7 @@ pub async fn datasets_to_json() -> Result<(), BeaErr> {
 /// avoids making api calls to bea
 /// used to test internal parsing of responses
 #[tracing::instrument]
-pub fn datasets_from_file() -> Result<(), BeaErr> {
+pub fn datasets_from_file() -> Result<(), Bull> {
     trace_init()?;
     dotenvy::dotenv().ok();
     let bea_data = bea_data()?;
@@ -37,7 +37,7 @@ pub fn datasets_from_file() -> Result<(), BeaErr> {
 ///
 /// Does not test that all variants in `Dataset` are in active use.
 #[tracing::instrument]
-pub fn check_datasets() -> Result<(), BeaErr> {
+pub fn check_datasets() -> Result<(), Bull> {
     trace_init()?;
     dotenvy::dotenv().ok();
     // Load `datasets.json` into a `BeaResponse` type.

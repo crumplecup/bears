@@ -1,8 +1,8 @@
 use crate::{App, History, Mode, Options, Overwrite, Queue, Scope, bea_data, init};
 use bears_species::{
-    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, FixedAssets, GdpByIndustry, Iip,
-    InputOutput, IoError, Ita, Method, Mne, NiUnderlyingDetail, Nipa, ParameterName, ReqwestError,
-    Results, SerdeJson, VariantMissing,
+    BeaResponse, Bull, Data, Dataset, DatasetMissing, FixedAssets, GdpByIndustry, Iip, InputOutput,
+    IoError, Ita, Method, Mne, NiUnderlyingDetail, Nipa, ParameterName, ReqwestError, Results,
+    SerdeJson, VariantMissing,
 };
 use strum::IntoEnumIterator;
 
@@ -31,7 +31,7 @@ pub enum Request {
 
 impl Request {
     #[tracing::instrument(skip_all)]
-    pub fn init(&self) -> Result<App, BeaErr> {
+    pub fn init(&self) -> Result<App, Bull> {
         match self {
             Self::Data => {
                 let method = Method::GetData;
@@ -58,7 +58,7 @@ impl Request {
 }
 
 #[tracing::instrument]
-fn init_method(method: Method) -> Result<App, BeaErr> {
+fn init_method(method: Method) -> Result<App, Bull> {
     let mut app = init()?;
     tracing::info!("App initialized.");
     let mut options = Options::default();
@@ -68,7 +68,7 @@ fn init_method(method: Method) -> Result<App, BeaErr> {
     Ok(app)
 }
 
-pub fn init_queue(dataset: Dataset) -> Result<Queue, BeaErr> {
+pub fn init_queue(dataset: Dataset) -> Result<Queue, Bull> {
     let req = Request::Data;
     let mut app = req.init()?;
     app.with_dataset(dataset);
@@ -154,7 +154,7 @@ pub fn init_queue(dataset: Dataset) -> Result<Queue, BeaErr> {
 }
 
 /// Download the BEA dataset parameter values into the `BEA_DATA` directory.
-pub async fn get_datasets() -> Result<(), BeaErr> {
+pub async fn get_datasets() -> Result<(), Bull> {
     let req = Request::Dataset;
     let app = req.init()?;
     let data = app.get().await?;
@@ -178,7 +178,7 @@ pub async fn get_datasets() -> Result<(), BeaErr> {
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn initial_download(dataset: Dataset) -> Result<(), BeaErr> {
+pub async fn initial_download(dataset: Dataset) -> Result<(), Bull> {
     let queue = init_queue(dataset)?;
     tracing::info!("Queue length: {}", queue.len());
     queue.download(Overwrite::No).await?;
@@ -189,7 +189,7 @@ pub async fn initial_download(dataset: Dataset) -> Result<(), BeaErr> {
 pub async fn download_with_history(
     dataset: Dataset,
     style: indicatif::ProgressStyle,
-) -> Result<(), BeaErr> {
+) -> Result<(), Bull> {
     let queue = init_queue(dataset)?;
     tracing::info!("Queue length: {}", queue.len());
 
@@ -210,7 +210,7 @@ pub async fn download_with_history(
 pub fn initial_load_par(
     dataset: Dataset,
     load_history: Option<&History>,
-) -> Result<Vec<Data>, BeaErr> {
+) -> Result<Vec<Data>, Bull> {
     let mut queue = init_queue(dataset)?;
     tracing::info!("Queue length: {}", queue.len());
 
@@ -239,7 +239,7 @@ pub fn initial_load_par(
 pub async fn initial_load(
     dataset: Dataset,
     load_history: Option<&History>,
-) -> Result<Vec<Data>, BeaErr> {
+) -> Result<Vec<Data>, Bull> {
     let mut queue = init_queue(dataset)?;
     tracing::info!("Queue length: {}", queue.len());
 
@@ -264,7 +264,7 @@ pub async fn initial_load(
 
 /// Tries to load any files in the history that previously failed to load.
 #[tracing::instrument(skip_all)]
-pub async fn retry_load(dataset: Dataset) -> Result<Vec<Data>, BeaErr> {
+pub async fn retry_load(dataset: Dataset) -> Result<Vec<Data>, Bull> {
     let mut queue = init_queue(dataset)?;
     tracing::info!("Queue length: {}", queue.len());
 
@@ -285,7 +285,7 @@ pub async fn retry_load(dataset: Dataset) -> Result<Vec<Data>, BeaErr> {
 ///
 /// Called by [`Self::parameters`].
 #[tracing::instrument(skip_all)]
-async fn parameter(dataset: Dataset, app: &mut App) -> Result<(), BeaErr> {
+async fn parameter(dataset: Dataset, app: &mut App) -> Result<(), Bull> {
     app.with_dataset(dataset);
     let data = app.get().await?;
     match data.json::<serde_json::Value>().await {
@@ -319,7 +319,7 @@ async fn parameter(dataset: Dataset, app: &mut App) -> Result<(), BeaErr> {
 /// For each variant of [`Dataset`], request the parameters.
 /// Write the results in JSON format to the BEA_DATA directory.
 #[tracing::instrument]
-pub async fn parameters() -> Result<(), BeaErr> {
+pub async fn parameters() -> Result<(), Bull> {
     let req = Request::Parameter;
     let mut app = req.init()?;
     let datasets: Vec<Dataset> = Dataset::iter().collect();
@@ -334,11 +334,7 @@ pub async fn parameters() -> Result<(), BeaErr> {
 ///
 /// Called by [`Self::parameter_values`].
 #[tracing::instrument(skip_all)]
-async fn parameter_value(
-    dataset: Dataset,
-    app: &mut App,
-    name: ParameterName,
-) -> Result<(), BeaErr> {
+async fn parameter_value(dataset: Dataset, app: &mut App, name: ParameterName) -> Result<(), Bull> {
     let mut opts = app.options().clone();
     let _ = opts.with_dataset(dataset);
     let _ = opts.with_param_name(name);
@@ -388,7 +384,7 @@ async fn parameter_value(
 /// multiple times into our internal library types, succussfully or unsuccessfully, without making
 /// repeated API calls to BEA for the same data.
 #[tracing::instrument]
-pub async fn parameter_values() -> Result<(), BeaErr> {
+pub async fn parameter_values() -> Result<(), Bull> {
     let req = Request::ParameterValue;
     let mut app = req.init()?;
     let datasets: Vec<Dataset> = Dataset::iter().collect();
@@ -405,7 +401,7 @@ pub async fn parameter_values() -> Result<(), BeaErr> {
 ///
 /// Called by [`Self::values`].
 #[tracing::instrument(skip_all)]
-async fn value(dataset: Dataset, app: &mut App, name: ParameterName) -> Result<(), BeaErr> {
+async fn value(dataset: Dataset, app: &mut App, name: ParameterName) -> Result<(), Bull> {
     let mut options = app.options().clone();
     let _ = options.with_dataset(dataset);
     let _ = options.with_target(name);
@@ -460,7 +456,7 @@ async fn value(dataset: Dataset, app: &mut App, name: ParameterName) -> Result<(
 /// The GdpByIndustry and UnderlyingGdpByIndustry datasets require additional parameters for some
 /// keys.
 #[tracing::instrument]
-pub async fn values() -> Result<(), BeaErr> {
+pub async fn values() -> Result<(), Bull> {
     let req = Request::ParameterValueFilter;
     let mut app = req.init()?;
     let datasets: Vec<Dataset> = Dataset::iter().collect();
@@ -477,7 +473,7 @@ pub async fn values() -> Result<(), BeaErr> {
 /// The `subset` variant of this method only requests data for datasets where the BEA has
 /// implemented a response for each parameter name associated with the dataset.
 #[tracing::instrument]
-pub async fn values_subset() -> Result<(), BeaErr> {
+pub async fn values_subset() -> Result<(), Bull> {
     let req = Request::ParameterValueFilter;
     let mut app = req.init()?;
     let datasets = vec![
@@ -503,7 +499,7 @@ pub async fn values_subset() -> Result<(), BeaErr> {
 ///
 /// Used for GdpByIndustry and UnderlyingGdpByIndustry variants.  Called by [`Self::values_gdp`] and [`Self::values_ugdp`].
 #[tracing::instrument(skip_all)]
-async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Result<(), BeaErr> {
+async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Result<(), Bull> {
     dotenvy::dotenv().ok();
     // path to bea_data directory
     let bea_data = bea_data()?;
@@ -549,7 +545,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
         ParameterName::Industry => {
             for id in table_id {
                 // add table id to options
-                let _ = options.with_table_id(*id.value());
+                let _ = options.with_table_id(id.code());
                 // update app with modified options
                 app.with_options(options.clone());
                 // fire off the get request using the configured app
@@ -564,7 +560,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
                         // update path with file name
                         let path = path.join(format!(
                             "{dataset}_{name}_byTableId_{}_values.json",
-                            id.value()
+                            id.code()
                         ));
                         tracing::info!("Current target path: {path:?}");
                         // Write contents of response to file
@@ -587,7 +583,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
         // TODO: Test this branch
         ParameterName::Year => {
             for id in table_id {
-                let _ = options.with_table_id(*id.value());
+                let _ = options.with_table_id(id.code());
                 app.with_options(options.clone());
                 let data = app.get().await?;
                 tracing::info!("{data:#?}");
@@ -598,7 +594,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
                             .map_err(|e| SerdeJson::new(e, line!(), file!().to_string()))?;
                         let path = path.join(format!(
                             "{dataset}_{name}_byTableId_{}_values.json",
-                            id.value()
+                            id.code()
                         ));
                         tracing::info!("Current target path: {path:?}");
                         std::fs::write(&path, contents)
@@ -635,7 +631,7 @@ async fn value_gdp(dataset: Dataset, app: &mut App, name: ParameterName) -> Resu
 /// Due to the nested call to [`GdpByIndustry::read_table_id`], we have seperate checks for GDP and
 /// Underlying GDP.  Less dry but somewhat clearer to write and read.
 #[tracing::instrument]
-pub async fn values_gdp() -> Result<(), BeaErr> {
+pub async fn values_gdp() -> Result<(), Bull> {
     let req = Request::ParameterValueFilter;
     let mut app = req.init()?;
     let dataset = Dataset::GDPbyIndustry;
@@ -649,7 +645,7 @@ pub async fn values_gdp() -> Result<(), BeaErr> {
 /// The `values_ugdp` method downloads the valid parameter values for
 /// [`Dataset::UnderlyingGDPbyIndustry`] variant.
 #[tracing::instrument]
-pub async fn values_ugdp() -> Result<(), BeaErr> {
+pub async fn values_ugdp() -> Result<(), Bull> {
     let req = Request::ParameterValueFilter;
     let mut app = req.init()?;
     let dataset = Dataset::UnderlyingGDPbyIndustry;
@@ -665,7 +661,7 @@ pub async fn values_ugdp() -> Result<(), BeaErr> {
 ///
 /// Calls [`Self::values_gdp`] and [`Self::values_ugdp`].
 #[tracing::instrument]
-pub async fn values_gdp_set() -> Result<(), BeaErr> {
+pub async fn values_gdp_set() -> Result<(), Bull> {
     values_gdp().await?;
     values_ugdp().await?;
     Ok(())
@@ -677,6 +673,6 @@ pub async fn values_gdp_set() -> Result<(), BeaErr> {
 /// iterator, this lack of access is counter-productive.
 /// TODO: Improve and remove.
 #[tracing::instrument(skip_all)]
-pub fn queue(dataset: Dataset) -> Result<Queue, BeaErr> {
+pub fn queue(dataset: Dataset) -> Result<Queue, Bull> {
     init_queue(dataset)
 }

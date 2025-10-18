@@ -1,7 +1,7 @@
 use bears_ecology::{
     History, Mode, Overwrite, Style, download_with_history, init_queue, initial_load,
 };
-use bears_species::{BeaErr, Dataset, write_json};
+use bears_species::{Bull, Dataset, write_json};
 use clap::Parser;
 // use indicatif::ProgressBar;
 
@@ -34,7 +34,7 @@ pub struct Cli {
 
 impl Cli {
     #[tracing::instrument(skip_all)]
-    pub async fn act(&self) -> Result<(), BeaErr> {
+    pub async fn act(&self) -> Result<(), Bull> {
         self.command.act(self).await
     }
 }
@@ -52,7 +52,7 @@ pub enum Action {
 
 impl Action {
     #[tracing::instrument(skip_all)]
-    pub async fn act(&self, cli: &Cli) -> Result<(), BeaErr> {
+    pub async fn act(&self, cli: &Cli) -> Result<(), Bull> {
         match self {
             Self::Download => {
                 if let Some(dataset) = cli.dataset {

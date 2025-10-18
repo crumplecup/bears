@@ -1,4 +1,4 @@
-use bears_species::{BeaErr, Dataset, IoError, ParameterName, write_json};
+use bears_species::{Bull, Dataset, IoError, ParameterName, write_json};
 use std::collections::BTreeSet;
 
 #[tracing::instrument(skip_all)]
@@ -8,7 +8,7 @@ pub fn params<T: Ord + serde::Serialize, P: AsRef<std::path::Path>, N: std::fmt:
     dataset: Dataset,
     name: N,
     kind: &str,
-) -> Result<(), BeaErr> {
+) -> Result<(), Bull> {
     let path = path.as_ref();
     let path = path.join("key_sets");
     if !path.exists() {
@@ -30,7 +30,7 @@ pub fn difference<T: Ord + serde::Serialize, P: AsRef<std::path::Path>>(
     dataset: Dataset,
     name: ParameterName,
     kind: &str,
-) -> Result<(), BeaErr> {
+) -> Result<(), Bull> {
     let path = path.as_ref();
     let path = path.join("key_sets");
     if !path.exists() {
@@ -60,7 +60,7 @@ pub fn unused<T: Ord + serde::Serialize, P: AsRef<std::path::Path>>(
     path: P,
     dataset: Dataset,
     name: ParameterName,
-) -> Result<(), BeaErr> {
+) -> Result<(), Bull> {
     let path = path.as_ref();
     let path = path.join("key_sets");
     if !path.exists() {
@@ -89,7 +89,7 @@ pub fn missing<T: Ord + serde::Serialize, P: AsRef<std::path::Path>>(
     path: P,
     dataset: Dataset,
     name: ParameterName,
-) -> Result<(), BeaErr> {
+) -> Result<(), Bull> {
     let path = path.as_ref();
     let path = path.join("key_sets");
     if !path.exists() {

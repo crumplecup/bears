@@ -1,10 +1,10 @@
 use bears_ecology::{bea_data, trace_init, values, values_gdp, values_subset, values_ugdp};
-use bears_species::{BeaErr, BeaResponse, IoError, SerdeJson};
+use bears_species::{BeaResponse, Bull, IoError, SerdeJson};
 
 /// Calls a known bad combination of parameters to generate an API Error as a response.
 /// Writes the JSON representation of the error to the BEA_DATA directory.
 #[tracing::instrument]
-pub fn api_error() -> Result<(), BeaErr> {
+pub fn api_error() -> Result<(), Bull> {
     trace_init()?;
     dotenvy::dotenv().ok();
     let path = bea_data()?;
@@ -25,7 +25,7 @@ pub fn api_error() -> Result<(), BeaErr> {
 /// type.  Verifies that the program accurately recognizing this error condition from the BEA
 /// server.
 #[tracing::instrument]
-pub fn requests_exceeded() -> Result<(), BeaErr> {
+pub fn requests_exceeded() -> Result<(), Bull> {
     trace_init()?;
     dotenvy::dotenv().ok();
     let path = bea_data()?;
@@ -48,7 +48,7 @@ pub fn requests_exceeded() -> Result<(), BeaErr> {
 /// The GdpByIndustry and UnderlyingGdpByIndustry datasets require additional parameters for some
 /// keys.
 #[tracing::instrument]
-pub async fn values_filtered() -> Result<(), BeaErr> {
+pub async fn values_filtered() -> Result<(), Bull> {
     values().await
 }
 
@@ -56,7 +56,7 @@ pub async fn values_filtered() -> Result<(), BeaErr> {
 /// The `subset` variant of this method only requests data for datasets where the BEA has
 /// implemented a response for each parameter name associated with the dataset.
 #[tracing::instrument]
-pub async fn values_filtered_subset() -> Result<(), BeaErr> {
+pub async fn values_filtered_subset() -> Result<(), Bull> {
     values_subset().await
 }
 
@@ -68,7 +68,7 @@ pub async fn values_filtered_subset() -> Result<(), BeaErr> {
 /// Due to the nested call to [`GdpByIndustry::read_table_id`], we have seperate checks for GDP and
 /// Underlying GDP.  Less dry but somewhat clearer to write and read.
 #[tracing::instrument]
-pub async fn values_gdp_filtered() -> Result<(), BeaErr> {
+pub async fn values_gdp_filtered() -> Result<(), Bull> {
     values_gdp().await
 }
 
@@ -80,6 +80,6 @@ pub async fn values_gdp_filtered() -> Result<(), BeaErr> {
 /// Due to the nested call to [`UnderlyingGdpByIndustry::read_table_id`], we have seperate checks for GDP and
 /// Underlying GDP.  Less dry but somewhat clearer to write and read.
 #[tracing::instrument]
-pub async fn values_ugdp_filtered() -> Result<(), BeaErr> {
+pub async fn values_ugdp_filtered() -> Result<(), Bull> {
     values_ugdp().await
 }

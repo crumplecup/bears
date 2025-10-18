@@ -1,7 +1,7 @@
 use crate::{difference, params};
 use bears_ecology::initial_load;
 use bears_species::{
-    BeaErr, Component, Data, Dataset, Iip, Investment, ItaFrequency, Measure, Note, ParameterName,
+    Bull, Component, Data, Dataset, Iip, Investment, ItaFrequency, Measure, Note, ParameterName,
     Scale,
 };
 use std::collections::BTreeSet;
@@ -49,7 +49,7 @@ impl IipKeys {
             BTreeSet<Investment>,
             BTreeSet<jiff::civil::Date>,
         ),
-        BeaErr,
+        Bull,
     > {
         let path = path.as_ref().to_owned();
         let data = Iip::try_from(&path)?;
@@ -64,7 +64,7 @@ impl IipKeys {
     /// Loads IIP files, converts struct fields to BTree hash maps or sets.
     /// Serializes the results to the `BEA_DATA` directory.
     #[tracing::instrument(skip_all)]
-    pub async fn observed() -> Result<Self, BeaErr> {
+    pub async fn observed() -> Result<Self, Bull> {
         let dataset = Dataset::Iip;
         let obs = initial_load(dataset, None).await?;
         tracing::info!("{} datasets loaded.", obs.len());
@@ -113,7 +113,7 @@ impl IipKeys {
     #[tracing::instrument]
     pub fn print_expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::Iip;
         let kind = "Expected";
@@ -134,7 +134,7 @@ impl IipKeys {
     #[tracing::instrument]
     pub fn check_expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::Iip;
         // BEA provided paramater name keys for table id and year
@@ -160,7 +160,7 @@ impl IipKeys {
 
     /// Prints set members of type struct fields from source data to the `BEA_DATA` directory.
     #[tracing::instrument(skip_all)]
-    pub async fn print_observed<P: AsRef<std::path::Path>>(path: P) -> Result<(), BeaErr> {
+    pub async fn print_observed<P: AsRef<std::path::Path>>(path: P) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::Iip;
         let kind = "Observed";
@@ -190,7 +190,7 @@ impl IipKeys {
     /// Checks that all struct field values in source data are present as variants of their corresponding enum.
     /// Also warns on unused variants in the associated enum.
     #[tracing::instrument(skip_all)]
-    pub async fn check_observed<P: AsRef<std::path::Path>>(path: P) -> Result<(), BeaErr> {
+    pub async fn check_observed<P: AsRef<std::path::Path>>(path: P) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::Iip;
         // sets of codes within source data

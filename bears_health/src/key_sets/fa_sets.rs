@@ -1,8 +1,8 @@
 use crate::{Set, difference, params};
 use bears_ecology::initial_load;
 use bears_species::{
-    BeaErr, Data, Dataset, FixedAssetLine, FixedAssetTable, FixedAssets, Measure, Metric,
-    NipaRanges, Note, ParameterName, Scale,
+    Bull, Data, Dataset, FixedAssetLine, FixedAssetTable, FixedAssets, Measure, Metric, NipaRanges,
+    Note, ParameterName, Scale,
 };
 use std::collections::{BTreeMap, BTreeSet};
 use strum::IntoEnumIterator;
@@ -51,7 +51,7 @@ impl FixedAssetKeys {
     /// Serializes the results to `InputOutput_RowCode.json` and `InputOutput_ColumnCode.json` in the
     /// `BEA_DATA` directory.
     #[tracing::instrument]
-    async fn observed() -> Result<Self, BeaErr> {
+    async fn observed() -> Result<Self, Bull> {
         let dataset = Dataset::FixedAssets;
         let data = initial_load(dataset, None).await?;
         tracing::info!("{} datasets loaded.", data.len());
@@ -155,7 +155,7 @@ impl FixedAssetKeys {
     /// Serializes the results to `InputOutput_RowCode.json` and `InputOutput_ColumnCode.json` in the
     /// `BEA_DATA` directory.
     #[tracing::instrument(skip_all)]
-    pub async fn print_observed<P: AsRef<std::path::Path>>(path: P) -> Result<(), BeaErr> {
+    pub async fn print_observed<P: AsRef<std::path::Path>>(path: P) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::FixedAssets;
         let obs = Self::observed().await?;
@@ -254,7 +254,7 @@ impl FixedAssetKeys {
     #[tracing::instrument]
     pub async fn check_observed<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::InputOutput;
         let (exp, _years) = Self::expected(path)?;
@@ -273,7 +273,7 @@ impl FixedAssetKeys {
     #[tracing::instrument]
     fn expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(std::collections::BTreeSet<FixedAssetTable>, NipaRanges), BeaErr> {
+    ) -> Result<(std::collections::BTreeSet<FixedAssetTable>, NipaRanges), Bull> {
         let path = path.as_ref().to_owned();
         let data = FixedAssets::try_from(&path)?;
         let ids = data.table_names();
@@ -285,7 +285,7 @@ impl FixedAssetKeys {
     #[tracing::instrument]
     pub fn print_expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::FixedAssets;
         let kind = "Expected";
@@ -302,7 +302,7 @@ impl FixedAssetKeys {
     #[tracing::instrument]
     pub async fn check_expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let dataset = Dataset::FixedAssets;
         // BEA provided paramater name keys for table id and year

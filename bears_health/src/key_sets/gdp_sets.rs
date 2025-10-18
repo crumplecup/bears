@@ -1,8 +1,7 @@
 use crate::{difference, params};
 use bears_ecology::initial_load;
 use bears_species::{
-    BeaErr, Data, Dataset, DatasetMissing, Frequency, GdpByIndustry, Naics, Note, ParameterName,
-    Set,
+    Bull, Data, Dataset, DatasetMissing, Frequency, GdpByIndustry, Naics, Note, ParameterName, Set,
 };
 use std::collections::BTreeSet;
 use strum::IntoEnumIterator;
@@ -49,7 +48,7 @@ impl GdpKeys {
     fn expected<'a, P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<GdpKeys, BeaErr> {
+    ) -> Result<GdpKeys, Bull> {
         let path = path.as_ref().to_owned();
         match dataset {
             Dataset::GDPbyIndustry => {
@@ -97,7 +96,7 @@ impl GdpKeys {
     pub fn print_expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let kind = "Expected";
         let data = Self::expected(path, dataset)?;
@@ -118,7 +117,7 @@ impl GdpKeys {
     pub fn check_expected<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         // BEA provided paramater name keys for table id and year
         let keys = Self::expected(path, dataset)?;
@@ -143,7 +142,7 @@ impl GdpKeys {
     /// Attempts to load all files in the download [`History`], without respect to the load `History`.
     /// Loads GDPbyIndustry files, converts them to struct field sets.
     #[tracing::instrument(skip_all)]
-    async fn observed(dataset: Dataset) -> Result<GdpKeys, BeaErr> {
+    async fn observed(dataset: Dataset) -> Result<GdpKeys, Bull> {
         let obs = initial_load(dataset, None).await?;
         tracing::info!("{} datasets loaded.", obs.len());
         let mut frequencies = BTreeSet::new();
@@ -188,7 +187,7 @@ impl GdpKeys {
     pub async fn print_observed<P: AsRef<std::path::Path>>(
         path: P,
         dataset: Dataset,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let kind = "Observed";
         let obs = Self::observed(dataset).await?;
@@ -214,7 +213,7 @@ impl GdpKeys {
     pub async fn check_observed<P: AsRef<std::path::Path>>(
         path: P,
         dataset: Dataset,
-    ) -> Result<(), BeaErr> {
+    ) -> Result<(), Bull> {
         let path = path.as_ref();
         let exp = Self::expected(path, dataset)?;
         // sets of codes within source data

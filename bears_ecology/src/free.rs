@@ -1,5 +1,5 @@
 use crate::{App, Options};
-use bears_species::{BeaErr, EnvError, IoError, UrlParseError};
+use bears_species::{Bull, EnvError, IoError, UrlParseError};
 use tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt};
 
 pub fn bea_data() -> Result<std::path::PathBuf, EnvError> {
@@ -13,7 +13,7 @@ pub fn bea_data() -> Result<std::path::PathBuf, EnvError> {
 /// Initiates a subscriber for the tracing library. Used to instrument internal library functions
 /// for debugging and diagnostics.
 #[tracing::instrument]
-pub fn trace_init() -> Result<(), BeaErr> {
+pub fn trace_init() -> Result<(), Bull> {
     let path = bea_data()?;
     let path = path.join("history");
     if !path.exists() {
@@ -58,7 +58,7 @@ pub fn trace_init() -> Result<(), BeaErr> {
 /// Reads environmental variables from .env
 /// Creates an instance of App
 #[tracing::instrument]
-pub fn init() -> Result<App, BeaErr> {
+pub fn init() -> Result<App, Bull> {
     trace_init()?;
     tracing::info!("Test logging initialized.");
     dotenvy::dotenv().ok();

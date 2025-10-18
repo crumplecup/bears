@@ -1,6 +1,6 @@
 use crate::{Options, ParameterKind, bea_data};
 use bears_species::{
-    BTreeKeyMissing, BeaErr, BeaResponse, Dataset, DeriveFromStr, IoError, JsonParseError,
+    BTreeKeyMissing, BeaResponse, Bull, Dataset, DeriveFromStr, IoError, JsonParseError,
     KeyMissing, Method, MillionsOptions, ParameterName, RateLimit, ReqwestError, Results,
     SerdeJson, VariantMissing,
 };
@@ -227,7 +227,7 @@ impl App {
 
     /// Returns the value of the parameter containing the selected [`Method`].  Used to determine
     /// path destinations for queries.
-    pub fn method(&self) -> Result<Method, BeaErr> {
+    pub fn method(&self) -> Result<Method, Bull> {
         let query = self.query();
         let key = ParameterKind::Method.header();
         let method = match query.get(&key) {
@@ -243,7 +243,7 @@ impl App {
 
     /// Returns the value of the parameter containing the selected [`Dataset`].  Used to determine
     /// path destinations for queries.
-    pub fn dataset(&self) -> Result<Dataset, BeaErr> {
+    pub fn dataset(&self) -> Result<Dataset, Bull> {
         let query = self.query();
         let key = ParameterKind::Dataset.header();
         let dataset = match query.get(&key) {
@@ -261,7 +261,7 @@ impl App {
     /// Called by [`App::save`] and [`App::load`].
     // TODO: Handle year or year ranges for individual and multiple selections.
     // TODO: Break into smaller functions for improved code clarity.
-    pub fn destination(&self, create: bool) -> Result<std::path::PathBuf, BeaErr> {
+    pub fn destination(&self, create: bool) -> Result<std::path::PathBuf, Bull> {
         let query = self.query();
         tracing::trace!("Params are {:#?}", query);
         let method = self.method()?;
@@ -428,7 +428,7 @@ impl App {
     ///
     /// For one-off requests, tracking is unnecessary and it is better to use the [`App::get`]
     /// method directly.
-    pub async fn download(&self, id: uuid::Uuid) -> Result<ResultStatus, BeaErr> {
+    pub async fn download(&self, id: uuid::Uuid) -> Result<ResultStatus, Bull> {
         tracing::trace!("Calling download.");
         let query = self.query();
         tracing::trace!("Params are {:#?}", query);
@@ -488,7 +488,7 @@ impl App {
     }
 
     /// The `save` method writes a [`serde_json::Value`] to the `BEA_DATA` directory.
-    pub fn save(&self, json: serde_json::Value) -> Result<(), BeaErr> {
+    pub fn save(&self, json: serde_json::Value) -> Result<(), Bull> {
         tracing::trace!("Calling save.");
         let method = self.method()?;
         match method {
@@ -509,7 +509,7 @@ impl App {
 
     /// The `load` method reads a [`BeaResponse`] from the `BEA_DATA` directory.  Uses the `App`
     /// configuration to determine the file destination.
-    pub fn load(&self) -> Result<BeaResponse, BeaErr> {
+    pub fn load(&self) -> Result<BeaResponse, Bull> {
         tracing::trace!("Calling load.");
         let query = self.query();
         tracing::trace!("Params are {:#?}", query);

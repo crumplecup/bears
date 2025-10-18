@@ -1,5 +1,5 @@
 use bears_species::{
-    ApiMetadata, BeaErr, Dataset, FixedAssets, GdpByIndustry, Iip, InputOutput, IntlServSta,
+    ApiMetadata, Bull, Dataset, FixedAssets, GdpByIndustry, Iip, InputOutput, IntlServSta,
     IntlServTrade, Ita, Mne, NiUnderlyingDetail, Nipa, Regional,
 };
 
@@ -33,7 +33,7 @@ pub enum ValueSet {
 }
 
 impl ValueSet {
-    pub fn from_path(path: &std::path::PathBuf, dataset: Dataset) -> Result<Self, BeaErr> {
+    pub fn from_path(path: &std::path::PathBuf, dataset: Dataset) -> Result<Self, Bull> {
         match dataset {
             Dataset::APIDatasetMetadata => {
                 let set = ApiMetadata::try_from(path)?;
@@ -215,7 +215,7 @@ impl ValueSet {
 pub struct ValueSets(Vec<ValueSet>);
 
 impl ValueSets {
-    pub fn from_path(path: &std::path::PathBuf, datasets: &[Dataset]) -> Result<Self, BeaErr> {
+    pub fn from_path(path: &std::path::PathBuf, datasets: &[Dataset]) -> Result<Self, Bull> {
         let mut sets = Vec::new();
         for dataset in datasets {
             let set = ValueSet::from_path(path, *dataset)?;

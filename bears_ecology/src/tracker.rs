@@ -1,5 +1,5 @@
 use crate::{Mode, ResultStatus};
-use bears_species::{BeaErr, DeriveFromStr, Jiff, KeyMissing, NotObject, ParseInt, map_to_string};
+use bears_species::{Bull, DeriveFromStr, Jiff, KeyMissing, NotObject, ParseInt, map_to_string};
 use jiff::ToSpan;
 use std::str::FromStr;
 
@@ -257,7 +257,7 @@ impl Event {
         }
     }
 
-    pub fn len_from_str(len: &str) -> Result<Option<u64>, BeaErr> {
+    pub fn len_from_str(len: &str) -> Result<Option<u64>, Bull> {
         match len {
             "None" => Ok(None),
             number => match number.parse::<u64>() {
@@ -271,7 +271,7 @@ impl Event {
         }
     }
 
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let msg = map_to_string("message", m)?;
         // skip the key in key: value pair sequence
         // skip the first field "id"
@@ -317,7 +317,7 @@ impl Event {
 }
 
 impl TryFrom<&serde_json::Value> for Event {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading Event.");

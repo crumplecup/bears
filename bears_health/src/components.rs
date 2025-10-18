@@ -1,5 +1,5 @@
 use bears_ecology::{bea_data, trace_init};
-use bears_species::{BeaErr, BeaResponse, Component, IoError, KeyMissing, SerdeJson};
+use bears_species::{BeaResponse, Bull, Component, IoError, KeyMissing, SerdeJson};
 use strum::IntoEnumIterator;
 
 /// Checks that each "Component" parameter value matches an enum variant in
@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 ///
 /// Does not test that all variants in `Component` are in active use.
 #[tracing::instrument]
-pub fn check_components() -> Result<(), BeaErr> {
+pub fn check_components() -> Result<(), Bull> {
     trace_init()?;
     dotenvy::dotenv().ok();
     // Load Indicator parameter values into the `BeaResponse` type.
