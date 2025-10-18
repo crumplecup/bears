@@ -239,7 +239,7 @@ pub struct IipDatum {
     note_ref: Option<String>,
     time_period: jiff::civil::Date,
     time_series_description: String,
-    time_series_id: String,
+    time_series_id: TimeSeries,
     type_of_investment: Investment,
     unit_mult: Scale,
     year: jiff::civil::Date,
@@ -272,6 +272,8 @@ impl IipDatum {
         let time_series_description = map_to_string("TimeSeriesDescription", m)?;
         tracing::trace!("time_series_description is {time_series_description}.");
         let time_series_id = map_to_string("TimeSeriesId", m)?;
+        let time_series_id = TimeSeries::from_str(&time_series_id)
+            .map_err(|e| DeriveFromStr::new(time_series_id, e, line!(), file!().to_owned()))?;
         tracing::trace!("time_series_id is {time_series_id}.");
         let type_of_investment = map_to_string("TypeOfInvestment", m)?;
         let type_of_investment = Investment::from_str(&type_of_investment)
@@ -311,14 +313,14 @@ impl IipDatum {
     #[tracing::instrument]
     pub fn time_series_code(&self) -> (String, String) {
         (
-            self.time_series_id().to_owned(),
+            self.time_series_id().to_string(),
             self.time_series_description().to_owned(),
         )
     }
 }
 
 impl TryFrom<serde_json::Value> for IipDatum {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading IipDatum.");
         match value {
@@ -404,7 +406,7 @@ impl IipData {
         self.iter()
             .map(|v| {
                 codes.insert(
-                    v.time_series_id().to_owned(),
+                    v.time_series_id().to_string(),
                     v.time_series_description().to_owned(),
                 )
             })
