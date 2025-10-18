@@ -6,7 +6,7 @@ use crate::{
 
 #[derive(Debug, derive_more::Deref, derive_more::DerefMut)]
 pub struct Bull {
-    kind: Box<BeaErrorKind>,
+    kind: Box<BullKind>,
 }
 
 impl std::fmt::Display for Bull {
@@ -21,30 +21,30 @@ impl std::error::Error for Bull {
     }
 }
 
-impl From<BeaErrorKind> for Bull {
-    fn from(value: BeaErrorKind) -> Self {
+impl From<BullKind> for Bull {
+    fn from(value: BullKind) -> Self {
         let kind = Box::new(value);
         Self { kind }
     }
 }
 
-macro_rules! impl_bea_err {
+macro_rules! impl_bull {
     ( $( $name:ident),* ) => {
         $(
             impl From<$name> for Bull {
                 fn from(value: $name) -> Self {
-                    let kind = BeaErrorKind::from(value).into();
+                    let kind = BullKind::from(value).into();
                     Self { kind }
                 }
             }
         )*
     };
     ( $( $name:ident),+ ,) => {
-       impl_bea_err![ $( $name ),* ];
+       impl_bull![ $( $name ),* ];
     };
 }
 
-impl_bea_err!(
+impl_bull!(
     AnnotationMissing,
     BadMetric,
     BadScale,
@@ -76,27 +76,27 @@ impl_bea_err!(
     YearInvalid,
 );
 
-macro_rules! impl_json_to_bea_err {
+macro_rules! impl_json_to_bull {
     ( $( $name:ident),* ) => {
         $(
             impl From<$name> for Bull {
                 fn from(value: $name) -> Self {
                     let kind = JsonParseError::from(value);
-                    let kind = BeaErrorKind::from(kind).into();
+                    let kind = BullKind::from(kind).into();
                     Self { kind }
                 }
             }
         )*
     };
     ( $( $name:ident),+ ,) => {
-       impl_json_to_bea_err![ $( $name ),* ];
+       impl_json_to_bull![ $( $name ),* ];
     };
 }
 
-impl_json_to_bea_err!(NotArray, NotObject, KeyMissing);
+impl_json_to_bull!(NotArray, NotObject, KeyMissing);
 
 #[derive(Debug, derive_more::From)]
-pub enum BeaErrorKind {
+pub enum BullKind {
     #[from(AnnotationMissing)]
     AnnotationMissing(AnnotationMissing),
     #[from(BadMetric)]
@@ -157,7 +157,7 @@ pub enum BeaErrorKind {
     YearInvalid(YearInvalid),
 }
 
-impl std::fmt::Display for BeaErrorKind {
+impl std::fmt::Display for BullKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::AnnotationMissing(e) => {
@@ -251,7 +251,7 @@ impl std::fmt::Display for BeaErrorKind {
     }
 }
 
-impl std::error::Error for BeaErrorKind {
+impl std::error::Error for BullKind {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::AnnotationMissing(e) => e.source(),

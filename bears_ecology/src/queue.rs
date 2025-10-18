@@ -1,5 +1,5 @@
 use crate::{App, Event, History, ResultStatus, SizeEvent, Tracker, file_size};
-use bears_species::{BeaErrorKind, Bull, Data};
+use bears_species::{Bull, BullKind, Data};
 use indicatif::ProgressIterator;
 use rand::SeedableRng;
 use rand::seq::SliceRandom;
@@ -235,7 +235,7 @@ impl Queue {
         if let Err(blame) = listen_res {
             tracing::warn!("Probelm with tracking: {blame}");
             match *blame.as_ref() {
-                BeaErrorKind::RateLimit(_) => {
+                BullKind::RateLimit(_) => {
                     tracing::error!("Limit rate exceeded, pausing for one hour.");
                     tokio::time::sleep(std::time::Duration::from_millis(3600000)).await;
                 }

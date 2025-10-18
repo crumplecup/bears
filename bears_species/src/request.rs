@@ -1,6 +1,6 @@
 use crate::{
-    BeaErrorKind, Bull, Dataset, DeriveFromStr, JsonParseError, JsonParseErrorKind, KeyMissing,
-    Method, NotObject, ParameterName, map_to_string,
+    Bull, BullKind, Dataset, DeriveFromStr, JsonParseError, JsonParseErrorKind, KeyMissing, Method,
+    NotObject, ParameterName, map_to_string,
 };
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -179,8 +179,8 @@ impl RequestParameters {
         } else {
             tracing::warn!("Failed to locate method in request.");
             match &**errs[0] {
-                BeaErrorKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
-                BeaErrorKind::JsonParse(kind) => match &**kind {
+                BullKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
+                BullKind::JsonParse(kind) => match &**kind {
                     JsonParseErrorKind::KeyMissing(key) => {
                         let error = JsonParseErrorKind::KeyMissing(key.clone());
                         let error = JsonParseError::from(error);
@@ -202,8 +202,8 @@ impl RequestParameters {
             }
         }
         match &**errs[0] {
-            BeaErrorKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
-            BeaErrorKind::JsonParse(kind) => match &**kind {
+            BullKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
+            BullKind::JsonParse(kind) => match &**kind {
                 JsonParseErrorKind::KeyMissing(key) => {
                     let error = JsonParseErrorKind::KeyMissing(key.clone());
                     let error = JsonParseError::from(error);
@@ -237,8 +237,8 @@ impl RequestParameters {
         } else {
             tracing::warn!("Failed to locate parameter name in request.");
             match &**errs[0] {
-                BeaErrorKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
-                BeaErrorKind::JsonParse(kind) => match &**kind {
+                BullKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
+                BullKind::JsonParse(kind) => match &**kind {
                     JsonParseErrorKind::KeyMissing(key) => {
                         let error = JsonParseErrorKind::KeyMissing(key.clone());
                         let error = JsonParseError::from(error);
