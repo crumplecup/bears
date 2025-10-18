@@ -16,10 +16,10 @@ pub use dataset::{Dataset, DatasetDetails, Datasets};
 // investment invalid unused
 // check unused
 pub use error::{
-    BTreeKeyMissing, BeaErrorKind, Bull, Csv, DatasetMissing, DeriveFromStr, EnvError,
-    FromStrError, IoError, Jiff, JsonParseError, JsonParseErrorKind, KeyMissing, NotArray,
-    NotObject, ParameterValueTableVariant, ParseInt, Progress, RateLimit, ReqwestError, SerdeJson,
-    Set, VariantMissing,
+    BTreeKeyMissing, Bull, BullKind, Csv, DatasetMissing, DeriveFromStr, EnvError, FromStrError,
+    IoError, Jiff, JsonParseError, JsonParseErrorKind, KeyMissing, NotArray, NotObject,
+    ParameterValueTableVariant, ParseInt, Progress, RateLimit, ReqwestError, SerdeJson, Set,
+    VariantMissing,
 };
 pub use free::{
     NotFloat, NotInteger, ParseFloat, ParseInteger, UrlParseError, from_csv, json_bool, json_str,

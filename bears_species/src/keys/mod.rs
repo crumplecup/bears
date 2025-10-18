@@ -10,6 +10,7 @@ mod fixed_asset_line;
 mod fixed_asset_table;
 mod footnote;
 mod frequency;
+mod gdp_table;
 mod indicator;
 mod industry;
 mod input_output_code;
@@ -26,6 +27,7 @@ mod selection;
 mod service;
 mod state;
 mod table_name;
+mod time_series;
 mod trade;
 mod year;
 
@@ -41,6 +43,7 @@ pub use fixed_asset_line::FixedAssetLine;
 pub use fixed_asset_table::FixedAssetTable;
 pub use footnote::Footnotes;
 pub use frequency::{Frequencies, Frequency, FrequencyOptions, ItaFrequencies, ItaFrequency};
+pub use gdp_table::GdpTable;
 pub use indicator::Indicator;
 pub use industry::IipIndustry;
 pub use input_output_code::InputOutputCode;
@@ -63,6 +66,7 @@ pub use selection::{SelectionKind, SelectionSet};
 pub use service::Service;
 pub use state::{State, StateKind};
 pub use table_name::{NipaTableName, TableName};
+pub use time_series::TimeSeries;
 pub use trade::TradeDirection;
 pub use year::{
     NipaRange, NipaRangeIterator, NipaRanges, NotQuarter, Year, YearInvalid, YearKind, YearOptions,
