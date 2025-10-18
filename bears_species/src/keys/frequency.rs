@@ -1,6 +1,6 @@
 use crate::{
-    BeaErr, DeriveFromStr, JsonParseError, KeyMissing, NipaFrequency, ParameterFields,
-    ParameterName, ParameterValueTable, ParameterValueTableVariant,
+    Bull, DeriveFromStr, JsonParseError, KeyMissing, NipaFrequency, ParameterFields, ParameterName,
+    ParameterValueTable, ParameterValueTableVariant,
 };
 use std::str::FromStr;
 
@@ -82,7 +82,7 @@ impl TryFrom<&NipaFrequency> for Frequency {
 }
 
 impl TryFrom<&ParameterValueTable> for Frequency {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::NipaFrequency(freq) => Ok(Self::try_from(freq)?),
@@ -233,7 +233,7 @@ impl TryFrom<&ParameterFields> for ItaFrequency {
 }
 
 impl TryFrom<&ParameterValueTable> for ItaFrequency {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),

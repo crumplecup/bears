@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::{
-    BeaErr, BeaResponse, Currency, Data, Dataset, DatasetMissing, DeriveFromStr, FixedAssetLine,
+    BeaResponse, Bull, Currency, Data, Dataset, DatasetMissing, DeriveFromStr, FixedAssetLine,
     FixedAssetTable, IoError, KeyMissing, Measure, Metric, NipaRange, NipaRanges, NotArray,
     NotObject, Note, Notes, ParameterName, ParameterValueTable, ParameterValueTableVariant, Scale,
     SerdeJson, Set, VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string,
@@ -32,7 +32,7 @@ impl FixedAssets {
 }
 
 impl TryFrom<&std::path::PathBuf> for FixedAssets {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::FixedAssets;
         let names = dataset.names();
@@ -157,7 +157,7 @@ pub struct FixedAssetDatum {
 }
 
 impl FixedAssetDatum {
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let cl_unit = map_to_string("CL_UNIT", m)?;
         let cl_unit = Measure::from_str(&cl_unit)
             .map_err(|e| DeriveFromStr::new(cl_unit, e, line!(), file!().to_owned()))?;
@@ -210,7 +210,7 @@ impl FixedAssetDatum {
 }
 
 impl TryFrom<serde_json::Value> for FixedAssetDatum {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading FixedAssetDatum.");
         match value {
@@ -599,7 +599,7 @@ impl FixedAssetData {
 }
 
 impl TryFrom<&std::path::PathBuf> for FixedAssetData {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let file = std::fs::File::open(value)
@@ -640,7 +640,7 @@ impl TryFrom<&std::path::PathBuf> for FixedAssetData {
 }
 
 impl TryFrom<&serde_json::Value> for FixedAssetData {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading FixedAssetData");
         match result_to_data(value)? {

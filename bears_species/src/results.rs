@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, Data, Dataset, DatasetMissing, Datasets, FixedAssetData, GdpData, IipData,
+    Bull, Data, Dataset, DatasetMissing, Datasets, FixedAssetData, GdpData, IipData,
     InputOutputData, ItaData, KeyMissing, Method, MneDiData, NipaData, NotObject, Notes,
     ParameterValues, Parameters, ParseInt, RequestParameters, map_to_string,
 };
@@ -58,10 +58,7 @@ impl Results {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn read_json(
-        value: &serde_json::Value,
-        request: &RequestParameters,
-    ) -> Result<Self, BeaErr> {
+    pub fn read_json(value: &serde_json::Value, request: &RequestParameters) -> Result<Self, Bull> {
         let method = request.method()?;
         match method {
             Method::GetData => {
@@ -202,7 +199,7 @@ pub struct Beaapi {
 
 impl Beaapi {
     #[tracing::instrument(skip_all)]
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let key = "Request".to_string();
         let request = if let Some(value) = m.get(&key) {
             RequestParameters::try_from(value)?
@@ -226,7 +223,7 @@ impl Beaapi {
 }
 
 impl TryFrom<&serde_json::Value> for Beaapi {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading Beaapi.");
         match value {
@@ -289,7 +286,7 @@ impl BeaResponse {
 }
 
 impl TryFrom<&serde_json::Value> for BeaResponse {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading BeaResponse.");
         match value {
@@ -335,7 +332,7 @@ pub struct ApiError {
 }
 
 impl ApiError {
-    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let key = "Error".to_string();
         if let Some(value) = mp.get(&key) {
             match value {
@@ -364,7 +361,7 @@ impl ApiError {
 }
 
 impl TryFrom<&serde_json::Value> for ApiError {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading ApiError.");
         match value {
@@ -399,7 +396,7 @@ pub struct MneError {
 }
 
 impl MneError {
-    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let key = "Error".to_string();
         if let Some(value) = mp.get(&key) {
             match value {
@@ -445,7 +442,7 @@ impl MneError {
 }
 
 impl TryFrom<&serde_json::Value> for MneError {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading MneError.");
         match value {
@@ -480,7 +477,7 @@ pub struct RequestsExceeded {
 }
 
 impl RequestsExceeded {
-    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(mp: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let key = "Error".to_string();
         if let Some(value) = mp.get(&key) {
             match value {
@@ -509,7 +506,7 @@ impl RequestsExceeded {
 }
 
 impl TryFrom<&serde_json::Value> for RequestsExceeded {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading RequestsExceeded.");
         match value {

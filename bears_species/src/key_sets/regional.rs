@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, Integer, IoError, ParameterName, SerdeJson, Set, TableName, Year,
+    BeaResponse, Bull, Dataset, Integer, IoError, ParameterName, SerdeJson, Set, TableName, Year,
 };
 
 #[derive(
@@ -22,7 +22,7 @@ pub struct Regional {
 }
 
 impl TryFrom<&std::path::PathBuf> for Regional {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::Regional;
         let names = dataset.names();

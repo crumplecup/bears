@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, IoError, ParameterFields, ParameterName, ParameterValueTable,
+    BeaResponse, Bull, Dataset, IoError, ParameterFields, ParameterName, ParameterValueTable,
     SerdeJson, Set, Year,
 };
 
@@ -24,7 +24,7 @@ pub struct IntlServTrade {
 }
 
 impl TryFrom<&std::path::PathBuf> for IntlServTrade {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::IntlServTrade;
         let names = dataset.names();

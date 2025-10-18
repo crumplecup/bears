@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, BeaResponse, Currency, Dataset, InputOutputCode, InputOutputTable, IoError, Naics,
+    BeaResponse, Bull, Currency, Dataset, InputOutputCode, InputOutputTable, IoError, Naics,
     NotArray, NotObject, Note, Notes, ParameterName, SerdeJson, Set, Year, map_to_float,
     map_to_string, parse_year,
 };
@@ -49,7 +49,7 @@ impl InputOutput {
 }
 
 impl TryFrom<&std::path::PathBuf> for InputOutput {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::InputOutput;
         let names = dataset.names();
@@ -161,7 +161,7 @@ pub struct InputOutputDatum {
 
 impl InputOutputDatum {
     #[tracing::instrument]
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let column_code = map_to_string("ColCode", m)?;
         let column_code = InputOutputCode::from_value(&column_code)?;
         tracing::trace!("column_code is {}.", column_code.code());
@@ -304,7 +304,7 @@ impl InputOutputData {
 }
 
 impl TryFrom<&serde_json::Value> for InputOutputData {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading InputOutputData");
         match crate::data::result_to_data(value)? {

@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, BeaResponse, Data, Dataset, DatasetMissing, Frequencies, Frequency, IoError, Millions,
+    BeaResponse, Bull, Data, Dataset, DatasetMissing, Frequencies, Frequency, IoError, Millions,
     MillionsOptions, NipaRange, NipaRanges, NipaTableName, NotArray, NotObject, ParameterName,
     ParameterValueTable, ParameterValueTableVariant, SelectionKind, SerdeJson, Set, TableName,
     VariantMissing, date_by_period, map_to_float, map_to_int, map_to_string, result_to_data,
@@ -43,7 +43,7 @@ impl Nipa {
 }
 
 impl TryFrom<&std::path::PathBuf> for Nipa {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::Nipa;
         let names = dataset.names();
@@ -399,7 +399,7 @@ impl NiUnderlyingDetail {
 }
 
 impl TryFrom<&std::path::PathBuf> for NiUnderlyingDetail {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::NIUnderlyingDetail;
         let names = dataset.names();
@@ -669,7 +669,7 @@ pub struct NipaDatum {
 }
 
 impl NipaDatum {
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let cl_unit = map_to_string("CL_UNIT", m)?;
         tracing::trace!("cl_unit is {cl_unit}.");
         let data_value = map_to_float("DataValue", m)?;
@@ -711,7 +711,7 @@ impl NipaDatum {
 }
 
 impl TryFrom<serde_json::Value> for NipaDatum {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading NipaDatum.");
         match value {
@@ -744,7 +744,7 @@ impl TryFrom<serde_json::Value> for NipaDatum {
 pub struct NipaData(Vec<NipaDatum>);
 
 impl TryFrom<&std::path::PathBuf> for NipaData {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let file = std::fs::File::open(value)
@@ -786,7 +786,7 @@ impl TryFrom<&std::path::PathBuf> for NipaData {
 }
 
 impl TryFrom<&serde_json::Value> for NipaData {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading NipaData");
         match result_to_data(value)? {

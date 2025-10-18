@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, Csv, FromStrError, IoError, JsonParseError, JsonParseErrorKind, KeyMissing, SerdeJson,
+    Bull, Csv, FromStrError, IoError, JsonParseError, JsonParseErrorKind, KeyMissing, SerdeJson,
 };
 
 /// Generic function to serialize data types into a CSV file.  Called by methods to avoid code
@@ -7,7 +7,7 @@ use crate::{
 pub fn to_csv<T: serde::Serialize + Clone, P: AsRef<std::path::Path>>(
     item: &mut [T],
     path: P,
-) -> Result<(), BeaErr> {
+) -> Result<(), Bull> {
     match csv::Writer::from_path(path.as_ref()) {
         Ok(mut wtr) => {
             for i in item {
@@ -74,7 +74,7 @@ pub fn from_csv<T: serde::de::DeserializeOwned + Clone, P: AsRef<std::path::Path
 pub fn write_json<T: ?Sized + serde::Serialize, P: AsRef<std::path::Path>>(
     contents: &T,
     path: P,
-) -> Result<(), BeaErr> {
+) -> Result<(), Bull> {
     let path = path.as_ref();
     let file = std::fs::File::create(path)
         .map_err(|e| IoError::new(path.to_owned(), e, line!(), file!().to_string()))?;

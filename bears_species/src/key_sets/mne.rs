@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::{
-    AffiliateLevel, BeaErr, BeaResponse, Classification, Dataset, DeriveFromStr, DirectionKind,
+    AffiliateLevel, BeaResponse, Bull, Classification, Dataset, DeriveFromStr, DirectionKind,
     DirectionOfInvestment, Footnotes, Integer, IntegerOptions, IoError, OwnershipLevel,
     ParameterName, ParameterValueTable, ParameterValueTableVariant, SerdeJson, Set, State,
     YearOptions,
@@ -69,7 +69,7 @@ impl Mne {
 }
 
 impl TryFrom<&std::path::PathBuf> for Mne {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::Mne;
         let names = dataset.names();

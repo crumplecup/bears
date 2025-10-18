@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, Frequency, MneDoi, NipaYear, ParameterFields, ParameterValueTable,
+    Bull, Frequency, MneDoi, NipaYear, ParameterFields, ParameterValueTable,
     ParameterValueTableVariant, ParseInt,
 };
 
@@ -142,7 +142,7 @@ pub fn date_by_month(input: &str) -> Option<jiff::civil::Date> {
     }
 }
 
-pub fn date_by_period(input: &str) -> Result<jiff::civil::Date, BeaErr> {
+pub fn date_by_period(input: &str) -> Result<jiff::civil::Date, Bull> {
     if let Some(date) = date_by_quarter(input) {
         Ok(date)
     } else if let Some(date) = date_by_month(input) {
@@ -153,7 +153,7 @@ pub fn date_by_period(input: &str) -> Result<jiff::civil::Date, BeaErr> {
 }
 
 impl TryFrom<&ParameterValueTable> for Year {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),
@@ -199,7 +199,7 @@ impl YearKind {
 }
 
 impl TryFrom<&ParameterFields> for YearKind {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
         match Year::try_from(value) {
             Ok(year) => Ok(Self::Year(year)),
@@ -215,7 +215,7 @@ impl TryFrom<&ParameterFields> for YearKind {
 }
 
 impl TryFrom<&MneDoi> for YearKind {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
         match Year::try_from(value) {
             Ok(year) => Ok(Self::Year(year)),
@@ -344,7 +344,7 @@ impl Default for YearOptions {
 }
 
 impl TryFrom<&ParameterFields> for YearOptions {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
         let key = value.key().to_string();
         let kind = YearKind::try_from(value)?;
@@ -353,7 +353,7 @@ impl TryFrom<&ParameterFields> for YearOptions {
 }
 
 impl TryFrom<&MneDoi> for YearOptions {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
         let key = value.key().to_string();
         let kind = YearKind::try_from(value)?;
@@ -362,7 +362,7 @@ impl TryFrom<&MneDoi> for YearOptions {
 }
 
 impl TryFrom<&ParameterValueTable> for YearOptions {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),
@@ -469,7 +469,7 @@ impl TryFrom<&NipaYear> for NipaRange {
 }
 
 impl TryFrom<&ParameterValueTable> for NipaRange {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::NipaYear(nipa_year) => Ok(Self::try_from(nipa_year)?),

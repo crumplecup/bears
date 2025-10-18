@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, DeriveFromStr, NipaTable, ParameterFields, ParameterName, ParameterValueTable,
+    Bull, DeriveFromStr, NipaTable, ParameterFields, ParameterName, ParameterValueTable,
     ParameterValueTableVariant,
 };
 
@@ -675,7 +675,7 @@ impl FixedAssetTable {
 
 use std::str::FromStr;
 impl TryFrom<&NipaTable> for FixedAssetTable {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &NipaTable) -> Result<Self, Self::Error> {
         Self::from_str(value.table_name()).map_err(|e| {
             DeriveFromStr::new(
@@ -690,7 +690,7 @@ impl TryFrom<&NipaTable> for FixedAssetTable {
 }
 
 impl TryFrom<&ParameterFields> for FixedAssetTable {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
         Self::from_str(value.key()).map_err(|e| {
@@ -700,7 +700,7 @@ impl TryFrom<&ParameterFields> for FixedAssetTable {
 }
 
 impl TryFrom<&ParameterValueTable> for FixedAssetTable {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::NipaTable(tab) => Self::try_from(tab),

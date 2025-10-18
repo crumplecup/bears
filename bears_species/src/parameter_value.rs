@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, Dataset, DeriveFromStr, Jiff, JsonParseError, KeyMissing, NotArray, NotObject,
+    Bull, Dataset, DeriveFromStr, Jiff, JsonParseError, KeyMissing, NotArray, NotObject,
     map_to_string,
 };
 use serde::{Deserialize, Serialize};
@@ -419,7 +419,7 @@ impl Metadata {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         use ParameterValueKind as pvk;
         tracing::trace!("Converting {} to Metadata.", &pvk::Dataset);
         let dataset = map_to_string(&pvk::Dataset.to_string(), m)?;
@@ -453,7 +453,7 @@ impl Metadata {
 }
 
 impl TryFrom<serde_json::Value> for Metadata {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading Metadata.");
         match value {

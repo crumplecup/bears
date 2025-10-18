@@ -1,4 +1,4 @@
-use crate::BeaErr;
+use crate::Bull;
 
 #[derive(
     Debug,
@@ -52,7 +52,7 @@ pub enum Annotation {
 }
 
 impl Annotation {
-    pub fn from_value(value: &str) -> Result<Self, BeaErr> {
+    pub fn from_value(value: &str) -> Result<Self, Bull> {
         let anno = match value {
             "(*)" => Self::Star,
             "A" => Self::A,

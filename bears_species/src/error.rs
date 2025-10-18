@@ -5,23 +5,23 @@ use crate::{
 };
 
 #[derive(Debug, derive_more::Deref, derive_more::DerefMut)]
-pub struct BeaErr {
+pub struct Bull {
     kind: Box<BeaErrorKind>,
 }
 
-impl std::fmt::Display for BeaErr {
+impl std::fmt::Display for Bull {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.kind)
     }
 }
 
-impl std::error::Error for BeaErr {
+impl std::error::Error for Bull {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.kind.source()
     }
 }
 
-impl From<BeaErrorKind> for BeaErr {
+impl From<BeaErrorKind> for Bull {
     fn from(value: BeaErrorKind) -> Self {
         let kind = Box::new(value);
         Self { kind }
@@ -31,7 +31,7 @@ impl From<BeaErrorKind> for BeaErr {
 macro_rules! impl_bea_err {
     ( $( $name:ident),* ) => {
         $(
-            impl From<$name> for BeaErr {
+            impl From<$name> for Bull {
                 fn from(value: $name) -> Self {
                     let kind = BeaErrorKind::from(value).into();
                     Self { kind }
@@ -79,7 +79,7 @@ impl_bea_err!(
 macro_rules! impl_json_to_bea_err {
     ( $( $name:ident),* ) => {
         $(
-            impl From<$name> for BeaErr {
+            impl From<$name> for Bull {
                 fn from(value: $name) -> Self {
                     let kind = JsonParseError::from(value);
                     let kind = BeaErrorKind::from(kind).into();

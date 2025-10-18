@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, DeriveFromStr, MneDoi, ParameterFields, ParameterValueTable, ParameterValueTableVariant,
+    Bull, DeriveFromStr, MneDoi, ParameterFields, ParameterValueTable, ParameterValueTableVariant,
 };
 use convert_case::Casing;
 use std::str::FromStr;
@@ -24,7 +24,7 @@ pub struct State {
 }
 
 impl TryFrom<&ParameterFields> for State {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
         let key = value.key().to_string();
         let kind = StateKind::try_from(value)?;
@@ -33,7 +33,7 @@ impl TryFrom<&ParameterFields> for State {
 }
 
 impl TryFrom<&MneDoi> for State {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
         let key = value.key().to_string();
         let kind = StateKind::try_from(value)?;
@@ -42,7 +42,7 @@ impl TryFrom<&MneDoi> for State {
 }
 
 impl TryFrom<&ParameterValueTable> for State {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),

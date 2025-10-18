@@ -1,4 +1,4 @@
-use crate::{BeaErr, KeyMissing, NotObject, ParameterName, map_to_string};
+use crate::{Bull, KeyMissing, NotObject, ParameterName, map_to_string};
 use convert_case::Casing;
 use serde::{Deserialize, Serialize};
 
@@ -778,7 +778,7 @@ pub struct DatasetDetails {
 }
 
 impl TryFrom<serde_json::Value> for DatasetDetails {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         match value {
             serde_json::Value::Object(m) => {
@@ -824,7 +824,7 @@ pub struct Datasets {
 }
 
 impl TryFrom<serde_json::Value> for Datasets {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading DatasetDetails");
         match value {

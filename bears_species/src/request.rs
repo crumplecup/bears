@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, BeaErrorKind, Dataset, DeriveFromStr, JsonParseError, JsonParseErrorKind, KeyMissing,
+    BeaErrorKind, Bull, Dataset, DeriveFromStr, JsonParseError, JsonParseErrorKind, KeyMissing,
     Method, NotObject, ParameterName, map_to_string,
 };
 use serde::{Deserialize, Serialize};
@@ -49,7 +49,7 @@ impl RequestParameter {
         }
     }
 
-    pub fn name(&self) -> Result<ParameterName, BeaErr> {
+    pub fn name(&self) -> Result<ParameterName, Bull> {
         let key_1 = "PARAMETERNAME".to_string();
         let key_2 = "TARGETPARAMETER".to_string();
         if self.parameter_name == key_1 || self.parameter_name == key_2 {
@@ -75,7 +75,7 @@ impl RequestParameter {
         }
     }
 
-    pub fn method(&self) -> Result<Method, BeaErr> {
+    pub fn method(&self) -> Result<Method, Bull> {
         let key = "METHOD".to_string();
         if self.parameter_name == key {
             match Method::from_str(&self.parameter_value) {
@@ -96,7 +96,7 @@ impl RequestParameter {
         }
     }
 
-    pub fn dataset(&self) -> Result<Dataset, BeaErr> {
+    pub fn dataset(&self) -> Result<Dataset, Bull> {
         let key = "DATASETNAME".to_string();
         if self.parameter_name == key {
             match Dataset::from_str(&self.parameter_value) {
@@ -165,7 +165,7 @@ pub struct RequestParameters {
 }
 
 impl RequestParameters {
-    pub fn method(&self) -> Result<Method, BeaErr> {
+    pub fn method(&self) -> Result<Method, Bull> {
         let mut methods = Vec::new();
         let mut errs = Vec::new();
         for req in self.iter() {
@@ -179,7 +179,7 @@ impl RequestParameters {
         } else {
             tracing::warn!("Failed to locate method in request.");
             match &**errs[0] {
-                BeaErrorKind::DeriveFromStr(x) => Err(BeaErr::from(x.clone())),
+                BeaErrorKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
                 BeaErrorKind::JsonParse(kind) => match &**kind {
                     JsonParseErrorKind::KeyMissing(key) => {
                         let error = JsonParseErrorKind::KeyMissing(key.clone());
@@ -193,7 +193,7 @@ impl RequestParameters {
         }
     }
 
-    pub fn dataset(&self) -> Result<Dataset, BeaErr> {
+    pub fn dataset(&self) -> Result<Dataset, Bull> {
         let mut errs = Vec::new();
         for req in self.iter() {
             match req.dataset() {
@@ -202,7 +202,7 @@ impl RequestParameters {
             }
         }
         match &**errs[0] {
-            BeaErrorKind::DeriveFromStr(x) => Err(BeaErr::from(x.clone())),
+            BeaErrorKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
             BeaErrorKind::JsonParse(kind) => match &**kind {
                 JsonParseErrorKind::KeyMissing(key) => {
                     let error = JsonParseErrorKind::KeyMissing(key.clone());
@@ -223,7 +223,7 @@ impl RequestParameters {
         contains
     }
 
-    pub fn name(&self) -> Result<ParameterName, BeaErr> {
+    pub fn name(&self) -> Result<ParameterName, Bull> {
         let mut names = Vec::new();
         let mut errs = Vec::new();
         for req in self.iter() {
@@ -237,7 +237,7 @@ impl RequestParameters {
         } else {
             tracing::warn!("Failed to locate parameter name in request.");
             match &**errs[0] {
-                BeaErrorKind::DeriveFromStr(x) => Err(BeaErr::from(x.clone())),
+                BeaErrorKind::DeriveFromStr(x) => Err(Bull::from(x.clone())),
                 BeaErrorKind::JsonParse(kind) => match &**kind {
                     JsonParseErrorKind::KeyMissing(key) => {
                         let error = JsonParseErrorKind::KeyMissing(key.clone());

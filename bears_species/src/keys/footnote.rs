@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, DeriveFromStr, MneDoi, ParameterFields, ParameterName, ParameterValueTable,
+    Bull, DeriveFromStr, MneDoi, ParameterFields, ParameterName, ParameterValueTable,
     ParameterValueTableVariant,
 };
 
@@ -70,7 +70,7 @@ impl TryFrom<&MneDoi> for Footnotes {
 }
 
 impl TryFrom<&ParameterValueTable> for Footnotes {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),

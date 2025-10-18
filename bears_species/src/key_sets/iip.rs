@@ -1,7 +1,7 @@
 use crate::{
-    BeaErr, BeaResponse, Component, Currency, Data, Dataset, DatasetMissing, DeriveFromStr,
+    BeaResponse, Bull, Component, Currency, Data, Dataset, DatasetMissing, DeriveFromStr,
     Investment, IoError, ItaFrequencies, ItaFrequency, Measure, NotArray, NotObject, Note, Notes,
-    ParameterName, ParameterValueTable, Scale, SerdeJson, Set, VariantMissing, Year,
+    ParameterName, ParameterValueTable, Scale, SerdeJson, Set, TimeSeries, VariantMissing, Year,
     date_by_period, map_to_int, map_to_string, parse_year,
 };
 use std::str::FromStr;
@@ -67,7 +67,7 @@ impl Iip {
 }
 
 impl TryFrom<&std::path::PathBuf> for Iip {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::Iip;
         let names = dataset.names();
@@ -247,7 +247,7 @@ pub struct IipDatum {
 
 impl IipDatum {
     #[tracing::instrument]
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let cl_unit = map_to_string("CL_UNIT", m)?;
         let cl_unit = Measure::from_str(&cl_unit)
             .map_err(|e| DeriveFromStr::new(cl_unit, e, line!(), file!().to_owned()))?;
@@ -441,7 +441,7 @@ impl IipData {
 }
 
 impl TryFrom<&std::path::PathBuf> for IipData {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let file = std::fs::File::open(value)
@@ -480,7 +480,7 @@ impl TryFrom<&std::path::PathBuf> for IipData {
 }
 
 impl TryFrom<&serde_json::Value> for IipData {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading ItaData");
         match crate::data::result_to_data(value)? {

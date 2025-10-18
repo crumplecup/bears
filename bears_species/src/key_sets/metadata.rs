@@ -1,6 +1,6 @@
 use crate::{
-    BeaErr, BeaResponse, Dataset, IoError, Metadata, ParameterValueTable,
-    ParameterValueTableVariant, SerdeJson, Set,
+    BeaResponse, Bull, Dataset, IoError, Metadata, ParameterValueTable, ParameterValueTableVariant,
+    SerdeJson, Set,
 };
 #[derive(
     Debug,
@@ -20,7 +20,7 @@ use crate::{
 pub struct ApiMetadata(Vec<Metadata>);
 
 impl TryFrom<&std::path::PathBuf> for ApiMetadata {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::APIDatasetMetadata;
         let names = dataset.names();

@@ -1,4 +1,4 @@
-use crate::{BeaErr, KeyMissing, ParameterFields, ParameterValueTable, ParameterValueTableVariant};
+use crate::{Bull, KeyMissing, ParameterFields, ParameterValueTable, ParameterValueTableVariant};
 use std::str::FromStr;
 
 /// Valid values for the Indicator parameter.
@@ -3802,7 +3802,7 @@ impl TryFrom<&ParameterFields> for Indicator {
 }
 
 impl TryFrom<&ParameterValueTable> for Indicator {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),

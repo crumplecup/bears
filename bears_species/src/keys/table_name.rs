@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, DeriveFromStr, NipaTable, ParameterFields, ParameterName, ParameterValueTable,
+    Bull, DeriveFromStr, NipaTable, ParameterFields, ParameterName, ParameterValueTable,
     ParameterValueTableVariant,
 };
 use std::str::FromStr;
@@ -50,7 +50,7 @@ impl From<&ParameterFields> for TableName {
 }
 
 impl TryFrom<&ParameterValueTable> for TableName {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::NipaTable(tab) => Ok(TableName::from(tab)),
@@ -1547,7 +1547,7 @@ impl TryFrom<&ParameterFields> for NipaTableName {
 }
 
 impl TryFrom<&ParameterValueTable> for NipaTableName {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::NipaTable(tab) => Ok(NipaTableName::try_from(tab)?),

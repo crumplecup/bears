@@ -1,5 +1,5 @@
 use crate::{
-    AreaOrCountry, BeaErr, BeaResponse, Dataset, DeriveFromStr, Indicator, IoError, ItaFrequencies,
+    AreaOrCountry, BeaResponse, Bull, Dataset, DeriveFromStr, Indicator, IoError, ItaFrequencies,
     ItaFrequency, KeyMissing, NotArray, NotObject, ParameterName, ParameterValueTable, SerdeJson,
     Set, Year, date_by_period, map_to_int, map_to_string, parse_year,
 };
@@ -47,7 +47,7 @@ impl Ita {
 }
 
 impl TryFrom<&std::path::PathBuf> for Ita {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let dataset = Dataset::Ita;
         let names = dataset.names();
@@ -214,7 +214,7 @@ pub struct ItaDatum {
 }
 
 impl ItaDatum {
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let area_or_country = map_to_string("AreaOrCountry", m)?;
         let area_or_country = AreaOrCountry::from_str(&area_or_country)
             .map_err(|e| DeriveFromStr::new(area_or_country, e, line!(), file!().to_owned()))?;
@@ -287,7 +287,7 @@ impl ItaDatum {
 pub struct ItaData(Vec<ItaDatum>);
 
 impl TryFrom<&serde_json::Value> for ItaData {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading ItaData");
         match crate::data::result_to_data(value)? {

@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, JsonParseError, KeyMissing, NipaShowMillions, ParameterName, ParameterValueTable,
+    Bull, JsonParseError, KeyMissing, NipaShowMillions, ParameterName, ParameterValueTable,
     ParameterValueTableVariant, VariantMissing,
 };
 
@@ -46,7 +46,7 @@ impl TryFrom<&NipaShowMillions> for Millions {
 }
 
 impl TryFrom<&ParameterValueTable> for Millions {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::NipaShowMillions(mil) => Ok(Self::try_from(mil)?),

@@ -1,4 +1,4 @@
-use crate::{BeaErr, KeyMissing, NotArray, NotObject, ParameterName, map_to_string};
+use crate::{Bull, KeyMissing, NotArray, NotObject, ParameterName, map_to_string};
 
 #[derive(
     Debug,
@@ -19,7 +19,7 @@ pub struct Note {
 }
 
 impl Note {
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         let key = ParameterName::NoteRef.to_string();
         let reference = map_to_string(&key, m).ok();
         tracing::trace!("reference is {reference:?}.");
@@ -31,7 +31,7 @@ impl Note {
 }
 
 impl TryFrom<serde_json::Value> for Note {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading Note.");
         match value {
@@ -78,7 +78,7 @@ impl Notes {
     /// response data into `Notes`, use the impl `TryFrom` for `serde_json::Value`, which
     /// calls this function internally.
     #[tracing::instrument(skip_all)]
-    pub fn try_from_results(result: &serde_json::Value) -> Result<&serde_json::Value, BeaErr> {
+    pub fn try_from_results(result: &serde_json::Value) -> Result<&serde_json::Value, Bull> {
         tracing::trace!("Reading notes from results.");
         let key = ParameterName::Notes.to_string();
         match result {
@@ -129,7 +129,7 @@ impl Notes {
 }
 
 impl TryFrom<&serde_json::Value> for Notes {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading Notes");
         match Notes::try_from_results(value)? {

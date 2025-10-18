@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, Integer, MneDoi, ParameterName, ParameterValueTable, ParameterValueTableVariant,
+    Bull, Integer, MneDoi, ParameterName, ParameterValueTable, ParameterValueTableVariant,
 };
 
 #[derive(
@@ -66,7 +66,7 @@ impl OwnershipLevel {
 }
 
 impl TryFrom<&MneDoi> for OwnershipLevel {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
         let key = Integer::try_from(value)?;
         let kind = OwnershipKind::try_from(value)?;
@@ -75,7 +75,7 @@ impl TryFrom<&MneDoi> for OwnershipLevel {
 }
 
 impl TryFrom<&ParameterValueTable> for OwnershipLevel {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::MneDoi(tab) => Ok(Self::try_from(tab)?),
@@ -155,7 +155,7 @@ impl AffiliateLevel {
 }
 
 impl TryFrom<&MneDoi> for AffiliateLevel {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
         let key = Integer::try_from(value)?;
         let kind = AffiliateKind::try_from(value)?;
@@ -164,7 +164,7 @@ impl TryFrom<&MneDoi> for AffiliateLevel {
 }
 
 impl TryFrom<&ParameterValueTable> for AffiliateLevel {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::MneDoi(tab) => Ok(Self::try_from(tab)?),

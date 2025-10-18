@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, DeriveFromStr, MneKind, ParameterName, ParameterValueTable, ParameterValueTableVariant,
+    Bull, DeriveFromStr, MneKind, ParameterName, ParameterValueTable, ParameterValueTableVariant,
     parameter_value::MneDoi,
 };
 use convert_case::Casing;
@@ -118,7 +118,7 @@ impl TryFrom<&MneDoi> for DirectionOfInvestment {
 }
 
 impl TryFrom<&ParameterValueTable> for DirectionOfInvestment {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::MneDoi(tab) => Ok(Self::try_from(tab)?),

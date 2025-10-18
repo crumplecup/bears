@@ -1,5 +1,5 @@
 use crate::{
-    BeaErr, KeyMissing, Measure, ParameterFields, ParameterName, ParameterValueTable,
+    Bull, KeyMissing, Measure, ParameterFields, ParameterName, ParameterValueTable,
     ParameterValueTableVariant, ParseInt, Scale,
 };
 
@@ -126,7 +126,7 @@ impl InputOutputTable {
     /// Returns a `ParseInt` error if the string cannot be parsed as i64.
     /// Returns a `KeyMissing` error if the parsed integer does not match any known key.
     #[tracing::instrument]
-    pub fn from_key(key: &str) -> Result<Self, BeaErr> {
+    pub fn from_key(key: &str) -> Result<Self, Bull> {
         let result = match key
             .parse::<i64>()
             .map_err(|e| ParseInt::new(key.to_owned(), e, line!(), file!().to_string()))?
@@ -225,14 +225,14 @@ impl InputOutputTable {
 }
 
 impl TryFrom<&ParameterFields> for InputOutputTable {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
         Self::from_key(value.key())
     }
 }
 
 impl TryFrom<&ParameterValueTable> for InputOutputTable {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),

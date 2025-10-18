@@ -16,7 +16,7 @@ pub use dataset::{Dataset, DatasetDetails, Datasets};
 // investment invalid unused
 // check unused
 pub use error::{
-    BTreeKeyMissing, BeaErr, BeaErrorKind, Csv, DatasetMissing, DeriveFromStr, EnvError,
+    BTreeKeyMissing, BeaErrorKind, Bull, Csv, DatasetMissing, DeriveFromStr, EnvError,
     FromStrError, IoError, Jiff, JsonParseError, JsonParseErrorKind, KeyMissing, NotArray,
     NotObject, ParameterValueTableVariant, ParseInt, Progress, RateLimit, ReqwestError, SerdeJson,
     Set, VariantMissing,
@@ -35,15 +35,15 @@ pub use keys::{
     AffiliateKind, AffiliateLevel, Affiliation, AnnotatedInteger, Annotation, AnnotationMissing,
     AocSta, AreaOrCountry, BadMetric, BadScale, BoolInvalid, BoolOptions, Channel, Classification,
     Component, Currency, DirectionKind, DirectionOfInvestment, FixedAssetLine, FixedAssetTable,
-    Footnotes, Frequencies, Frequency, FrequencyOptions, IipIndustry, Indicator, InputOutputCode,
-    InputOutputTable, Integer, IntegerInvalid, IntegerKind, IntegerOptions, Investment,
-    ItaFrequencies, ItaFrequency, Measure, Metric, Millions, MillionsOptions, Naics, NaicsCategory,
-    NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
-    NaicsSubsector, NaicsSupplement, NipaRange, NipaRangeIterator, NipaRanges, NipaTableName, Nom,
-    NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode, RowCodeMissing, Scale,
-    SelectionKind, SelectionSet, Service, State, StateKind, TableName, TradeDirection, ValueKind,
-    Year, YearInvalid, YearKind, YearOptions, YearRange, date_by_period, parse_year,
-    roman_numeral_quarter,
+    Footnotes, Frequencies, Frequency, FrequencyOptions, GdpTable, IipIndustry, Indicator,
+    InputOutputCode, InputOutputTable, Integer, IntegerInvalid, IntegerKind, IntegerOptions,
+    Investment, ItaFrequencies, ItaFrequency, Measure, Metric, Millions, MillionsOptions, Naics,
+    NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector,
+    NaicsSubcategory, NaicsSubsector, NaicsSupplement, NipaRange, NipaRangeIterator, NipaRanges,
+    NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode,
+    RowCodeMissing, Scale, SelectionKind, SelectionSet, Service, State, StateKind, TableName,
+    TimeSeries, TradeDirection, ValueKind, Year, YearInvalid, YearKind, YearOptions, YearRange,
+    date_by_period, parse_year, roman_numeral_quarter,
 };
 pub use method::Method;
 pub use notes::{Note, Notes};

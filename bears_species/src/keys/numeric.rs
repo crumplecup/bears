@@ -1,5 +1,5 @@
 use crate::{
-    Annotation, BeaErr, MneDoi, ParameterFields, ParameterValueTable, ParameterValueTableVariant,
+    Annotation, Bull, MneDoi, ParameterFields, ParameterValueTable, ParameterValueTableVariant,
     ParseInt,
 };
 
@@ -51,7 +51,7 @@ impl TryFrom<&MneDoi> for Integer {
 }
 
 impl TryFrom<&ParameterValueTable> for Integer {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Integer::try_from(pf)?),
@@ -88,7 +88,7 @@ pub enum IntegerKind {
 }
 
 impl TryFrom<&ParameterFields> for IntegerKind {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
         match Integer::try_from(value) {
             Ok(year) => Ok(Self::Integer(year)),
@@ -104,7 +104,7 @@ impl TryFrom<&ParameterFields> for IntegerKind {
 }
 
 impl TryFrom<&MneDoi> for IntegerKind {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
         match Integer::try_from(value) {
             Ok(year) => Ok(Self::Integer(year)),
@@ -139,7 +139,7 @@ pub struct IntegerOptions {
 }
 
 impl TryFrom<&ParameterFields> for IntegerOptions {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterFields) -> Result<Self, Self::Error> {
         let key = value.key().to_string();
         let kind = IntegerKind::try_from(value)?;
@@ -148,7 +148,7 @@ impl TryFrom<&ParameterFields> for IntegerOptions {
 }
 
 impl TryFrom<&MneDoi> for IntegerOptions {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &MneDoi) -> Result<Self, Self::Error> {
         let key = value.key().to_string();
         let kind = IntegerKind::try_from(value)?;
@@ -157,7 +157,7 @@ impl TryFrom<&MneDoi> for IntegerOptions {
 }
 
 impl TryFrom<&ParameterValueTable> for IntegerOptions {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),
@@ -235,7 +235,7 @@ impl TryFrom<&MneDoi> for BoolOptions {
 }
 
 impl TryFrom<&ParameterValueTable> for BoolOptions {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &ParameterValueTable) -> Result<Self, Self::Error> {
         match value {
             ParameterValueTable::ParameterFields(pf) => Ok(Self::try_from(pf)?),
@@ -262,7 +262,7 @@ pub enum AnnotatedInteger {
 }
 
 impl AnnotatedInteger {
-    pub fn from_value(value: &str) -> Result<Self, BeaErr> {
+    pub fn from_value(value: &str) -> Result<Self, Bull> {
         let mut value = value;
         let sign =
             match nom::bytes::complete::tag::<&str, &str, nom::error::Error<&str>>("-")(value) {

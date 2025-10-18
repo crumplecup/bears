@@ -1,5 +1,5 @@
 use crate::{
-    AnnotatedInteger, BeaErr, BeaResponse, DatasetMissing, FixedAssetData, GdpData, IipData,
+    AnnotatedInteger, BeaResponse, Bull, DatasetMissing, FixedAssetData, GdpData, IipData,
     InputOutputData, IoError, ItaData, KeyMissing, NaicsItems, NipaData, NotArray, NotObject,
     RowCode, SerdeJson, VariantMissing, map_to_float, map_to_int, map_to_string, parse_year,
 };
@@ -25,7 +25,7 @@ pub enum Data {
     InputOutput(InputOutputData),
 }
 
-pub fn result_to_data(result: &serde_json::Value) -> Result<&serde_json::Value, BeaErr> {
+pub fn result_to_data(result: &serde_json::Value) -> Result<&serde_json::Value, Bull> {
     tracing::trace!("Reading results to data.");
     match result {
         serde_json::Value::Object(m) => {
@@ -95,7 +95,7 @@ impl MneDiDatum {
     pub fn read_json(
         m: &serde_json::Map<String, serde_json::Value>,
         naics: &NaicsItems,
-    ) -> Result<Self, BeaErr> {
+    ) -> Result<Self, Bull> {
         tracing::trace!("Reading MneDiDatum.");
         let column = map_to_string("Column", m)?;
         tracing::trace!("Column: {column}.");
@@ -164,7 +164,7 @@ impl MneDiDatum {
 pub struct MneDiData(Vec<MneDiDatum>);
 
 impl TryFrom<&std::path::PathBuf> for MneDiData {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let file = std::fs::File::open(value)
@@ -202,7 +202,7 @@ impl TryFrom<&std::path::PathBuf> for MneDiData {
 }
 
 impl TryFrom<&serde_json::Value> for MneDiData {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading MneDiData");
         // use naics code to determine missing row codes from the row title

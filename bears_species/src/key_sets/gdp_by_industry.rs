@@ -1,6 +1,6 @@
 use crate::{
-    BeaErr, BeaResponse, Currency, Data, Dataset, DatasetMissing, Frequencies, Frequency, Integer,
-    IoError, KeyMissing, Measure, Naics, NotArray, NotObject, Note, Notes, ParameterName,
+    BeaResponse, Bull, Currency, Data, Dataset, DatasetMissing, Frequencies, Frequency, GdpTable,
+    Integer, IoError, KeyMissing, Measure, Naics, NotArray, NotObject, Note, Notes, ParameterName,
     ParameterValueTable, Scale, SerdeJson, Set, VariantMissing, Year, data::result_to_data,
     map_to_float, map_to_int, map_to_string, parse_year, roman_numeral_quarter,
 };
@@ -87,7 +87,7 @@ impl GdpByIndustry {
     pub fn from_file<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<Self, BeaErr> {
+    ) -> Result<Self, Bull> {
         let frequency = Self::frequencies(dataset);
         let industry = Self::read_industry(&path, dataset)?;
         let table_id = Self::read_table_id(&path, dataset)?;
@@ -99,7 +99,7 @@ impl GdpByIndustry {
     pub fn read_industry<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<std::collections::BTreeMap<Integer, Vec<Naics>>, BeaErr> {
+    ) -> Result<std::collections::BTreeMap<GdpTable, Vec<Naics>>, Bull> {
         let path = path.as_ref();
         let table_id = Self::read_table_id(path, dataset)?;
         // start with table_id because it is a precondition for other parameter values
@@ -160,7 +160,7 @@ impl GdpByIndustry {
     pub fn read_table_id<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<Vec<Integer>, BeaErr> {
+    ) -> Result<Vec<GdpTable>, Bull> {
         let path = path.as_ref();
         // start with table_id because it is a precondition for other parameter values
         let name = ParameterName::TableID;
@@ -196,7 +196,7 @@ impl GdpByIndustry {
     pub fn read_year<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<std::collections::BTreeMap<Integer, Vec<Year>>, BeaErr> {
+    ) -> Result<std::collections::BTreeMap<GdpTable, Vec<Year>>, Bull> {
         let path = path.as_ref();
         let table_id = Self::read_table_id(path, dataset)?;
         // start with table_id because it is a precondition for other parameter values
@@ -237,7 +237,7 @@ impl GdpByIndustry {
 }
 
 impl<P: AsRef<std::path::Path>> TryFrom<(P, Dataset)> for GdpByIndustry {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: (P, Dataset)) -> Result<Self, Self::Error> {
         let (path, dataset) = value;
         let path = path.as_ref();
@@ -318,7 +318,7 @@ impl GdpDatum {
     /// Encapsulates the logic of retrieving the `GpdDatum` when converting the JSON representation
     /// into internal data types.  Used to implement the [`TryFrom`] trait from [`serde_json::Value`] to `self`.
     #[tracing::instrument]
-    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, BeaErr> {
+    pub fn read_json(m: &serde_json::Map<String, serde_json::Value>) -> Result<Self, Bull> {
         tracing::trace!("Reading MneDiDatum.");
         let data_value = map_to_float("DataValue", m)?;
         let measure = Measure::Usd;
@@ -483,7 +483,7 @@ impl GdpData {
 }
 
 impl TryFrom<&std::path::PathBuf> for GdpData {
-    type Error = BeaErr;
+    type Error = Bull;
 
     fn try_from(value: &std::path::PathBuf) -> Result<Self, Self::Error> {
         let file = std::fs::File::open(value)
@@ -520,7 +520,7 @@ impl TryFrom<&std::path::PathBuf> for GdpData {
 }
 
 impl TryFrom<&serde_json::Value> for GdpData {
-    type Error = BeaErr;
+    type Error = Bull;
     fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
         tracing::trace!("Reading GdpData");
         match result_to_data(value)? {
