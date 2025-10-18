@@ -20,10 +20,10 @@ pub struct GdpByIndustry {
     dataset: Dataset,
     frequency: Frequencies,
     // BTreeMap of table ids to industry names
-    industry: std::collections::BTreeMap<Integer, Vec<Naics>>,
-    table_id: Vec<Integer>,
+    industry: std::collections::BTreeMap<GdpTable, Vec<Naics>>,
+    table_id: Vec<GdpTable>,
     // BTreeMap of table ids to years
-    year: std::collections::BTreeMap<Integer, Vec<Year>>,
+    year: std::collections::BTreeMap<GdpTable, Vec<Year>>,
 }
 
 impl GdpByIndustry {
@@ -58,7 +58,7 @@ impl GdpByIndustry {
     pub fn table_ids(&self) -> std::collections::BTreeSet<i64> {
         self.table_id()
             .iter()
-            .map(|v| *v.value())
+            .map(|v| v.code())
             .collect::<std::collections::BTreeSet<i64>>()
     }
 
@@ -111,7 +111,7 @@ impl GdpByIndustry {
             // open the file at the expected storage location, error if missing
             let path = path.join(format!(
                 "{dataset}_{name}_byTableId_{}_values.json",
-                id.value()
+                id.code()
             ));
             let file = std::fs::File::open(&path)
                 .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
@@ -182,7 +182,10 @@ impl GdpByIndustry {
         // access parameter values from response
         if let Some(pv) = results.into_parameter_values() {
             for table in pv.iter() {
-                table_id.push(Integer::try_from(table)?);
+                let id = Integer::try_from(table)?;
+                if let Some(table) = GdpTable::from_code(*id.value()) {
+                    table_id.push(table);
+                }
             }
             tracing::trace!("{dataset} contains {} {name} values.", table_id.len());
             Ok(table_id)
@@ -208,7 +211,7 @@ impl GdpByIndustry {
             // open the file at the expected storage location, error if missing
             let path = path.join(format!(
                 "{dataset}_{name}_byTableId_{}_values.json",
-                id.value()
+                id.code()
             ));
             let file = std::fs::File::open(&path)
                 .map_err(|e| IoError::new(path, e, line!(), file!().into()))?;
@@ -249,7 +252,7 @@ impl<P: AsRef<std::path::Path>> TryFrom<(P, Dataset)> for GdpByIndustry {
 /// Used to create API calls with Industry, Frequency and Years set to "ALL".
 #[derive(Debug, Clone)]
 pub struct GdpTables<'a> {
-    tables: std::slice::Iter<'a, Integer>,
+    tables: std::slice::Iter<'a, GdpTable>,
 }
 
 impl<'a> GdpTables<'a> {
@@ -270,7 +273,7 @@ impl Iterator for GdpTables<'_> {
         // set type of investment
         let tables = self.tables.next()?;
         let key = ParameterName::TableID.to_string();
-        let value = tables.value().to_string();
+        let value = tables.code().to_string();
         params.insert(key, value);
 
         // set industry
@@ -308,7 +311,7 @@ pub struct GdpDatum {
     industry: Naics,
     note_ref: String,
     quarter: Option<jiff::civil::Date>,
-    table_id: i64,
+    table_id: GdpTable,
     year: jiff::civil::Date,
 }
 
@@ -343,6 +346,13 @@ impl GdpDatum {
         tracing::trace!("Note Ref: {note_ref}.");
         let table_id = map_to_int("TableID", m)?;
         // let table_id = RowCode::from_value(m, &row, naics)?;
+        let table_id = match GdpTable::from_code(table_id) {
+            Some(id) => id,
+            None => {
+                let error = KeyMissing::new(table_id.to_string(), line!(), file!().to_string());
+                return Err(error.into());
+            }
+        };
         tracing::trace!("Note Ref: {note_ref}.");
         let year = map_to_string("Year", m)?;
         let year = parse_year(&year)?;
@@ -467,7 +477,7 @@ impl GdpData {
     pub fn table_ids(&self) -> std::collections::BTreeSet<i64> {
         let mut set = std::collections::BTreeSet::new();
         self.iter()
-            .map(|v| set.insert(*v.table_id()))
+            .map(|v| set.insert(v.table_id().code()))
             .for_each(drop);
         set
     }
