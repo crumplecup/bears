@@ -1,6 +1,6 @@
 use crate::{
-    AnnotationMissing, BadMetric, BadScale, BoolInvalid, IntegerInvalid, Mismatch, Nom, NotFloat,
-    NotInteger, NotParameterName, NotQuarter, OwnershipInvalid, ParseFloat, ParseInteger,
+    AnnotationMissing, BadMetric, BadScale, BoolInvalid, IntegerInvalid, Lex, Mismatch, Nom,
+    NotFloat, NotInteger, NotParameterName, NotQuarter, OwnershipInvalid, ParseFloat, ParseInteger,
     RowCodeMissing, UrlParseError, YearInvalid,
 };
 
@@ -60,6 +60,7 @@ impl_bull!(
     IoError,
     Jiff,
     JsonParseError,
+    Lex,
     Mismatch,
     Nom,
     OwnershipInvalid,
@@ -127,6 +128,8 @@ pub enum BullKind {
     Jiff(Jiff),
     #[from(JsonParseError)]
     JsonParse(JsonParseError),
+    #[from(Lex)]
+    Lex(Lex),
     #[from(Mismatch)]
     Mismatch(Mismatch),
     #[from(Nom)]
@@ -205,6 +208,9 @@ impl std::fmt::Display for BullKind {
             Self::JsonParse(e) => {
                 write!(f, "{e}")
             }
+            Self::Lex(e) => {
+                write!(f, "{e}")
+            }
             Self::Mismatch(e) => {
                 write!(f, "{e}")
             }
@@ -269,6 +275,7 @@ impl std::error::Error for BullKind {
             Self::Io(e) => Some(e.source()),
             Self::Jiff(e) => e.source(),
             Self::JsonParse(e) => e.source(),
+            Self::Lex(e) => e.source(),
             Self::Mismatch(e) => e.source(),
             Self::Nom(e) => e.source(),
             Self::OwnershipInvalid(e) => e.source(),
