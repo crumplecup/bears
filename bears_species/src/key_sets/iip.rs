@@ -272,9 +272,8 @@ impl IipDatum {
         let time_series_description = map_to_string("TimeSeriesDescription", m)?;
         tracing::trace!("time_series_description is {time_series_description}.");
         let time_series_id = map_to_string("TimeSeriesId", m)?;
-        let time_series_id = TimeSeries::from_str(&time_series_id)
-            .map_err(|e| DeriveFromStr::new(time_series_id, e, line!(), file!().to_owned()))?;
-        tracing::trace!("time_series_id is {time_series_id}.");
+        let time_series_id = TimeSeries::from_str(&time_series_id).unwrap();
+        tracing::trace!("time_series_id is {time_series_id:?}.");
         let type_of_investment = map_to_string("TypeOfInvestment", m)?;
         let type_of_investment = Investment::from_str(&type_of_investment)
             .map_err(|e| DeriveFromStr::new(type_of_investment, e, line!(), file!().to_string()))?;
@@ -313,7 +312,7 @@ impl IipDatum {
     #[tracing::instrument]
     pub fn time_series_code(&self) -> (String, String) {
         (
-            self.time_series_id().to_string(),
+            format!("{:#?}", self.time_series_id()),
             self.time_series_description().to_owned(),
         )
     }
@@ -406,7 +405,7 @@ impl IipData {
         self.iter()
             .map(|v| {
                 codes.insert(
-                    v.time_series_id().to_string(),
+                    format!("{:#?}", v.time_series_id()),
                     v.time_series_description().to_owned(),
                 )
             })
