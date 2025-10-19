@@ -33,16 +33,17 @@ pub use key_sets::{
 };
 pub use keys::{
     AffiliateKind, AffiliateLevel, Affiliation, AnnotatedInteger, Annotation, AnnotationMissing,
-    AocSta, AreaOrCountry, BadMetric, BadScale, BoolInvalid, BoolOptions, Channel, Classification,
-    Component, Currency, DirectionKind, DirectionOfInvestment, FixedAssetLine, FixedAssetTable,
-    Footnotes, Frequencies, Frequency, FrequencyOptions, GdpTable, IipIndustry, Indicator,
-    InputOutputCode, InputOutputTable, Integer, IntegerInvalid, IntegerKind, IntegerOptions,
-    Investment, ItaFrequencies, ItaFrequency, Measure, Metric, Millions, MillionsOptions, Naics,
-    NaicsCategory, NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector,
-    NaicsSubcategory, NaicsSubsector, NaicsSupplement, NipaRange, NipaRangeIterator, NipaRanges,
-    NipaTableName, Nom, NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, RowCode,
-    RowCodeMissing, Scale, SelectionKind, SelectionSet, Service, State, StateKind, TableName,
-    TimeSeries, TradeDirection, ValueKind, Year, YearInvalid, YearKind, YearOptions, YearRange,
+    AocSta, AreaOrCountry, AssetKind, BadMetric, BadScale, BoolInvalid, BoolOptions, Channel,
+    Classification, Component, Currency, DirectionKind, DirectionOfInvestment, FixedAssetLine,
+    FixedAssetTable, Footnotes, Frequencies, Frequency, FrequencyOptions, GdpTable, IipClass,
+    IipCurrency, IipEntity, IipEquity, IipIndustry, Indicator, InputOutputCode, InputOutputTable,
+    Integer, IntegerInvalid, IntegerKind, IntegerOptions, Investment, ItaFrequencies, ItaFrequency,
+    Lex, LexDetail, Measure, Metric, Millions, MillionsOptions, Naics, NaicsCategory,
+    NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
+    NaicsSubsector, NaicsSupplement, NipaRange, NipaRangeIterator, NipaRanges, NipaTableName, Nom,
+    NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, Position, RowCode, RowCodeMissing,
+    Scale, SelectionKind, SelectionSet, Service, State, StateKind, TableName, TimeSeries,
+    TimeSeriesRaw, TradeDirection, ValueKind, Year, YearInvalid, YearKind, YearOptions, YearRange,
     date_by_period, parse_year, roman_numeral_quarter,
 };
 pub use method::Method;
