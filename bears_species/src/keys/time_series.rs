@@ -1,3 +1,7 @@
+use crate::{AssetKind, IipClass, IipCurrency, IipEntity, Position};
+use std::str::FromStr;
+use strum::IntoEnumIterator;
+
 /// Time series codes for U.S. International Investment Position (IIP) data.
 ///
 /// This enumeration represents various economic indicators related to U.S. international
@@ -20,7 +24,7 @@
     serde::Deserialize,
     strum::EnumIter,
 )]
-pub enum TimeSeries {
+pub enum TimeSeriesRaw {
     #[default]
     /// U.S. assets; other investment; currency and deposits (Change in position attributable to changes in volume and valuation n.i.e.)
     CurrAndDepAssetsChgPosNie,
@@ -1554,7 +1558,91 @@ pub enum TimeSeries {
     TreasBondsAndNotesLiabsPos,
 }
 
-impl TimeSeries {
+impl TimeSeriesRaw {
+    /// Returns all variant names as a sorted set of strings.
+    pub fn variants() -> std::collections::BTreeSet<String> {
+        use strum::IntoEnumIterator;
+        
+        Self::iter()
+            .map(|variant| variant.to_string())
+            .collect()
+    }
+
+    /// Returns all variant names with Position suffix removed, as a sorted set of strings.
+    pub fn variants_without_position() -> std::collections::BTreeSet<String> {
+        Self::iter()
+            .map(|variant| {
+                let variant_str = variant.to_string();
+                let (_position, remainder) = Position::lex_from_right(&variant_str);
+                remainder.to_string()
+            })
+            .collect()
+    }
+
+    /// Returns all variant names with IipCurrency and Position suffixes removed, as a sorted set of strings.
+    pub fn variants_without_currency_and_position() -> std::collections::BTreeSet<String> {
+        Self::iter()
+            .map(|variant| {
+                let variant_str = variant.to_string();
+                
+                // Remove Position from the end
+                let (_position, remainder) = Position::lex_from_right(&variant_str);
+                
+                // Remove IipCurrency from the end of what's left
+                let (_currency, remainder) = IipCurrency::lex_from_right(remainder);
+                
+                remainder.to_string()
+            })
+            .collect()
+    }
+
+    /// Returns all variant names with IipEntity, IipCurrency and Position suffixes removed, as a sorted set of strings.
+    pub fn variants_without_entity_currency_and_position() -> std::collections::BTreeSet<String> {
+        use strum::IntoEnumIterator;
+        
+        Self::iter()
+            .map(|variant| {
+                let variant_str = variant.to_string();
+                
+                // Remove Position from the end
+                let (_position, remainder) = Position::lex_from_right(&variant_str);
+                
+                // Remove IipCurrency from the end of what's left
+                let (_currency, remainder) = IipCurrency::lex_from_right(remainder);
+                
+                // Remove IipEntity from the end of what's left
+                let (_entity, remainder) = IipEntity::lex_from_right(remainder);
+                
+                remainder.to_string()
+            })
+            .collect()
+    }
+
+    /// Returns all variant names with IipClass, IipEntity, IipCurrency and Position suffixes removed, as a sorted set of strings.
+    pub fn variants_without_class_entity_currency_and_position() -> std::collections::BTreeSet<String> {
+        use strum::IntoEnumIterator;
+        
+        Self::iter()
+            .map(|variant| {
+                let variant_str = variant.to_string();
+                
+                // Remove Position from the end
+                let (_position, remainder) = Position::lex_from_right(&variant_str);
+                
+                // Remove IipCurrency from the end of what's left
+                let (_currency, remainder) = IipCurrency::lex_from_right(remainder);
+                
+                // Remove IipEntity from the end of what's left
+                let (_entity, remainder) = IipEntity::lex_from_right(remainder);
+                
+                // Remove IipClass from the end of what's left
+                let (_class, remainder) = IipClass::lex_from_right(remainder);
+                
+                remainder.to_string()
+            })
+            .collect()
+    }
+
     /// Returns the description for this time series code.
     pub const fn description(&self) -> &'static str {
         match self {
@@ -2323,6 +2411,166 @@ impl TimeSeries {
             Self::TreasBondsAndNotesLiabsChgPosXRate => "U.S. liabilities; portfolio investment; long-term debt securities; Treasury bonds and notes (Change in position attributable to exchange-rate changes); annual",
             Self::TreasBondsAndNotesLiabsChgPos => "U.S. liabilities; portfolio investment; long-term debt securities; Treasury bonds and notes (Change in position); annual",
             Self::TreasBondsAndNotesLiabsPos => "U.S. liabilities; portfolio investment; long-term debt securities; Treasury bonds and notes; annual",
+        }
+    }
+
+    /// Converts a time series code string to a TimeSeries variant.
+    /// 
+    /// The code should be in the format "TSI_Iip{VariantName}_A" or "TSI_Iip{VariantName}_QNSA".
+    /// Returns None if the code format is invalid or doesn't match any variant.
+    pub fn from_code(code: &str) -> Option<Self> {
+        use std::str::FromStr;
+        
+        let stripped = code.strip_prefix("TSI_Iip")?;
+        let stripped = stripped
+            .strip_suffix("_A")
+            .or_else(|| stripped.strip_suffix("_QNSA"))?;
+        
+        Self::from_str(stripped).ok()
+    }
+}
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    derive_new::new,
+    derive_getters::Getters,
+    serde::Deserialize,
+    serde::Serialize,
+)]
+pub struct TimeSeries {
+    asset: AssetKind,
+    class: Option<IipClass>,
+    entity: Option<IipEntity>,
+    currency: Option<IipCurrency>,
+    position: Position,
+}
+
+impl TimeSeries {
+    /// Attempts to lex a TimeSeries from the input string.
+    /// 
+    /// The expected format is: {AssetKind}{IipClass?}{IipEntity?}{IipCurrency?}{Position}
+    /// 
+    /// Returns a tuple of (Option<Self>, remaining_str) where:
+    /// - Option<Self> is Some(TimeSeries) if all required components were found, None otherwise
+    /// - remaining_str is the unconsumed portion of the input string
+    pub fn lex(input: &str) -> (Option<Self>, &str) {
+        // Parse AssetKind (required)
+        let (asset, remainder) = AssetKind::lex(input);
+        let asset = match asset {
+            Some(a) => a,
+            None => return (None, input),
+        };
+        
+        // Parse IipClass (optional)
+        let (class, remainder) = IipClass::lex(remainder);
+        
+        // Parse IipEntity (optional)
+        let (entity, remainder) = IipEntity::lex(remainder);
+        
+        // Parse IipCurrency (optional)
+        let (currency, remainder) = IipCurrency::lex(remainder);
+        
+        // Parse Position (required) - need to parse from the end
+        // For now, try to parse Position from what's left
+        let (position, remainder) = Position::lex(remainder);
+        let position = match position {
+            Some(p) => p,
+            None => return (None, input),
+        };
+        
+        // If there's still remainder, the parse wasn't complete
+        if !remainder.is_empty() {
+            return (None, input);
+        }
+        
+        let series = TimeSeries {
+            asset,
+            class,
+            entity,
+            currency,
+            position,
+        };
+        
+        (Some(series), remainder)
+    }
+}
+
+impl FromStr for TimeSeries {
+    type Err = Lex;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        // Strip the TSI_Iip prefix
+        let s = s.strip_prefix("TSI_Iip")
+            .ok_or_else(|| {
+                let error = LexDetail::new(s.to_owned(), line!(), file!().to_string());
+                tracing::debug!("{}", error.to_string());
+                Lex::Prefix(error)
+            })?;
+        
+        // Strip the frequency suffix (_A or _QNSA)
+        let s = s.strip_suffix("_A")
+            .or_else(|| s.strip_suffix("_QNSA"))
+            .ok_or_else(|| {
+                let error = LexDetail::new(s.to_owned(), line!(), file!().to_string());
+                tracing::debug!("{}", error.to_string());
+                Lex::Suffix(error)
+            })?;
+        
+        // Lex the remainder
+        let (series, remainder) = TimeSeries::lex(s);
+        
+        match series {
+            Some(ts) if remainder.is_empty() => Ok(ts),
+            Some(_) => {
+                let error = LexDetail::new(remainder.to_owned(), line!(), file!().to_owned());
+                tracing::debug!("{}", error.to_string());
+                Err(Lex::Incomplete(error))
+            },
+            None => {
+                let error = LexDetail::new(s.to_owned(), line!(), file!().to_owned());
+                tracing::debug!("{}", error.to_string());
+                Err(Lex::Empty(error))
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+#[display("Lex error parsing {input} at line {line} in {file}")]
+pub struct LexDetail {
+    input: String,
+    line: u32,
+    file: String,
+}
+
+impl std::error::Error for LexDetail {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, derive_more::Display, derive_new::new)]
+pub enum Lex {
+    Prefix(LexDetail),
+    Suffix(LexDetail),
+    Incomplete(LexDetail),
+    Empty(LexDetail),
+}
+
+impl std::error::Error for Lex {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Prefix(detail) => Some(detail),
+            Self::Suffix(detail) => Some(detail),
+            Self::Incomplete(detail) => Some(detail),
+            Self::Empty(detail) => Some(detail),
         }
     }
 }
