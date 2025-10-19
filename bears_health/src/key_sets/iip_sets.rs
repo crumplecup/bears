@@ -1,8 +1,8 @@
 use crate::{difference, params};
 use bears_ecology::initial_load;
 use bears_species::{
-    Bull, Component, Data, Dataset, Iip, Investment, ItaFrequency, Measure, Note, ParameterName,
-    Scale,
+    Bull, Component, Data, Dataset, Iip, IipData, Investment, ItaFrequency, Measure, Note, Notes,
+    ParameterName, Scale, TimeSeriesRaw,
 };
 use std::collections::BTreeSet;
 use strum::IntoEnumIterator;
@@ -60,6 +60,13 @@ impl IipKeys {
         Ok((comp, freq, inv, year))
     }
 
+    #[tracing::instrument]
+    fn iip_expected<'a, P: AsRef<std::path::Path> + std::fmt::Debug>(path: P) -> Result<Iip, Bull> {
+        let path = path.as_ref().to_owned();
+        let data = Iip::try_from(&path)?;
+        Ok(data)
+    }
+
     /// Attempts to load all files in the download [`History`], without respect to the load `History`.
     /// Loads IIP files, converts struct fields to BTree hash maps or sets.
     /// Serializes the results to the `BEA_DATA` directory.
@@ -107,6 +114,46 @@ impl IipKeys {
             unit_multipliers,
             years,
         ))
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub async fn iip_observed() -> Result<IipData, Bull> {
+        let dataset = Dataset::Iip;
+        let mut data = Vec::new();
+        let mut notes = Vec::new();
+        let obs = initial_load(dataset, None).await?;
+        tracing::info!("{} datasets loaded.", obs.len());
+        obs.iter()
+            .map(|v| {
+                if let Data::Iip(values) = v {
+                    data.append(&mut values.clone());
+                    if let Some(value) = &mut values.notes() {
+                        let note = value.iter().cloned().collect::<Vec<Note>>();
+                        notes.append(&mut note.clone());
+                    }
+                }
+            })
+            .for_each(drop);
+        let notes = if notes.is_empty() {
+            None
+        } else {
+            Some(Notes::new(notes))
+        };
+
+        Ok(IipData::new(data, notes))
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn iip_time_series<P: AsRef<std::path::Path> + std::fmt::Debug>(
+        path: P,
+    ) -> Result<(), Bull> {
+        let path = path.as_ref();
+        let dataset = Dataset::Iip;
+        let data = TimeSeriesRaw::variants_without_class_entity_currency_and_position();
+        let kind = "Observed";
+        let name = "TimeSeriesWithoutClassEntityCurrencyAndPosition";
+        params(&data, path, dataset, name, kind)?;
+        Ok(())
     }
 
     /// Print the value sets from each struct field in the source data to the BEA_DATA directory.

@@ -250,3 +250,10 @@ fn download_summary() -> anyhow::Result<()> {
     bears_health::download_summary()?;
     Ok(())
 }
+
+#[test]
+fn iip_time_series() -> anyhow::Result<()> {
+    let path = bea_data()?;
+    bears_health::IipKeys::iip_time_series(path)?;
+    Ok(())
+}
