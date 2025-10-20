@@ -18,7 +18,7 @@ pub enum Data {
     #[from(GdpData)]
     Gdp(GdpData),
     #[from(ItaData)]
-    ItaData(ItaData),
+    Ita(ItaData),
     #[from(IipData)]
     Iip(IipData),
     #[from(InputOutputData)]
