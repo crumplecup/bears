@@ -148,4 +148,53 @@ impl Position {
             None => (None, input),
         }
     }
+
+    /// Returns the description for this position type.
+    pub const fn description(&self) -> &'static str {
+        match self {
+            Self::LtChgPosNie => {
+                "Long term change in position attributable to changes in volume and valuation n.i.e."
+            }
+            Self::LtChgPosOth => {
+                "Long term change in position not attributable to financial-account transactions"
+            }
+            Self::LtChgPosPrice => "Long term change in position attributable to price changes",
+            Self::LtChgPosTrans => {
+                "Long term change in position attributable to financial-account transactions"
+            }
+            Self::LtChgPosXRate => {
+                "Long term change in position attributable to exchange-rate changes"
+            }
+            Self::StChgPosNie => {
+                "Short term change in position attributable to changes in volume and valuation n.i.e."
+            }
+            Self::StChgPosOth => {
+                "Short term change in position not attributable to financial-account transactions"
+            }
+            Self::StChgPosPrice => "Short term change in position attributable to price changes",
+            Self::StChgPosTrans => {
+                "Short term change in position attributable to financial-account transactions"
+            }
+            Self::StChgPosXRate => {
+                "Short term change in position attributable to exchange-rate changes"
+            }
+            Self::ChgPosNie => {
+                "Change in position attributable to changes in volume and valuation n.i.e."
+            }
+            Self::ChgPosOth => {
+                "Change in position not attributable to financial-account transactions"
+            }
+            Self::ChgPosPrice => "Change in position attributable to price changes",
+            Self::ChgPosTrans => {
+                "Change in position attributable to financial-account transactions"
+            }
+            Self::ChgPosXRate => "Change in position attributable to exchange-rate changes",
+            Self::LtChgPos => "Long term change in position",
+            Self::StChgPos => "Short term change in position",
+            Self::ChgPos => "Change in position",
+            Self::LtPos => "Long term position",
+            Self::StPos => "Short term position",
+            Self::Pos => "Position",
+        }
+    }
 }
