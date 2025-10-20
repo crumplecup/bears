@@ -123,4 +123,25 @@ impl IipCurrency {
             None => (None, input),
         }
     }
+
+    /// Returns the description for this IIP currency.
+    pub const fn description(&self) -> &'static str {
+        match self {
+            Self::HistCostToMarketValueAdj => {
+                "Adjustment to revalue equity from historical cost to market value"
+            }
+            Self::NotSdrBasket => "Not in special drawing rights basket",
+            Self::SdrBasket => "In special drawing rights basket",
+            Self::MarketValue => "Market value",
+            Self::CurrCost => "Current cost",
+            Self::HistCost => "Historical cost",
+            Self::NonSpe => "Non-SPEs",
+            Self::OthFc => "Other foreign currency",
+            Self::Euro => "Euro",
+            Self::Spe => "SPEs",
+            Self::Usd => "U.S. dollar",
+            Self::Yen => "Yen",
+            Self::Fc => "Foreign currency",
+        }
+    }
 }
