@@ -1,7 +1,7 @@
 use crate::{
-    AreaOrCountry, BeaResponse, Bull, Dataset, DeriveFromStr, Indicator, IoError, ItaFrequencies,
-    ItaFrequency, KeyMissing, NotArray, NotObject, ParameterName, ParameterValueTable, SerdeJson,
-    Set, Year, date_by_period, map_to_int, map_to_string, parse_year,
+    AreaOrCountry, BeaResponse, Bull, Dataset, DeriveFromStr, Frequencies, Frequency, Indicator,
+    IoError, KeyMissing, Measure, NotArray, NotObject, ParameterName, ParameterValueTable, Scale,
+    SerdeJson, Set, Year, date_by_period, map_to_int, map_to_string, parse_year,
 };
 use std::str::FromStr;
 
@@ -16,34 +16,54 @@ use std::str::FromStr;
     serde::Serialize,
     serde::Deserialize,
     derive_getters::Getters,
+    derive_more::AsRef,
+    derive_more::AsMut,
 )]
 pub struct Ita {
     area_or_country: Vec<AreaOrCountry>,
-    frequency: ItaFrequencies,
+    frequency: Frequencies,
     indicator: Vec<Indicator>,
     year: Vec<Year>,
 }
 
 impl Ita {
+    #[tracing::instrument(skip_all)]
     pub fn iter(&self) -> ItaIterator<'_> {
         ItaIterator::new(self)
     }
 
-    // pub fn queue() -> Result<Queue, BeaErr> {
-    //     let req = Request::Data;
-    //     let mut app = req.init()?;
-    //     let dataset = Dataset::Ita;
-    //     app.with_dataset(dataset);
-    //     dotenvy::dotenv().ok();
-    //     let path = bea_data()?;
-    //     let data = Ita::try_from(&path)?;
-    //     let mut queue = Vec::new();
-    //     for params in data.iter() {
-    //         app.with_params(params.clone());
-    //         queue.push(app.clone());
-    //     }
-    //     Ok(Queue::new(queue))
-    // }
+    #[tracing::instrument(skip_all)]
+    pub fn aocs(&self) -> std::collections::BTreeSet<AreaOrCountry> {
+        self.area_or_country()
+            .iter()
+            .cloned()
+            .collect::<std::collections::BTreeSet<AreaOrCountry>>()
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn frequencies(&self) -> std::collections::BTreeSet<Frequency> {
+        self.frequency()
+            .iter()
+            .cloned()
+            .collect::<std::collections::BTreeSet<Frequency>>()
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn indicators(&self) -> std::collections::BTreeSet<Indicator> {
+        self.indicator()
+            .iter()
+            .cloned()
+            .collect::<std::collections::BTreeSet<Indicator>>()
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn years(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        self.year()
+            .iter()
+            .map(|v| v.date())
+            .cloned()
+            .collect::<std::collections::BTreeSet<jiff::civil::Date>>()
+    }
 }
 
 impl TryFrom<&std::path::PathBuf> for Ita {
@@ -91,7 +111,7 @@ impl TryFrom<&std::path::PathBuf> for Ita {
                         for table in pf.iter() {
                             match table {
                                 ParameterValueTable::ParameterFields(_) => {
-                                    frequency.push(ItaFrequency::try_from(table)?);
+                                    frequency.push(Frequency::try_from(table)?);
                                 }
                                 _ => {
                                     return Err(Set::ParameterFieldsMissing.into());
@@ -131,7 +151,7 @@ impl TryFrom<&std::path::PathBuf> for Ita {
             tracing::warn!("Value field is empty.");
             Err(Set::Empty.into())
         } else {
-            let frequency = ItaFrequencies::new(frequency);
+            let frequency = Frequencies::new(frequency);
             let table = Self {
                 area_or_country,
                 frequency,
@@ -202,14 +222,14 @@ impl Iterator for ItaIterator<'_> {
 )]
 pub struct ItaDatum {
     area_or_country: AreaOrCountry,
-    cl_unit: String,
+    cl_unit: Measure,
     data_value: Option<i64>,
-    frequency: ItaFrequency,
-    indicator: String,
+    frequency: Frequency,
+    indicator: Indicator,
     time_period: jiff::civil::Date,
     time_series_description: String,
     time_series_id: String,
-    unit_mult: Option<i64>,
+    unit_mult: Scale,
     year: jiff::civil::Date,
 }
 
@@ -220,6 +240,8 @@ impl ItaDatum {
             .map_err(|e| DeriveFromStr::new(area_or_country, e, line!(), file!().to_owned()))?;
         tracing::trace!("area_or_country is {area_or_country}.");
         let cl_unit = map_to_string("CL_UNIT", m)?;
+        let cl_unit = Measure::from_str(&cl_unit)
+            .map_err(|e| DeriveFromStr::new(cl_unit, e, line!(), file!().to_owned()))?;
         tracing::trace!("cl_unit is {cl_unit}.");
         let data_value = match map_to_int("DataValue", m) {
             Ok(value) => Some(value),
@@ -235,9 +257,11 @@ impl ItaDatum {
         };
         tracing::trace!("data_value is {data_value:?}.");
         let frequency = map_to_string("Frequency", m)?;
-        let frequency = ItaFrequency::from_value(&frequency)?;
+        let frequency = Frequency::from_value(&frequency)?;
         tracing::trace!("frequency is {frequency}.");
         let indicator = map_to_string("Indicator", m)?;
+        let indicator = Indicator::from_str(&indicator)
+            .map_err(|e| DeriveFromStr::new(indicator, e, line!(), file!().to_owned()))?;
         tracing::trace!("indicator is {indicator}.");
         let time_period = map_to_string("TimePeriod", m)?;
         let time_period = date_by_period(&time_period)?;
@@ -247,10 +271,7 @@ impl ItaDatum {
         let time_series_id = map_to_string("TimeSeriesId", m)?;
         tracing::trace!("time_series_id is {time_series_id}.");
         let unit_mult = map_to_int("UNIT_MULT", m)?;
-        let unit_mult = match unit_mult {
-            0 => None,
-            num => Some(num),
-        };
+        let unit_mult = Scale::from_key(unit_mult)?;
         tracing::trace!("unit_mult is {unit_mult:?}.");
         let year = map_to_string("Year", m)?;
         let year = parse_year(&year)?;
@@ -282,9 +303,89 @@ impl ItaDatum {
     derive_more::AsRef,
     derive_more::AsMut,
     derive_more::From,
+    derive_new::new,
 )]
 #[from(Vec<ItaDatum>)]
 pub struct ItaData(Vec<ItaDatum>);
+
+impl ItaData {
+    #[tracing::instrument]
+    pub fn aocs(&self) -> std::collections::BTreeSet<AreaOrCountry> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.area_or_country().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn cl_units(&self) -> std::collections::BTreeSet<Measure> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.cl_unit().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn frequencies(&self) -> std::collections::BTreeSet<Frequency> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.frequency().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn indicators(&self) -> std::collections::BTreeSet<Indicator> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.indicator().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn time_periods(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.time_period().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn time_series_codes(&self) -> std::collections::BTreeMap<String, String> {
+        let mut codes = std::collections::BTreeMap::new();
+        self.iter()
+            .map(|v| {
+                codes.insert(
+                    format!("{:#?}", v.time_series_id()),
+                    v.time_series_description().to_owned(),
+                )
+            })
+            .for_each(drop);
+        codes
+    }
+
+    #[tracing::instrument]
+    pub fn unit_multipliers(&self) -> std::collections::BTreeSet<Scale> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.unit_mult().to_owned()))
+            .for_each(drop);
+        set
+    }
+
+    #[tracing::instrument]
+    pub fn years(&self) -> std::collections::BTreeSet<jiff::civil::Date> {
+        let mut set = std::collections::BTreeSet::new();
+        self.iter()
+            .map(|v| set.insert(v.year().to_owned()))
+            .for_each(drop);
+        set
+    }
+}
 
 impl TryFrom<&serde_json::Value> for ItaData {
     type Error = Bull;
