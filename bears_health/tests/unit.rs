@@ -123,6 +123,7 @@ fn print_expected_keys() -> anyhow::Result<()> {
     bears_health::GdpKeys::print_expected(&path, Dataset::UnderlyingGDPbyIndustry)?;
     bears_health::IipKeys::print_expected(&path)?;
     bears_health::IoKeys::print_expected(&path)?;
+    bears_health::ItaKeys::print_expected(&path)?;
     Ok(())
 }
 
@@ -135,6 +136,7 @@ async fn print_observed_keys() -> anyhow::Result<()> {
     bears_health::GdpKeys::print_observed(&path, Dataset::UnderlyingGDPbyIndustry).await?;
     bears_health::IipKeys::print_observed(&path).await?;
     bears_health::IoKeys::print_observed(&path).await?;
+    bears_health::ItaKeys::print_observed(&path).await?;
     Ok(())
 }
 
