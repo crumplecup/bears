@@ -194,7 +194,7 @@ pub use helpers::{difference, missing, params, unused};
 pub use histories::download_summary;
 pub use indicators::check_indicators;
 pub use investments::check_investments;
-pub use key_sets::{FixedAssetKeys, GdpKeys, IipKeys, IoKeys};
+pub use key_sets::{FixedAssetKeys, GdpKeys, IipKeys, IoKeys, ItaKeys};
 pub use naics::{
     check_naics_category, check_naics_industry, check_naics_sectors, check_naics_subcategory,
     check_naics_subsectors,
