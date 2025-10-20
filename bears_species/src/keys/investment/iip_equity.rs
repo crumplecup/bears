@@ -1,3 +1,5 @@
+use crate::Describe;
+
 /// Equity and claims classifications used in the U.S. International Investment Position (IIP) dataset.
 ///
 /// These represent the type of equity position or claims relationship, including whether it's
@@ -64,9 +66,10 @@ impl IipEquity {
             _ => (None, input),
         }
     }
+}
 
-    /// Returns the description for this IIP equity type.
-    pub const fn description(&self) -> &'static str {
+impl Describe for IipEquity {
+    fn description(&self) -> &'static str {
         match self {
             Self::Assets => "U.S. assets",
             Self::Claims => "claims",

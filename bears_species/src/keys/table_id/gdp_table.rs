@@ -1,3 +1,5 @@
+use crate::{Code, Describe};
+
 /// GDP tables from the Bureau of Economic Analysis.
 ///
 /// This enum represents the various GDP-related data tables published by the BEA,
@@ -106,9 +108,8 @@ pub enum GdpTable {
     ValueAddedByIndustryAsPercentageOfGrossDomesticProduct,
 }
 
-impl GdpTable {
-    /// Returns the description of the GDP table.
-    pub fn description(&self) -> &'static str {
+impl Describe for GdpTable {
+    fn description(&self) -> &'static str {
         match self {
             Self::ChainTypePriceIndexesForEnergyInputsByIndustry => "Chain-Type Price Indexes for Energy Inputs by Industry [2017=100]",
             Self::ChainTypePriceIndexesForGrossOutputByIndustry => "Chain-Type Price Indexes for Gross Output by Industry [2017=100]",
@@ -151,9 +152,12 @@ impl GdpTable {
             Self::ValueAddedByIndustryAsPercentageOfGrossDomesticProduct => "Value added by Industry as a Percentage of Gross Domestic Product [Percent]",
         }
     }
+}
 
-    /// Returns the BEA table code for this GDP table.
-    pub fn code(&self) -> i64 {
+impl Code<i64> for GdpTable {
+    type Decoded = Self;
+
+    fn code(&self) -> i64 {
         match self {
             Self::ChainTypePriceIndexesForEnergyInputsByIndustry => 33,
             Self::ChainTypePriceIndexesForGrossOutputByIndustry => 18,
@@ -197,8 +201,7 @@ impl GdpTable {
         }
     }
 
-    /// Returns the GdpTable variant corresponding to the given BEA table code.
-    pub fn from_code(code: i64) -> Option<Self> {
+    fn from_code(code: i64) -> Option<Self> {
         let table = match code {
             1 => Self::ValueAddedByIndustry,
             5 => Self::ValueAddedByIndustryAsPercentageOfGrossDomesticProduct,

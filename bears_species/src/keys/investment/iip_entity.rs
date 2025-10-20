@@ -1,3 +1,5 @@
+use crate::Describe;
+
 /// Entity classifications used in the U.S. International Investment Position (IIP) dataset.
 ///
 /// These represent various dimensions of classification including asset/liability type,
@@ -103,9 +105,10 @@ impl IipEntity {
             None => (None, input),
         }
     }
+}
 
-    /// Returns the description for this IIP entity.
-    pub const fn description(&self) -> &'static str {
+impl Describe for IipEntity {
+    fn description(&self) -> &'static str {
         match self {
             Self::NonFinExclGenGovt => "Nonfinancial institutions except general government",
             Self::DepExclCenBank => "Deposit-taking institutions except central bank",

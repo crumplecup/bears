@@ -1,3 +1,5 @@
+use crate::Describe;
+
 /// Position and change measurement types in the U.S. International Investment Position (IIP) dataset.
 ///
 /// These represent the final component of time series identifiers, indicating whether the data
@@ -148,9 +150,10 @@ impl Position {
             None => (None, input),
         }
     }
+}
 
-    /// Returns the description for this position type.
-    pub const fn description(&self) -> &'static str {
+impl Describe for Position {
+    fn description(&self) -> &'static str {
         match self {
             Self::LtChgPosNie => {
                 "Long term change in position attributable to changes in volume and valuation n.i.e."

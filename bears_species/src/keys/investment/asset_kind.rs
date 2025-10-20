@@ -1,5 +1,7 @@
 use logos::Logos;
 
+use crate::Describe;
+
 /// Asset kind categories derived from the U.S. International Investment Position (IIP) dataset.
 ///
 /// These categories represent the high-level classification of different types of international
@@ -184,9 +186,10 @@ impl AssetKind {
             _ => (None, input),
         }
     }
+}
 
-    /// Returns the description for this asset kind.
-    pub const fn description(&self) -> &'static str {
+impl Describe for AssetKind {
+    fn description(&self) -> &'static str {
         match self {
             Self::DiInvDebtInstUsAffiliates => {
                 "Direct investment; debt instruments; U.S. affiliates"

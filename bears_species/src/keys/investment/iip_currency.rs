@@ -1,3 +1,5 @@
+use crate::Describe;
+
 /// Currency and attribute classifications used in the U.S. International Investment Position (IIP) dataset.
 ///
 /// These represent additional modifiers that can appear after the main IipEntity components,
@@ -123,9 +125,10 @@ impl IipCurrency {
             None => (None, input),
         }
     }
+}
 
-    /// Returns the description for this IIP currency.
-    pub const fn description(&self) -> &'static str {
+impl Describe for IipCurrency {
+    fn description(&self) -> &'static str {
         match self {
             Self::HistCostToMarketValueAdj => {
                 "Adjustment to revalue equity from historical cost to market value"

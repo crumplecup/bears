@@ -1,3 +1,5 @@
+use crate::Describe;
+
 /// Classification types used in the U.S. International Investment Position (IIP) dataset.
 ///
 /// These represent the high-level category or type of investment instrument, transaction,
@@ -105,9 +107,10 @@ impl IipClass {
             None => (None, input),
         }
     }
+}
 
-    /// Returns the description for this IIP class.
-    pub const fn description(&self) -> &'static str {
+impl Describe for IipClass {
+    fn description(&self) -> &'static str {
         match self {
             Self::ClaimsBy => "Claims by",
             Self::Outward => "Outward (U.S. direct investment abroad)",
