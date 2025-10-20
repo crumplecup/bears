@@ -1,6 +1,6 @@
 use crate::{
     BeaResponse, Bull, Component, Currency, Data, Dataset, DatasetMissing, DeriveFromStr,
-    Investment, IoError, ItaFrequencies, ItaFrequency, Measure, NotArray, NotObject, Note, Notes,
+    Frequencies, Frequency, Investment, IoError, Measure, NotArray, NotObject, Note, Notes,
     ParameterName, ParameterValueTable, Scale, SerdeJson, Set, TimeSeries, VariantMissing, Year,
     date_by_period, map_to_int, map_to_string, parse_year,
 };
@@ -17,10 +17,12 @@ use std::str::FromStr;
     serde::Serialize,
     serde::Deserialize,
     derive_getters::Getters,
+    derive_more::AsRef,
+    derive_more::AsMut,
 )]
 pub struct Iip {
     component: Vec<Component>,
-    frequency: ItaFrequencies,
+    frequency: Frequencies,
     type_of_investment: Vec<Investment>,
     year: Vec<Year>,
 }
@@ -41,11 +43,11 @@ impl Iip {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn frequencies(&self) -> std::collections::BTreeSet<ItaFrequency> {
+    pub fn frequencies(&self) -> std::collections::BTreeSet<Frequency> {
         self.frequency()
             .iter()
             .cloned()
-            .collect::<std::collections::BTreeSet<ItaFrequency>>()
+            .collect::<std::collections::BTreeSet<Frequency>>()
     }
 
     #[tracing::instrument(skip_all)]
@@ -117,7 +119,7 @@ impl TryFrom<&std::path::PathBuf> for Iip {
                         for table in pf.iter() {
                             match table {
                                 ParameterValueTable::ParameterFields(_) => {
-                                    frequency.push(ItaFrequency::try_from(table)?);
+                                    frequency.push(Frequency::try_from(table)?);
                                 }
                                 _ => {
                                     return Err(Set::ParameterFieldsMissing.into());
@@ -165,7 +167,7 @@ impl TryFrom<&std::path::PathBuf> for Iip {
             tracing::warn!("Value field is empty.");
             Err(Set::Empty.into())
         } else {
-            let frequency = ItaFrequencies::new(frequency);
+            let frequency = Frequencies::new(frequency);
             let table = Self {
                 component,
                 frequency,
@@ -235,7 +237,7 @@ pub struct IipDatum {
     cl_unit: Measure,
     component: Component,
     data_value: Option<Currency>,
-    frequency: ItaFrequency,
+    frequency: Frequency,
     note_ref: Option<String>,
     time_period: jiff::civil::Date,
     time_series_description: String,
@@ -257,7 +259,7 @@ impl IipDatum {
             .map_err(|e| DeriveFromStr::new(component, e, line!(), file!().to_string()))?;
         tracing::trace!("component is {component}.");
         let frequency = map_to_string("Frequency", m)?;
-        let frequency = ItaFrequency::from_value(&frequency)?;
+        let frequency = Frequency::from_value(&frequency)?;
         tracing::trace!("frequency is {frequency}.");
         let note_ref = map_to_string("NoteRef", m)?;
         let note_ref = if note_ref.is_empty() {
@@ -377,7 +379,7 @@ impl IipData {
     }
 
     #[tracing::instrument]
-    pub fn frequencies(&self) -> std::collections::BTreeSet<ItaFrequency> {
+    pub fn frequencies(&self) -> std::collections::BTreeSet<Frequency> {
         let mut set = std::collections::BTreeSet::new();
         self.iter()
             .map(|v| set.insert(v.frequency().to_owned()))
