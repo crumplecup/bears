@@ -1,8 +1,9 @@
 use crate::{
-    BeaResponse, Bull, Currency, Data, Dataset, DatasetMissing, Frequencies, Frequency, GdpTable,
-    Integer, IoError, KeyMissing, Measure, Naics, NotArray, NotObject, Note, Notes, ParameterName,
-    ParameterValueTable, Scale, SerdeJson, Set, VariantMissing, Year, data::result_to_data,
-    map_to_float, map_to_int, map_to_string, parse_year, roman_numeral_quarter,
+    BeaResponse, Bull, Code, Currency, Data, Dataset, DatasetMissing, Frequencies, Frequency,
+    GdpTable, Integer, IoError, KeyMissing, Measure, Naics, NotArray, NotObject, Note, Notes,
+    ParameterName, ParameterValueTable, Scale, SerdeJson, Set, TableId, UgdpTable, VariantMissing,
+    Year, map_to_float, map_to_int, map_to_string, parse_year, result_to_data,
+    roman_numeral_quarter,
 };
 use strum::IntoEnumIterator;
 
@@ -20,10 +21,10 @@ pub struct GdpByIndustry {
     dataset: Dataset,
     frequency: Frequencies,
     // BTreeMap of table ids to industry names
-    industry: std::collections::BTreeMap<GdpTable, Vec<Naics>>,
-    table_id: Vec<GdpTable>,
+    industry: std::collections::BTreeMap<TableId, Vec<Naics>>,
+    table_id: Vec<TableId>,
     // BTreeMap of table ids to years
-    year: std::collections::BTreeMap<GdpTable, Vec<Year>>,
+    year: std::collections::BTreeMap<TableId, Vec<Year>>,
 }
 
 impl GdpByIndustry {
@@ -99,7 +100,7 @@ impl GdpByIndustry {
     pub fn read_industry<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<std::collections::BTreeMap<GdpTable, Vec<Naics>>, Bull> {
+    ) -> Result<std::collections::BTreeMap<TableId, Vec<Naics>>, Bull> {
         let path = path.as_ref();
         let table_id = Self::read_table_id(path, dataset)?;
         // start with table_id because it is a precondition for other parameter values
@@ -160,7 +161,7 @@ impl GdpByIndustry {
     pub fn read_table_id<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<Vec<GdpTable>, Bull> {
+    ) -> Result<Vec<TableId>, Bull> {
         let path = path.as_ref();
         // start with table_id because it is a precondition for other parameter values
         let name = ParameterName::TableID;
@@ -183,8 +184,14 @@ impl GdpByIndustry {
         if let Some(pv) = results.into_parameter_values() {
             for table in pv.iter() {
                 let id = Integer::try_from(table)?;
-                if let Some(table) = GdpTable::from_code(*id.value()) {
-                    table_id.push(table);
+                if dataset == Dataset::GDPbyIndustry {
+                    if let Some(table) = GdpTable::from_code(*id.value()) {
+                        table_id.push(table.into());
+                    }
+                } else if dataset == Dataset::UnderlyingGDPbyIndustry
+                    && let Some(table) = UgdpTable::from_code(*id.value())
+                {
+                    table_id.push(table.into());
                 }
             }
             tracing::trace!("{dataset} contains {} {name} values.", table_id.len());
@@ -199,7 +206,7 @@ impl GdpByIndustry {
     pub fn read_year<P: AsRef<std::path::Path> + std::fmt::Debug>(
         path: P,
         dataset: Dataset,
-    ) -> Result<std::collections::BTreeMap<GdpTable, Vec<Year>>, Bull> {
+    ) -> Result<std::collections::BTreeMap<TableId, Vec<Year>>, Bull> {
         let path = path.as_ref();
         let table_id = Self::read_table_id(path, dataset)?;
         // start with table_id because it is a precondition for other parameter values
@@ -252,7 +259,7 @@ impl<P: AsRef<std::path::Path>> TryFrom<(P, Dataset)> for GdpByIndustry {
 /// Used to create API calls with Industry, Frequency and Years set to "ALL".
 #[derive(Debug, Clone)]
 pub struct GdpTables<'a> {
-    tables: std::slice::Iter<'a, GdpTable>,
+    tables: std::slice::Iter<'a, TableId>,
 }
 
 impl<'a> GdpTables<'a> {
@@ -311,7 +318,7 @@ pub struct GdpDatum {
     industry: Naics,
     note_ref: String,
     quarter: Option<jiff::civil::Date>,
-    table_id: GdpTable,
+    table_id: TableId,
     year: jiff::civil::Date,
 }
 
@@ -346,7 +353,7 @@ impl GdpDatum {
         tracing::trace!("Note Ref: {note_ref}.");
         let table_id = map_to_int("TableID", m)?;
         // let table_id = RowCode::from_value(m, &row, naics)?;
-        let table_id = match GdpTable::from_code(table_id) {
+        let table_id = match TableId::from_code(table_id) {
             Some(id) => id,
             None => {
                 let error = KeyMissing::new(table_id.to_string(), line!(), file!().to_string());
