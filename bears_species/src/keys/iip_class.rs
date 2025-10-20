@@ -105,4 +105,17 @@ impl IipClass {
             None => (None, input),
         }
     }
+
+    /// Returns the description for this IIP class.
+    pub const fn description(&self) -> &'static str {
+        match self {
+            Self::ClaimsBy => "Claims by",
+            Self::Outward => "Outward (U.S. direct investment abroad)",
+            Self::LiabsIn => "Liabilities in",
+            Self::Inward => "Inward (foreign direct investment in the United States)",
+            Self::Assets => "U.S. assets",
+            Self::Claims => "Claims",
+            Self::Liabs => "U.S. liabilities",
+        }
+    }
 }
