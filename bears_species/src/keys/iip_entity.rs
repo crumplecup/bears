@@ -103,4 +103,16 @@ impl IipEntity {
             None => (None, input),
         }
     }
+
+    /// Returns the description for this IIP entity.
+    pub const fn description(&self) -> &'static str {
+        match self {
+            Self::NonFinExclGenGovt => "Nonfinancial institutions except general government",
+            Self::DepExclCenBank => "Deposit-taking institutions except central bank",
+            Self::CenBank => "Central bank",
+            Self::GenGovt => "General government",
+            Self::OthFin => "Other financial institutions",
+            Self::Foa => "Foreign official agencies",
+        }
+    }
 }
