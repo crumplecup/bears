@@ -509,16 +509,7 @@ impl Iterator for NipaRangeIterator<'_> {
     fn next(&mut self) -> Option<Self::Item> {
         match self.frequency {
             Frequency::Annual => {
-                self.frequency = Frequency::Monthly;
                 if let Some(range) = self.range.annual() {
-                    Some(range.keys())
-                } else {
-                    self.next()
-                }
-            }
-            Frequency::Monthly => {
-                self.frequency = Frequency::Quarterly;
-                if let Some(range) = self.range.quarterly() {
                     Some(range.keys())
                 } else {
                     self.next()
@@ -535,6 +526,9 @@ impl Iterator for NipaRangeIterator<'_> {
                     None
                 }
             }
+            // TODO: sort by sources to eliminate this arm
+            Frequency::Qnsa => None,
+            Frequency::Qsa => None,
         }
     }
 }
