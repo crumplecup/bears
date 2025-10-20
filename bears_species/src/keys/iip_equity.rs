@@ -64,4 +64,17 @@ impl IipEquity {
             _ => (None, input),
         }
     }
+
+    /// Returns the description for this IIP equity type.
+    pub const fn description(&self) -> &'static str {
+        match self {
+            Self::Assets => "U.S. assets",
+            Self::Claims => "claims",
+            Self::ClaimsByNonSpe => "by non-SPE affiliates",
+            Self::ClaimsBySpe => "by SPE affiliates",
+            Self::Liabs => "U.S. liabilities",
+            Self::LiabsIn => "liabilities in",
+            Self::MarketValue => "market value",
+        }
+    }
 }
