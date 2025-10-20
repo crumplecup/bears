@@ -206,14 +206,6 @@ impl<'a> NipaIterator<'a> {
                         self.years = None;
                     }
                 }
-                Frequency::Monthly => {
-                    if let Some(monthly) = rng.monthly() {
-                        self.years = Some(monthly.keys());
-                    } else {
-                        tracing::error!("Values for monthly years not found.");
-                        self.years = None;
-                    }
-                }
                 Frequency::Quarterly => {
                     if let Some(quarterly) = rng.quarterly() {
                         self.years = Some(quarterly.keys());
@@ -222,6 +214,9 @@ impl<'a> NipaIterator<'a> {
                         self.years = None;
                     }
                 }
+                // TODO: use the sources method to filter out this match arm
+                Frequency::Qnsa => {}
+                Frequency::Qsa => {}
             }
         }
     }
@@ -537,14 +532,6 @@ impl<'a> NiUnderlyingDetailIterator<'a> {
                         self.years = None;
                     }
                 }
-                Frequency::Monthly => {
-                    if let Some(monthly) = rng.monthly() {
-                        self.years = Some(monthly.keys());
-                    } else {
-                        tracing::error!("Values for monthly years not found.");
-                        self.years = None;
-                    }
-                }
                 Frequency::Quarterly => {
                     if let Some(quarterly) = rng.quarterly() {
                         self.years = Some(quarterly.keys());
@@ -553,6 +540,9 @@ impl<'a> NiUnderlyingDetailIterator<'a> {
                         self.years = None;
                     }
                 }
+                // TODO: use the sources method to filter out this match arm
+                Frequency::Qnsa => {}
+                Frequency::Qsa => {}
             }
         }
     }
