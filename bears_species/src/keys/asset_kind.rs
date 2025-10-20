@@ -184,4 +184,59 @@ impl AssetKind {
             _ => (None, input),
         }
     }
+
+    /// Returns the description for this asset kind.
+    pub const fn description(&self) -> &'static str {
+        match self {
+            Self::DiInvDebtInstUsAffiliates => {
+                "Direct investment; debt instruments; U.S. affiliates"
+            }
+            Self::DiInvDebtInstUsParents => "Direct investment; debt instruments; U.S. parents",
+            Self::DiInvDirectionalBasisAdj => "Direct investment; directional basis adjustment",
+            Self::FinDerivExchTraded => "Financial derivatives; exchange-traded",
+            Self::FinDerivSingleCurr => "Financial derivatives; single currency",
+            Self::FinLiabsExclFinDeriv => "Financial liabilities excluding financial derivatives",
+            Self::FinAssetsExclFinDeriv => "Financial assets excluding financial derivatives",
+            Self::FinDerivReserve => "Financial derivatives; reserve assets",
+            Self::CurrAndDepReserve => "Currency and deposits; reserve assets",
+            Self::DebtAssetsExclReserve => "U.S. debt assets except reserve assets",
+            Self::TreasBillsAndCerts => "Treasury bills and certificates",
+            Self::TreasBondsAndNotes => "Treasury bonds and notes",
+            Self::EquityAndInvFundShares => "Equity and investment fund shares",
+            Self::NetExclFinDeriv => "Net excluding financial derivatives",
+            Self::DiInvDebtInst => "Direct investment; debt instruments",
+            Self::LtDebtSecTreas => "Long-term debt securities; Treasury",
+            Self::StDebtSecTreas => "Short-term debt securities; Treasury",
+            Self::InsTechReserves => "Insurance technical reserves",
+            Self::TrdCredAndAdv => "Trade credit and advances",
+            Self::FinDerivForEx => "Financial derivatives; foreign exchange",
+            Self::OthLtDebtSec => "Other long-term debt securities",
+            Self::OthStDebtSec => "Other short-term debt securities",
+            Self::OthClmReserve => "Other claims; reserve assets",
+            Self::FinDerivOtc => "Financial derivatives; over-the-counter",
+            Self::FinDerivOth => "Financial derivatives; other",
+            Self::FinDerivNet => "Financial derivatives; net",
+            Self::DiInvEquity => "Direct investment; equity",
+            Self::LtDebtSec => "Long-term debt securities",
+            Self::StDebtSec => "Short-term debt securities",
+            Self::CurrAndDep => "Currency and deposits",
+            Self::GoldReserve => "Gold; reserve assets",
+            Self::ImfReserve => "IMF; reserve assets",
+            Self::OthReserve => "Other reserve assets",
+            Self::SdrReserve => "SDR; reserve assets",
+            Self::SecReserve => "Securities; reserve assets",
+            Self::FinDeriv => "Financial derivatives",
+            Self::OthEquity => "Other equity",
+            Self::SdrAlloc => "SDR allocations",
+            Self::DebtSec => "Debt securities",
+            Self::DiInv => "Direct investment",
+            Self::OthInv => "Other investment",
+            Self::PfInv => "Portfolio investment",
+            Self::Reserve => "Reserve assets",
+            Self::Loans => "Loans",
+            Self::Debt => "Debt",
+            Self::Fin => "Financial",
+            Self::Net => "Net",
+        }
+    }
 }
