@@ -1,3 +1,4 @@
+mod behavior;
 mod data;
 mod dataset;
 mod error;
@@ -11,6 +12,7 @@ mod parameter_value;
 mod request;
 mod results;
 
+pub use behavior::{Code, Describe};
 pub use data::{Data, MneDiData, result_to_data};
 pub use dataset::{Dataset, DatasetDetails, Datasets};
 // investment invalid unused
@@ -37,13 +39,13 @@ pub use keys::{
     Classification, Component, Currency, DirectionKind, DirectionOfInvestment, FixedAssetLine,
     FixedAssetTable, Footnotes, Frequencies, Frequency, FrequencyOptions, GdpTable, IipClass,
     IipCurrency, IipEntity, IipEquity, IipIndustry, Indicator, InputOutputCode, InputOutputTable,
-    Integer, IntegerInvalid, IntegerKind, IntegerOptions, Investment, ItaFrequencies, ItaFrequency,
-    Lex, LexDetail, Measure, Metric, Millions, MillionsOptions, Naics, NaicsCategory,
-    NaicsIndustry, NaicsInputOutput, NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory,
-    NaicsSubsector, NaicsSupplement, NipaRange, NipaRangeIterator, NipaRanges, NipaTableName, Nom,
-    NotQuarter, OwnershipInvalid, OwnershipKind, OwnershipLevel, Position, RowCode, RowCodeMissing,
-    Scale, SelectionKind, SelectionSet, Service, State, StateKind, TableName, TimeSeries,
-    TimeSeriesRaw, TradeDirection, ValueKind, Year, YearInvalid, YearKind, YearOptions, YearRange,
+    Integer, IntegerInvalid, IntegerKind, IntegerOptions, Investment, Lex, LexDetail, Measure,
+    Metric, Millions, MillionsOptions, Naics, NaicsCategory, NaicsIndustry, NaicsInputOutput,
+    NaicsItem, NaicsItems, NaicsSector, NaicsSubcategory, NaicsSubsector, NaicsSupplement,
+    NipaRange, NipaRangeIterator, NipaRanges, NipaTableName, Nom, NotQuarter, OwnershipInvalid,
+    OwnershipKind, OwnershipLevel, Position, RowCode, RowCodeMissing, Scale, SelectionKind,
+    SelectionSet, Service, State, StateKind, TableId, TableName, TimeSeries, TimeSeriesRaw,
+    TradeDirection, UgdpTable, ValueKind, Year, YearInvalid, YearKind, YearOptions, YearRange,
     date_by_period, parse_year, roman_numeral_quarter,
 };
 pub use method::Method;
