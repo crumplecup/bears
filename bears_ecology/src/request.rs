@@ -1,8 +1,8 @@
 use crate::{App, History, Mode, Options, Overwrite, Queue, Scope, bea_data, init};
 use bears_species::{
-    BeaResponse, Bull, Data, Dataset, DatasetMissing, FixedAssets, GdpByIndustry, Iip, InputOutput,
-    IoError, Ita, Method, Mne, NiUnderlyingDetail, Nipa, ParameterName, ReqwestError, Results,
-    SerdeJson, VariantMissing,
+    BeaResponse, Bull, Code, Data, Dataset, DatasetMissing, FixedAssets, GdpByIndustry, Iip,
+    InputOutput, IoError, Ita, Method, Mne, NiUnderlyingDetail, Nipa, ParameterName, ReqwestError,
+    Results, SerdeJson, VariantMissing,
 };
 use strum::IntoEnumIterator;
 
