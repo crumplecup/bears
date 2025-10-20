@@ -1,7 +1,7 @@
 use crate::{difference, params};
 use bears_ecology::initial_load;
 use bears_species::{
-    Bull, Component, Data, Dataset, Iip, IipData, Investment, ItaFrequency, Measure, Note, Notes,
+    Bull, Component, Data, Dataset, Frequency, Iip, IipData, Investment, Measure, Note, Notes,
     ParameterName, Scale, TimeSeriesRaw,
 };
 use std::collections::BTreeSet;
@@ -27,7 +27,7 @@ use strum::IntoEnumIterator;
 pub struct IipKeys {
     cl_units: BTreeSet<Measure>,
     components: BTreeSet<Component>,
-    frequencies: BTreeSet<ItaFrequency>,
+    frequencies: BTreeSet<Frequency>,
     notes: Option<BTreeSet<Note>>,
     time_periods: BTreeSet<jiff::civil::Date>,
     time_series_codes: std::collections::BTreeMap<String, String>,
@@ -45,7 +45,7 @@ impl IipKeys {
     ) -> Result<
         (
             BTreeSet<Component>,
-            BTreeSet<ItaFrequency>,
+            BTreeSet<Frequency>,
             BTreeSet<Investment>,
             BTreeSet<jiff::civil::Date>,
         ),
@@ -188,7 +188,7 @@ impl IipKeys {
         let (comp, freq, inv, _year) = Self::expected(path)?;
         // load source data
         let comps = Component::iter().collect::<std::collections::BTreeSet<Component>>();
-        let freqs = ItaFrequency::iter().collect::<std::collections::BTreeSet<ItaFrequency>>();
+        let freqs = Frequency::iter().collect::<std::collections::BTreeSet<Frequency>>();
         let invs = Investment::iter().collect::<std::collections::BTreeSet<Investment>>();
 
         let unused = "UnusedParams";
